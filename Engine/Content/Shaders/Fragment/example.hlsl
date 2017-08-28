@@ -36,8 +36,12 @@ void main(
 {
 	// Output solid white
 	o_color = float4(
-		// RGB
-		1.0, 1.0, 1.0,
+		// R
+		1.0 + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5,
+		// G
+		1.0 + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, 
+		// B
+		1.0 + (tan(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5,
 		// Alpha
 		1.0 );
 

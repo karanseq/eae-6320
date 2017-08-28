@@ -50,10 +50,13 @@ void main()
 	// Calculate the position of this vertex on screen
 	{
 		// This example shader sets the "out" position directly from the "in" position:
-		gl_Position = vec4( i_position.x, i_position.y, 0.0, 1.0 );
+		// gl_Position = vec4( i_position.x, i_position.y, 0.0, 1.0 );
+
+		gl_Position = vec4( i_position.x + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, i_position.y + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, 0.0, 1.0 );
+		
 		// Both of the following lines are exactly equivalent to the one above
-		gl_Position = vec4( i_position.xy, 0.0, 1.0 );
-		gl_Position = vec4( i_position, 0.0, 1.0 );
+		// gl_Position = vec4( i_position.xy, 0.0, 1.0 );
+		// gl_Position = vec4( i_position, 0.0, 1.0 );
 	}
 
 	// EAE6320_TODO: Change the position based on time!
