@@ -27,7 +27,7 @@ void eae6320::Graphics::cSprite::Draw() const
 		constexpr unsigned int startingSlot = 0;
 		constexpr unsigned int vertexBufferCount = 1;
 		// The "stride" defines how large a single vertex is in the stream of data
-		constexpr unsigned int bufferStride = sizeof(VertexFormats::sGeometry);
+		constexpr unsigned int bufferStride = sizeof(VertexFormats::sSprite);
 		// It's possible to start streaming data in the middle of a vertex buffer
 		constexpr unsigned int bufferOffset = 0;
 		direct3dImmediateContext->IASetVertexBuffers(startingSlot, vertexBufferCount, &m_vertexBuffer, &bufferStride, &bufferOffset);
@@ -72,7 +72,7 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize()
 		// Load the compiled binary vertex shader for the input layout
 		eae6320::Platform::sDataFromFile vertexShaderDataFromFile;
 		std::string errorMessage;
-		if (result = eae6320::Platform::LoadBinaryFile("data/Shaders/Vertex/vertexInputLayout_geometry.shd", vertexShaderDataFromFile, &errorMessage))
+		if (result = eae6320::Platform::LoadBinaryFile("data/Shaders/Vertex/vertexInputLayout_sprite.shd", vertexShaderDataFromFile, &errorMessage))
 		{
 			// Create the vertex layout
 
@@ -97,7 +97,7 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize()
 					positionElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
 					positionElement.Format = DXGI_FORMAT_R32G32_FLOAT;
 					positionElement.InputSlot = 0;
-					positionElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sGeometry, x);
+					positionElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sSprite, x);
 					positionElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 					positionElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
 				}
@@ -126,7 +126,7 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize()
 		constexpr unsigned int triangleCount = 2;
 		constexpr unsigned int vertexCountPerTriangle = 3;
 		const auto vertexCount = triangleCount * vertexCountPerTriangle;
-		eae6320::Graphics::VertexFormats::sGeometry vertexData[vertexCount];
+		eae6320::Graphics::VertexFormats::sSprite vertexData[vertexCount];
 		{
 			vertexData[0].x = 0.0f;
 			vertexData[0].y = 0.0f;
@@ -148,7 +148,7 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize()
 		}
 		D3D11_BUFFER_DESC bufferDescription{};
 		{
-			const auto bufferSize = vertexCount * sizeof(eae6320::Graphics::VertexFormats::sGeometry);
+			const auto bufferSize = vertexCount * sizeof(eae6320::Graphics::VertexFormats::sSprite);
 			EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(bufferDescription.ByteWidth) * 8)));
 			bufferDescription.ByteWidth = static_cast<unsigned int>(bufferSize);
 			bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;	// In our class the buffer will never change after it's been created

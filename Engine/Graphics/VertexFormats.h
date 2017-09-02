@@ -26,7 +26,16 @@ namespace eae6320
 				// 2 floats == 8 bytes
 				// Offset = 0
 				float x, y;
-			};
+			}; // struct sGeometry
+
+			struct sSprite
+			{
+				// POSITION
+				// 2 floats == 8 bytes
+				// Offset = 0
+				float x, y;
+
+			}; // struct sSprite
 		}
 	}
 }
