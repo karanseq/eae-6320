@@ -38,7 +38,7 @@
       <Project>{60ff1b7f-04ec-40ae-bded-5fe1742da10e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Graphics\Graphics.vcxproj">
-      <Project>{73affba9-6270-4d14-a9f9-ac2e550b17fa}</Project>
+      <Project>{f59dda89-7cc8-4fbf-8baa-f7d83b908e5b}</Project>
     </ProjectReference>
     <ProjectReference Include="..\Logging\Logging.vcxproj">
       <Project>{a5c152ad-26a3-4835-bb10-ef292daf94ac}</Project>

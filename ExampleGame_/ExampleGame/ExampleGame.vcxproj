@@ -40,14 +40,8 @@
     <ProjectReference Include="..\..\Engine\Application\Application.vcxproj">
       <Project>{e9a1c1db-d622-4fb4-8cf0-c76df6a8cb1b}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\..\Engine\Graphics\Graphics.vcxproj">
-      <Project>{f59dda89-7cc8-4fbf-8baa-f7d83b908e5b}</Project>
-    </ProjectReference>
     <ProjectReference Include="..\..\Engine\UserInput\UserInput.vcxproj">
       <Project>{193bb096-cd2c-48e8-8a28-99ecc2d019ad}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\External\OpenGlExtensions\OpenGlExtensions.vcxproj">
-      <Project>{433f6d20-943a-4d7b-bffe-bc9dfc932e6e}</Project>
     </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
