@@ -6,6 +6,16 @@
 // Interface
 //==========
 
+// Render
+//-------
+
+void eae6320::Graphics::cEffect::Bind() const
+{
+	BindPlatform();
+
+	m_renderState.Bind();
+}
+
 // Initialization / Clean Up
 //--------------------------
 

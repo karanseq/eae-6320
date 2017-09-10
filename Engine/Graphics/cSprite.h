@@ -10,13 +10,16 @@
 	
 #include <Engine/Results/Results.h>
 
-// TODO: Replace with forward declares
-#ifdef EAE6320_PLATFORM_D3D
-#include "Direct3D/Includes.h"
-#endif
-
 #ifdef EAE6320_PLATFORM_GL
 #include "OpenGL/Includes.h"
+#endif
+
+// Forward Declarations
+//=====================
+
+#ifdef EAE6320_PLATFORM_D3D
+	struct ID3D11Buffer;
+	struct ID3D11InputLayout;
 #endif
 
 // Class Declaration

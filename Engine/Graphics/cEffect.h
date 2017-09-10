@@ -46,6 +46,7 @@ namespace eae6320
 			~cEffect();
 
 		private:
+			void BindPlatform() const;
 			eae6320::cResult InitializePlatform();
 			eae6320::cResult CleanUpPlatform();
 

@@ -3,6 +3,7 @@
 
 #include "../cSprite.h"
 
+#include "Includes.h"
 #include "../sContext.h"
 #include "../VertexFormats.h"
 
