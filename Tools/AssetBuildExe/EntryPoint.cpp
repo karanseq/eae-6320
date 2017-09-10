@@ -54,13 +54,7 @@ int main( int i_argumentCount, char** i_arguments )
 		std::string errorMessage;
 		int exitCode;
 		{
-			const auto shader_authored = engineSourceContentDir + "Shaders/Vertex/sprite."
-#if defined( EAE6320_PLATFORM_D3D )
-				"hlsl"
-#elif defined( EAE6320_PLATFORM_GL )
-				"glsl"
-#endif
-				;
+			const auto shader_authored = engineSourceContentDir + "Shaders/Vertex/sprite.xlsl";
 			const auto shader_built = gameInstallDir + "data/Shaders/Vertex/sprite.shd";
 			if ( result = eae6320::Platform::CreateDirectoryIfItDoesntExist( shader_built, &errorMessage) )
 			{
@@ -86,40 +80,60 @@ int main( int i_argumentCount, char** i_arguments )
 			}
 		}
 		{
-			const auto shader_authored = engineSourceContentDir + "Shaders/Fragment/sprite."
-#if defined( EAE6320_PLATFORM_D3D )
-				"hlsl"
-#elif defined( EAE6320_PLATFORM_GL )
-				"glsl"
-#endif
-				;
-			const auto shader_built = gameInstallDir + "data/Shaders/Fragment/sprite.shd";
-			if ( result = eae6320::Platform::CreateDirectoryIfItDoesntExist( shader_built, &errorMessage ) )
+			const auto shader_authored = engineSourceContentDir + "Shaders/Fragment/spriteBasic.xlsl";
+			const auto shader_built = gameInstallDir + "data/Shaders/Fragment/spriteBasic.shd";
+			if (result = eae6320::Platform::CreateDirectoryIfItDoesntExist(shader_built, &errorMessage))
 			{
-				if ( result = eae6320::Platform::ExecuteCommand( ( std::string( "\"" ) + path_shaderBuilder
-					+ "\" \"" + shader_authored + "\" \"" + shader_built + "\" fragment" ).c_str(),
-					&exitCode, &errorMessage ) )
+				if (result = eae6320::Platform::ExecuteCommand((std::string("\"") + path_shaderBuilder
+					+ "\" \"" + shader_authored + "\" \"" + shader_built + "\" fragment").c_str(),
+					&exitCode, &errorMessage))
 				{
-					if ( exitCode != EXIT_SUCCESS )
+					if (exitCode != EXIT_SUCCESS)
 					{
 						return exitCode;
 					}
 				}
 				else
 				{
-					eae6320::Assets::OutputErrorMessageWithFileInfo( __FILE__, __LINE__, errorMessage.c_str() );
+					eae6320::Assets::OutputErrorMessageWithFileInfo(__FILE__, __LINE__, errorMessage.c_str());
 					goto OnExit;
 				}
 			}
 			else
 			{
-				eae6320::Assets::OutputErrorMessageWithFileInfo( __FILE__, __LINE__, errorMessage.c_str() );
+				eae6320::Assets::OutputErrorMessageWithFileInfo(__FILE__, __LINE__, errorMessage.c_str());
+				goto OnExit;
+			}
+		}
+		{
+			const auto shader_authored = engineSourceContentDir + "Shaders/Fragment/spriteAnimated.xlsl";
+			const auto shader_built = gameInstallDir + "data/Shaders/Fragment/spriteAnimated.shd";
+			if (result = eae6320::Platform::CreateDirectoryIfItDoesntExist(shader_built, &errorMessage))
+			{
+				if (result = eae6320::Platform::ExecuteCommand((std::string("\"") + path_shaderBuilder
+					+ "\" \"" + shader_authored + "\" \"" + shader_built + "\" fragment").c_str(),
+					&exitCode, &errorMessage))
+				{
+					if (exitCode != EXIT_SUCCESS)
+					{
+						return exitCode;
+					}
+				}
+				else
+				{
+					eae6320::Assets::OutputErrorMessageWithFileInfo(__FILE__, __LINE__, errorMessage.c_str());
+					goto OnExit;
+				}
+			}
+			else
+			{
+				eae6320::Assets::OutputErrorMessageWithFileInfo(__FILE__, __LINE__, errorMessage.c_str());
 				goto OnExit;
 			}
 		}
 #if defined( EAE6320_PLATFORM_D3D )
 		{
-			const auto shader_authored = engineSourceContentDir + "Shaders/Vertex/vertexInputLayout_sprite.hlsl";
+			const auto shader_authored = engineSourceContentDir + "Shaders/Vertex/vertexInputLayout_sprite.xlsl";
 			const auto shader_built = gameInstallDir + "data/Shaders/Vertex/vertexInputLayout_sprite.shd";
 			if ( result = eae6320::Platform::CreateDirectoryIfItDoesntExist( shader_built, &errorMessage ) )
 			{

@@ -63,7 +63,14 @@ namespace
 	// Shading Data
 	//-------------
 
-	eae6320::Graphics::cEffect s_effect;
+	eae6320::Graphics::cEffect s_effect1(
+		/* i_vertexShaderName = */ std::string("sprite"),
+		/* i_fragmentShaderName = */ std::string("spriteBasic")
+		);
+	eae6320::Graphics::cEffect s_effect2(
+		/* i_vertexShaderName = */ std::string("sprite"),
+		/* i_fragmentShaderName = */ std::string("spriteAnimated")
+		);
 
 	// Geometry Data
 	//--------------
@@ -154,14 +161,17 @@ void eae6320::Graphics::RenderFrame()
 		s_constantBuffer_perFrame.Update(&constantData_perFrame);
 	}
 
-	// Bind the shading data
 	{
-		s_effect.Bind();
+		// Bind the shading data
+		s_effect1.Bind();
+		// Draw the geometry
+		s_sprite1.Draw();
 	}
 
-	// Draw the geometry
 	{
-		s_sprite1.Draw();
+		// Bind the shading data
+		s_effect2.Bind();
+		// Draw the geometry
 		s_sprite2.Draw();
 	}
 
@@ -253,7 +263,8 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 	}
 	// Initialize the shading data
 	{
-		if (!(result = s_effect.Initialize()))
+		if (!(result = s_effect1.Initialize()) ||
+			!(result = s_effect2.Initialize()))
 		{
 			EAE6320_ASSERT(false);
 			goto OnExit;
@@ -313,9 +324,21 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 			}
 		}
 	}
-	
+
 	{
-		const auto localResult = s_effect.CleanUp();
+		const auto localResult = s_effect1.CleanUp();
+		if (!localResult)
+		{
+			EAE6320_ASSERT(false);
+			if (result)
+			{
+				result = localResult;
+			}
+		}
+	}
+
+	{
+		const auto localResult = s_effect2.CleanUp();
 		if (!localResult)
 		{
 			EAE6320_ASSERT(false);

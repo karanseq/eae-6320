@@ -43,6 +43,7 @@ namespace eae6320
 			eae6320::cResult CleanUp();
 
 			cEffect() = default;
+			cEffect(const std::string& i_vertexShaderName, const std::string& i_fragmentShaderName);
 			~cEffect();
 
 		private:
@@ -54,6 +55,12 @@ namespace eae6320
 			//=====
 
 		private:
+			static const std::string s_vertexShaderFolderPath;
+			static const std::string s_fragmentShaderFolderPath;
+			static const std::string s_shaderFileExtension;
+
+			std::string m_vertexShaderFileName;
+			std::string m_fragmentShaderFileName;
 
 			eae6320::Graphics::cShader::Handle m_vertexShader;
 			eae6320::Graphics::cShader::Handle m_fragmentShader;
