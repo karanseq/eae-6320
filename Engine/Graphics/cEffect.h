@@ -42,7 +42,6 @@ namespace eae6320
 			eae6320::cResult Initialize();
 			eae6320::cResult CleanUp();
 
-			cEffect() = default;
 			cEffect(const std::string& i_vertexShaderName, const std::string& i_fragmentShaderName);
 			~cEffect();
 

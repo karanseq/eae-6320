@@ -59,7 +59,6 @@ namespace eae6320
 			eae6320::cResult Initialize();
 			eae6320::cResult CleanUp();
 
-			cSprite() = default;
 			cSprite(const eae6320::Math::sVector2d& i_centre, const eae6320::Math::sVector2d& i_extents);
 			~cSprite();
 
