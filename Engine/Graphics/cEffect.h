@@ -56,7 +56,7 @@ namespace eae6320
 
 			eae6320::Graphics::cShader::Handle m_vertexShader;
 			eae6320::Graphics::cShader::Handle m_fragmentShader;
-#if defined(EAE6320_PLATFORM_GL)
+#if defined( EAE6320_PLATFORM_GL )
 			GLuint m_programId = 0;
 #endif
 

@@ -10,6 +10,7 @@
 	
 #include <Engine/Results/Results.h>
 
+// TODO: Replace with forward declares
 #ifdef EAE6320_PLATFORM_D3D
 #include "Direct3D/Includes.h"
 #endif
@@ -50,7 +51,7 @@ namespace eae6320
 			//=====
 
 		private:
-#if defined(EAE6320_PLATFORM_D3D)
+#if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex
 			ID3D11Buffer* m_vertexBuffer = nullptr;
 			// D3D has an "input layout" object that associates the layout of the vertex format struct
@@ -58,7 +59,7 @@ namespace eae6320
 			ID3D11InputLayout* m_vertexInputLayout = nullptr;
 #endif
 
-#if defined(EAE6320_PLATFORM_GL)
+#if defined( EAE6320_PLATFORM_GL )
 			// A vertex buffer holds the data for each vertex
 			GLuint s_vertexBufferId = 0;
 			// A vertex array encapsulates the vertex data as well as the vertex input layout
