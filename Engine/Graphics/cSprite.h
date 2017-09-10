@@ -7,7 +7,8 @@
 
 // Include Files
 //==============
-	
+
+#include <Engine/Math/sVector2d.h>
 #include <Engine/Results/Results.h>
 
 #ifdef EAE6320_PLATFORM_GL
@@ -21,6 +22,17 @@
 	struct ID3D11Buffer;
 	struct ID3D11InputLayout;
 #endif
+
+namespace eae6320
+{
+	namespace Graphics
+	{
+		namespace VertexFormats
+		{
+			struct sSprite;
+		}
+	}
+}
 
 // Class Declaration
 //==================
@@ -48,12 +60,20 @@ namespace eae6320
 			eae6320::cResult CleanUp();
 
 			cSprite() = default;
+			cSprite(const eae6320::Math::sVector2d& i_centre, const eae6320::Math::sVector2d& i_extents);
 			~cSprite();
+
+		private:
+			// Generates vertex data in counter-clockwise winding, based on centre and extents
+			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData) const;
 
 			// Data
 			//=====
 
 		private:
+			eae6320::Math::sVector2d m_centre;
+			eae6320::Math::sVector2d m_extents;
+
 #if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex
 			ID3D11Buffer* m_vertexBuffer = nullptr;
@@ -64,9 +84,9 @@ namespace eae6320
 
 #if defined( EAE6320_PLATFORM_GL )
 			// A vertex buffer holds the data for each vertex
-			GLuint s_vertexBufferId = 0;
+			GLuint m_vertexBufferId = 0;
 			// A vertex array encapsulates the vertex data as well as the vertex input layout
-			GLuint s_vertexArrayId = 0;
+			GLuint m_vertexArrayId = 0;
 #endif
 
 

@@ -14,6 +14,7 @@
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Concurrency/cEvent.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/sVector2d.h>
 #include <Engine/Platform/Platform.h>
 #include <Engine/Time/Time.h>
 #include <Engine/UserOutput/UserOutput.h>
@@ -67,7 +68,7 @@ namespace
 	// Geometry Data
 	//--------------
 
-	eae6320::Graphics::cSprite s_sprite;
+	eae6320::Graphics::cSprite s_sprite(eae6320::Math::sVector2d(0.5f, 0.5f), eae6320::Math::sVector2d(0.5f, 0.5f));
 }
 
 // Interface

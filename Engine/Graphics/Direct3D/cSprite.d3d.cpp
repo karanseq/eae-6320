@@ -128,25 +128,10 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize()
 		constexpr unsigned int vertexCountPerTriangle = 3;
 		const auto vertexCount = triangleCount * vertexCountPerTriangle;
 		eae6320::Graphics::VertexFormats::sSprite vertexData[vertexCount];
-		{
-			vertexData[0].x = 0.0f;
-			vertexData[0].y = 0.0f;
+		GetVertexData(vertexData);
+		std::swap(vertexData[1], vertexData[2]);
+		std::swap(vertexData[4], vertexData[5]);
 
-			vertexData[1].x = 1.0f;
-			vertexData[1].y = 1.0f;
-
-			vertexData[2].x = 1.0f;
-			vertexData[2].y = 0.0f;
-
-			vertexData[3].x = 0.0f;
-			vertexData[3].y = 0.0f;
-
-			vertexData[4].x = 0.0f;
-			vertexData[4].y = 1.0f;
-
-			vertexData[5].x = 1.0f;
-			vertexData[5].y = 1.0f;
-		}
 		D3D11_BUFFER_DESC bufferDescription{};
 		{
 			const auto bufferSize = vertexCount * sizeof(eae6320::Graphics::VertexFormats::sSprite);
