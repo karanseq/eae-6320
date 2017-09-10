@@ -68,7 +68,15 @@ namespace
 	// Geometry Data
 	//--------------
 
-	eae6320::Graphics::cSprite s_sprite(eae6320::Math::sVector2d(0.5f, 0.5f), eae6320::Math::sVector2d(0.5f, 0.5f));
+	eae6320::Graphics::cSprite s_sprite1(
+		/* i_centre = */ eae6320::Math::sVector2d(0.5f, 0.25f), 
+		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f
+		));
+
+	eae6320::Graphics::cSprite s_sprite2(
+		/* i_centre = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
+		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
+	);
 }
 
 // Interface
@@ -153,7 +161,8 @@ void eae6320::Graphics::RenderFrame()
 
 	// Draw the geometry
 	{
-		s_sprite.Draw();
+		s_sprite1.Draw();
+		s_sprite2.Draw();
 	}
 
 	// Everything has been drawn to the "back buffer", which is just an image in memory.
@@ -252,7 +261,8 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 	}
 	// Initialize the geometry
 	{
-		if (!(result = s_sprite.Initialize()))
+		if (!(result = s_sprite1.Initialize()) ||
+			!(result = s_sprite2.Initialize()))
 		{
 			EAE6320_ASSERT(false);
 			goto OnExit;
@@ -281,7 +291,19 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 	}
 
 	{
-		const auto localResult = s_sprite.CleanUp();
+		const auto localResult = s_sprite1.CleanUp();
+		if (!localResult)
+		{
+			EAE6320_ASSERT(false);
+			if (result)
+			{
+				result = localResult;
+			}
+		}
+	}
+
+	{
+		const auto localResult = s_sprite2.CleanUp();
 		if (!localResult)
 		{
 			EAE6320_ASSERT(false);
