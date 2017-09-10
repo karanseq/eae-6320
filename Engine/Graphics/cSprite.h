@@ -59,7 +59,7 @@ namespace eae6320
 			eae6320::cResult Initialize();
 			eae6320::cResult CleanUp();
 
-			cSprite(const eae6320::Math::sVector2d& i_centre, const eae6320::Math::sVector2d& i_extents);
+			cSprite(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
 			~cSprite();
 
 		private:
@@ -70,7 +70,7 @@ namespace eae6320
 			//=====
 
 		private:
-			eae6320::Math::sVector2d m_centre;
+			eae6320::Math::sVector2d m_origin;
 			eae6320::Math::sVector2d m_extents;
 
 #if defined( EAE6320_PLATFORM_D3D )

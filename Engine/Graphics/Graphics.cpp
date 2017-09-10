@@ -76,12 +76,12 @@ namespace
 	//--------------
 
 	eae6320::Graphics::cSprite s_sprite1(
-		/* i_centre = */ eae6320::Math::sVector2d(0.5f, 0.25f), 
+		/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f), 
 		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f
 		));
 
 	eae6320::Graphics::cSprite s_sprite2(
-		/* i_centre = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
+		/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
 		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
 	);
 }
@@ -149,7 +149,7 @@ void eae6320::Graphics::RenderFrame()
 	// by "clearing" the image buffer (filling it with a solid color)
 	{
 		// Black is usually used
-		s_view.Clear(0.0f, 0.0f, 0.0f, 1.0f);
+		s_view.Clear(0.5f, 0.5f, 0.5f, 1.0f);
 	}
 
 	EAE6320_ASSERT(s_dataBeingRenderedByRenderThread);
