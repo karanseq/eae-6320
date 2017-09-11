@@ -63,7 +63,7 @@ namespace eae6320
 			~cSprite();
 
 		private:
-			// Generates vertex data in counter-clockwise winding, based on centre and extents
+			// Generates vertex data for a quad in counter-clockwise winding, based on origin and extents
 			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData) const;
 
 			// Data

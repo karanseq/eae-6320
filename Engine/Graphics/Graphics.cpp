@@ -77,8 +77,8 @@ namespace
 
 	eae6320::Graphics::cSprite s_sprite1(
 		/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f), 
-		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f
-		));
+		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f)
+	);
 
 	eae6320::Graphics::cSprite s_sprite2(
 		/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
