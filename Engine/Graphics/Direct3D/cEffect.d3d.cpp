@@ -14,7 +14,7 @@
 // Render
 //-------
 
-void eae6320::Graphics::cEffect::Bind() const
+void eae6320::Graphics::cEffect::BindPlatform() const
 {
 	auto* const direct3dImmediateContext = sContext::g_context.direct3dImmediateContext;
 	EAE6320_ASSERT(direct3dImmediateContext);
@@ -35,8 +35,6 @@ void eae6320::Graphics::cEffect::Bind() const
 		EAE6320_ASSERT( shader && shader->m_shaderObject.fragment );
 		direct3dImmediateContext->PSSetShader( shader->m_shaderObject.fragment, noInterfaces, interfaceCount );
 	}
-
-	m_renderState.Bind();
 }
 
 // Initialization / Clean Up

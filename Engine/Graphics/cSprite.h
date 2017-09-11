@@ -7,16 +7,32 @@
 
 // Include Files
 //==============
-	
-#include <Engine/Results/Results.h>
 
-#ifdef EAE6320_PLATFORM_D3D
-#include "Direct3D/Includes.h"
-#endif
+#include <Engine/Math/sVector2d.h>
+#include <Engine/Results/Results.h>
 
 #ifdef EAE6320_PLATFORM_GL
 #include "OpenGL/Includes.h"
 #endif
+
+// Forward Declarations
+//=====================
+
+#ifdef EAE6320_PLATFORM_D3D
+	struct ID3D11Buffer;
+	struct ID3D11InputLayout;
+#endif
+
+namespace eae6320
+{
+	namespace Graphics
+	{
+		namespace VertexFormats
+		{
+			struct sSprite;
+		}
+	}
+}
 
 // Class Declaration
 //==================
@@ -43,14 +59,21 @@ namespace eae6320
 			eae6320::cResult Initialize();
 			eae6320::cResult CleanUp();
 
-			cSprite() = default;
+			cSprite(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
 			~cSprite();
+
+		private:
+			// Generates vertex data for a quad in counter-clockwise winding, based on origin and extents
+			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData) const;
 
 			// Data
 			//=====
 
 		private:
-#if defined(EAE6320_PLATFORM_D3D)
+			eae6320::Math::sVector2d m_origin;
+			eae6320::Math::sVector2d m_extents;
+
+#if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex
 			ID3D11Buffer* m_vertexBuffer = nullptr;
 			// D3D has an "input layout" object that associates the layout of the vertex format struct
@@ -58,11 +81,11 @@ namespace eae6320
 			ID3D11InputLayout* m_vertexInputLayout = nullptr;
 #endif
 
-#if defined(EAE6320_PLATFORM_GL)
+#if defined( EAE6320_PLATFORM_GL )
 			// A vertex buffer holds the data for each vertex
-			GLuint s_vertexBufferId = 0;
+			GLuint m_vertexBufferId = 0;
 			// A vertex array encapsulates the vertex data as well as the vertex input layout
-			GLuint s_vertexArrayId = 0;
+			GLuint m_vertexArrayId = 0;
 #endif
 
 

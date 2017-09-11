@@ -24,9 +24,6 @@
     <ClCompile Include="Direct3D\cShader.d3d.cpp">
       <Filter>Direct3D</Filter>
     </ClCompile>
-    <ClCompile Include="Direct3D\Graphics.d3d.cpp">
-      <Filter>Direct3D</Filter>
-    </ClCompile>
     <ClCompile Include="Direct3D\sContext.d3d.cpp">
       <Filter>Direct3D</Filter>
     </ClCompile>
@@ -40,9 +37,6 @@
       <Filter>OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="OpenGL\cShader.gl.cpp">
-      <Filter>OpenGL</Filter>
-    </ClCompile>
-    <ClCompile Include="OpenGL\Graphics.gl.cpp">
       <Filter>OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="OpenGL\sContext.gl.cpp">
@@ -68,6 +62,13 @@
       <Filter>OpenGL</Filter>
     </ClCompile>
     <ClCompile Include="cSprite.cpp" />
+    <ClCompile Include="Direct3D\cView.d3d.cpp">
+      <Filter>Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\cView.gl.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="cView.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Direct3D\Includes.h">
@@ -90,6 +91,7 @@
     <ClInclude Include="VertexFormats.h" />
     <ClInclude Include="cEffect.h" />
     <ClInclude Include="cSprite.h" />
+    <ClInclude Include="cView.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cRenderState.inl" />

@@ -13,14 +13,13 @@
 // Render
 //-------
 
-void eae6320::Graphics::cEffect::Bind() const
+void eae6320::Graphics::cEffect::BindPlatform() const
 {
 	{
 		EAE6320_ASSERT(m_programId != 0);
 		glUseProgram(m_programId);
 		EAE6320_ASSERT(glGetError() == GL_NO_ERROR);
 	}
-	m_renderState.Bind();
 }
 
 // Initialization / Clean Up
