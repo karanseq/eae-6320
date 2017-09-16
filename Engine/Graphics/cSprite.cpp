@@ -8,6 +8,7 @@
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Logging/Logging.h>
 #include <Engine/Math/sVector2d.h>
+
 #include <new>
 
 // Interface

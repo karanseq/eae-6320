@@ -4,6 +4,7 @@
 #include "cEffect.h"
 
 #include <Engine/Logging/Logging.h>
+
 #include <new>
 
 // Interface
