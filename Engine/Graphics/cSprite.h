@@ -56,22 +56,20 @@ namespace eae6320
 			// Initialization / Clean Up
 			//--------------------------
 
-			eae6320::cResult Initialize();
+			eae6320::cResult Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
 			eae6320::cResult CleanUp();
 
-			cSprite(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+			cSprite() = default;
 			~cSprite();
 
 		private:
 			// Generates vertex data for a quad in counter-clockwise winding, based on origin and extents
-			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData) const;
+			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
 
 			// Data
 			//=====
 
 		private:
-			eae6320::Math::sVector2d m_origin;
-			eae6320::Math::sVector2d m_extents;
 
 #if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex

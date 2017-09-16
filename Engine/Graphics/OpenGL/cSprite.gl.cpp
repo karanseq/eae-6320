@@ -40,7 +40,7 @@ void eae6320::Graphics::cSprite::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cSprite::Initialize()
+eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents)
 {
 	auto result = eae6320::Results::Success;
 
@@ -102,7 +102,7 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize()
 	{
 		const auto vertexCount = 4;
 		eae6320::Graphics::VertexFormats::sSprite vertexData[vertexCount];
-		GetVertexData(vertexData);
+		GetVertexData(vertexData, i_origin, i_extents);
 
 		const auto bufferSize = vertexCount * sizeof(eae6320::Graphics::VertexFormats::sSprite);
 		EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(GLsizeiptr) * 8)));

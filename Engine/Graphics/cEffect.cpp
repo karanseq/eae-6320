@@ -3,13 +3,6 @@
 
 #include "cEffect.h"
 
-// Static Data Initialization
-//===========================
-
-const std::string eae6320::Graphics::cEffect::s_vertexShaderFolderPath("data/Shaders/Vertex/");
-const std::string eae6320::Graphics::cEffect::s_fragmentShaderFolderPath("data/Shaders/Fragment/");
-const std::string eae6320::Graphics::cEffect::s_shaderFileExtension(".shd");
-
 // Interface
 //==========
 
@@ -26,16 +19,12 @@ void eae6320::Graphics::cEffect::Bind() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cEffect::Initialize()
+eae6320::cResult eae6320::Graphics::cEffect::Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName)
 {
 	auto result = eae6320::Results::Success;
 
 	{
-		std::string vertexFilePath(s_vertexShaderFolderPath);
-		vertexFilePath.append(m_vertexShaderFileName);
-		vertexFilePath.append(s_shaderFileExtension);
-
-		if (!(result = eae6320::Graphics::cShader::s_manager.Load(vertexFilePath.c_str(),
+		if (!(result = eae6320::Graphics::cShader::s_manager.Load(i_vertexShaderName,
 			m_vertexShader, eae6320::Graphics::ShaderTypes::Vertex)))
 		{
 			EAE6320_ASSERT(false);
@@ -44,11 +33,7 @@ eae6320::cResult eae6320::Graphics::cEffect::Initialize()
 	}
 
 	{
-		std::string vertexFilePath(s_fragmentShaderFolderPath);
-		vertexFilePath.append(m_fragmentShaderFileName);
-		vertexFilePath.append(s_shaderFileExtension);
-
-		if (!(result = eae6320::Graphics::cShader::s_manager.Load(vertexFilePath.c_str(),
+		if (!(result = eae6320::Graphics::cShader::s_manager.Load(i_fragmentShaderName,
 			m_fragmentShader, eae6320::Graphics::ShaderTypes::Fragment)))
 		{
 			EAE6320_ASSERT(false);
@@ -127,12 +112,6 @@ eae6320::cResult eae6320::Graphics::cEffect::CleanUp()
 	}
 
 	return result;
-}
-
-eae6320::Graphics::cEffect::cEffect(const std::string& i_vertexShaderFileName, const std::string& i_fragmentShaderFileName)
-	: m_vertexShaderFileName(i_vertexShaderFileName), m_fragmentShaderFileName(i_fragmentShaderFileName)
-{
-
 }
 
 eae6320::Graphics::cEffect::~cEffect()

@@ -63,27 +63,14 @@ namespace
 	// Shading Data
 	//-------------
 
-	eae6320::Graphics::cEffect s_effect1(
-		/* i_vertexShaderName = */ std::string("sprite"),
-		/* i_fragmentShaderName = */ std::string("spriteBasic")
-		);
-	eae6320::Graphics::cEffect s_effect2(
-		/* i_vertexShaderName = */ std::string("sprite"),
-		/* i_fragmentShaderName = */ std::string("spriteAnimated")
-		);
+	eae6320::Graphics::cEffect s_effect1;
+	eae6320::Graphics::cEffect s_effect2;
 
 	// Geometry Data
 	//--------------
 
-	eae6320::Graphics::cSprite s_sprite1(
-		/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f), 
-		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f)
-	);
-
-	eae6320::Graphics::cSprite s_sprite2(
-		/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
-		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
-	);
+	eae6320::Graphics::cSprite s_sprite1;
+	eae6320::Graphics::cSprite s_sprite2;
 }
 
 // Interface
@@ -263,8 +250,14 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 	}
 	// Initialize the shading data
 	{
-		if (!(result = s_effect1.Initialize()) ||
-			!(result = s_effect2.Initialize()))
+		if (!(result = s_effect1.Initialize(
+				/* i_vertexShaderName = */ "data/Shaders/Vertex/sprite.shd", 
+				/* i_fragmentShaderName = */ "data/Shaders/Fragment/spriteBasic.shd"
+		)) ||
+			!(result = s_effect2.Initialize(
+				/* i_vertexShaderName = */ "data/Shaders/Vertex/sprite.shd",
+				/* i_fragmentShaderName = */ "data/Shaders/Fragment/spriteAnimated.shd"
+			)))
 		{
 			EAE6320_ASSERT(false);
 			goto OnExit;
@@ -272,8 +265,14 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 	}
 	// Initialize the geometry
 	{
-		if (!(result = s_sprite1.Initialize()) ||
-			!(result = s_sprite2.Initialize()))
+		if (!(result = s_sprite1.Initialize(
+				/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f),
+				/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f)
+		)) ||
+			!(result = s_sprite2.Initialize(
+				/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
+				/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
+			)))
 		{
 			EAE6320_ASSERT(false);
 			goto OnExit;
