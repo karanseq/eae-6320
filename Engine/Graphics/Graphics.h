@@ -17,6 +17,17 @@
 	#include <Engine/Windows/Includes.h>
 #endif
 
+// Forward Declarations
+//=====================
+
+namespace eae6320
+{
+	namespace Graphics
+	{
+		struct sColor;
+	}
+}
+
 // Interface
 //==========
 
@@ -34,6 +45,8 @@ namespace eae6320
 		// of how the application submits the total elapsed times
 		// for the frame currently being submitted
 		void SubmitElapsedTime( const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_simulationTime );
+
+		void SubmitBackgroundColor( const sColor& i_backgroundColor );
 
 		// When the application is ready to submit data for a new frame
 		// it should call this before submitting anything

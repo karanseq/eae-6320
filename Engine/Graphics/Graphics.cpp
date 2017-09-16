@@ -10,6 +10,7 @@
 #include "cSprite.h"
 #include "cView.h"
 #include "sContext.h"
+#include "sColor.h"
 
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Concurrency/cEvent.h>
@@ -42,6 +43,7 @@ namespace
 	struct sDataRequiredToRenderAFrame
 	{
 		eae6320::Graphics::ConstantBufferFormats::sPerFrame constantData_perFrame;
+		eae6320::Graphics::sColor constantData_backgroundColor;
 	};
 	// In our class there will be two copies of the data required to render a frame:
 	//	* One of them will be getting populated by the data currently being submitted by the application loop thread
@@ -85,6 +87,12 @@ void eae6320::Graphics::SubmitElapsedTime(const float i_elapsedSecondCount_syste
 	auto& constantData_perFrame = s_dataBeingSubmittedByApplicationThread->constantData_perFrame;
 	constantData_perFrame.g_elapsedSecondCount_systemTime = i_elapsedSecondCount_systemTime;
 	constantData_perFrame.g_elapsedSecondCount_simulationTime = i_elapsedSecondCount_simulationTime;
+}
+
+void eae6320::Graphics::SubmitBackgroundColor(const sColor& i_backgroundColor)
+{
+	EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+	s_dataBeingSubmittedByApplicationThread->constantData_backgroundColor = i_backgroundColor;
 }
 
 eae6320::cResult eae6320::Graphics::WaitUntilDataForANewFrameCanBeSubmitted(const unsigned int i_timeToWait_inMilliseconds)
@@ -131,15 +139,15 @@ void eae6320::Graphics::RenderFrame()
 		}
 	}
 
+	EAE6320_ASSERT(s_dataBeingRenderedByRenderThread);
+
 	// Every frame an entirely new image will be created.
 	// Before drawing anything, then, the previous image will be erased
 	// by "clearing" the image buffer (filling it with a solid color)
 	{
 		// Black is usually used
-		s_view.Clear(0.5f, 0.5f, 0.5f, 1.0f);
+		s_view.Clear(s_dataBeingRenderedByRenderThread->constantData_backgroundColor);
 	}
-
-	EAE6320_ASSERT(s_dataBeingRenderedByRenderThread);
 
 	// Update the per-frame constant buffer
 	{

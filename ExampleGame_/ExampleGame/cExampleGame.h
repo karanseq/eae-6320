@@ -9,6 +9,7 @@
 //==============
 
 #include <Engine/Application/cbApplication.h>
+#include <Engine/Graphics/sColor.h>
 #include <Engine/Results/Results.h>
 
 #if defined( EAE6320_PLATFORM_WINDOWS )
@@ -71,12 +72,22 @@ namespace eae6320
 		//----
 
 		virtual void UpdateBasedOnInput() override;
+		virtual void UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
+
+		virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
 		// Initialization / Clean Up
 		//--------------------------
 
 		virtual cResult Initialize() override;
 		virtual cResult CleanUp() override;
+
+		// Data
+		//=====
+
+	private:
+
+		eae6320::Graphics::sColor m_backgroundColor = eae6320::Graphics::sColor::ORANGE;
 
 	};
 }
