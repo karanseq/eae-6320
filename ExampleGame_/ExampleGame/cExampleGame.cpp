@@ -149,18 +149,18 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
 	eae6320::cResult result = eae6320::Results::Success;
 
-	constexpr uint8_t numColumns = 4;
-	constexpr uint8_t numRows = 4;
+	constexpr uint8_t numColumns = 5;
+	constexpr uint8_t numRows = 5;
 	constexpr uint8_t numSprites = numColumns * numRows;
 	constexpr float size = 0.1f;
-	constexpr float offset = size + 0.5f;
+	constexpr float offset = size * float(numColumns * 2 - 2);
 	const eae6320::Math::sVector2d extents(size, size);
 
 	for (uint8_t i = 0; i < numSprites; ++i)
 	{
 		eae6320::Graphics::cSprite* sprite = nullptr;
 
-		eae6320::Math::sVector2d origin(i % numColumns * size * 4.0f - offset, i / numColumns * size * 4.0f - offset);
+		eae6320::Math::sVector2d origin(i % numColumns * size * 4 - offset, i / numColumns * size * 4 - offset);
 
 		if (!(result = eae6320::Graphics::cSprite::Create(sprite, origin, extents)))
 		{
