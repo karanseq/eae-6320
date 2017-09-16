@@ -11,6 +11,7 @@
 #include "cRenderState.h"
 #include "cShader.h"
 	
+#include <Engine/Assets/ReferenceCountedAssets.h>
 #include <Engine/Results/Results.h>
 
 #ifdef EAE6320_PLATFORM_GL
@@ -39,6 +40,19 @@ namespace eae6320
 			// Initialization / Clean Up
 			//--------------------------
 
+			static eae6320::cResult Load(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName);
+
+		public:
+
+			// Reference Counting
+			//-------------------
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS();
+
+			EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(cEffect);
+
+		private:
+
 			eae6320::cResult Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName);
 			eae6320::cResult CleanUp();
 
@@ -59,6 +73,8 @@ namespace eae6320
 #if defined( EAE6320_PLATFORM_GL )
 			GLuint m_programId = 0;
 #endif
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNT();
 
 			eae6320::Graphics::cRenderState m_renderState;
 

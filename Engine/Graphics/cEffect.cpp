@@ -3,6 +3,8 @@
 
 #include "cEffect.h"
 
+#include <Engine/Logging/Logging.h>
+
 // Interface
 //==========
 
@@ -18,6 +20,51 @@ void eae6320::Graphics::cEffect::Bind() const
 
 // Initialization / Clean Up
 //--------------------------
+
+eae6320::cResult eae6320::Graphics::cEffect::Load(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName)
+{
+	auto result = eae6320::Results::Success;
+
+	cEffect* newEffect = nullptr;
+
+	// Allocate a new effect
+	{
+		newEffect = new (std::nothrow) cEffect();
+		if (newEffect == nullptr)
+		{
+			result = eae6320::Results::OutOfMemory;
+			EAE6320_ASSERTF(false, "Failed to allocate memory for the new effect!");
+			Logging::OutputError("Failed to allocate memory for the new effect!");
+			goto OnExit;
+		}
+	}
+
+	// Initialize the new effect's shaders
+	if (!(result = newEffect->Initialize(i_vertexShaderName, i_fragmentShaderName)))
+	{
+		EAE6320_ASSERTF(false, "Failed to initialize the new effect!");
+		goto OnExit;
+	}
+
+OnExit:
+
+	if (result)
+	{
+		EAE6320_ASSERT(newEffect);
+		o_effect = newEffect;
+	}
+	else
+	{
+		if (newEffect)
+		{
+			newEffect->DecrementReferenceCount();
+			newEffect = nullptr;
+		}
+		o_effect = nullptr;
+	}
+
+	return result;
+}
 
 eae6320::cResult eae6320::Graphics::cEffect::Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName)
 {

@@ -8,6 +8,7 @@
 // Include Files
 //==============
 
+#include <Engine/Assets/ReferenceCountedAssets.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/Results/Results.h>
 
@@ -56,6 +57,19 @@ namespace eae6320
 			// Initialization / Clean Up
 			//--------------------------
 
+			static eae6320::cResult Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+
+		public:
+
+			// Reference Counting
+			//-------------------
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS();
+
+			EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(cSprite);
+
+		private:
+
 			eae6320::cResult Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
 			eae6320::cResult CleanUp();
 
@@ -70,6 +84,8 @@ namespace eae6320
 			//=====
 
 		private:
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNT();
 
 #if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex

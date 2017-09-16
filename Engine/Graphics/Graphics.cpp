@@ -63,14 +63,14 @@ namespace
 	// Shading Data
 	//-------------
 
-	eae6320::Graphics::cEffect s_effect1;
-	eae6320::Graphics::cEffect s_effect2;
+	//eae6320::Graphics::cEffect s_effect1;
+	//eae6320::Graphics::cEffect s_effect2;
 
 	// Geometry Data
 	//--------------
 
-	eae6320::Graphics::cSprite s_sprite1;
-	eae6320::Graphics::cSprite s_sprite2;
+	//eae6320::Graphics::cSprite s_sprite1;
+	//eae6320::Graphics::cSprite s_sprite2;
 }
 
 // Interface
@@ -148,19 +148,19 @@ void eae6320::Graphics::RenderFrame()
 		s_constantBuffer_perFrame.Update(&constantData_perFrame);
 	}
 
-	{
-		// Bind the shading data
-		s_effect1.Bind();
-		// Draw the geometry
-		s_sprite1.Draw();
-	}
+	//{
+	//	// Bind the shading data
+	//	s_effect1.Bind();
+	//	// Draw the geometry
+	//	s_sprite1.Draw();
+	//}
 
-	{
-		// Bind the shading data
-		s_effect2.Bind();
-		// Draw the geometry
-		s_sprite2.Draw();
-	}
+	//{
+	//	// Bind the shading data
+	//	s_effect2.Bind();
+	//	// Draw the geometry
+	//	s_sprite2.Draw();
+	//}
 
 	// Everything has been drawn to the "back buffer", which is just an image in memory.
 	// In order to display it the contents of the back buffer must be "presented"
@@ -248,36 +248,36 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 			goto OnExit;
 		}
 	}
-	// Initialize the shading data
-	{
-		if (!(result = s_effect1.Initialize(
-				/* i_vertexShaderName = */ "data/Shaders/Vertex/sprite.shd", 
-				/* i_fragmentShaderName = */ "data/Shaders/Fragment/spriteBasic.shd"
-		)) ||
-			!(result = s_effect2.Initialize(
-				/* i_vertexShaderName = */ "data/Shaders/Vertex/sprite.shd",
-				/* i_fragmentShaderName = */ "data/Shaders/Fragment/spriteAnimated.shd"
-			)))
-		{
-			EAE6320_ASSERT(false);
-			goto OnExit;
-		}
-	}
-	// Initialize the geometry
-	{
-		if (!(result = s_sprite1.Initialize(
-				/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f),
-				/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f)
-		)) ||
-			!(result = s_sprite2.Initialize(
-				/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
-				/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
-			)))
-		{
-			EAE6320_ASSERT(false);
-			goto OnExit;
-		}
-	}
+	//// Initialize the shading data
+	//{
+	//	if (!(result = s_effect1.Initialize(
+	//			/* i_vertexShaderName = */ "data/Shaders/Vertex/sprite.shd", 
+	//			/* i_fragmentShaderName = */ "data/Shaders/Fragment/spriteBasic.shd"
+	//	)) ||
+	//		!(result = s_effect2.Initialize(
+	//			/* i_vertexShaderName = */ "data/Shaders/Vertex/sprite.shd",
+	//			/* i_fragmentShaderName = */ "data/Shaders/Fragment/spriteAnimated.shd"
+	//		)))
+	//	{
+	//		EAE6320_ASSERT(false);
+	//		goto OnExit;
+	//	}
+	//}
+	//// Initialize the geometry
+	//{
+	//	if (!(result = s_sprite1.Initialize(
+	//			/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f),
+	//			/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f)
+	//	)) ||
+	//		!(result = s_sprite2.Initialize(
+	//			/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
+	//			/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
+	//		)))
+	//	{
+	//		EAE6320_ASSERT(false);
+	//		goto OnExit;
+	//	}
+	//}
 
 OnExit:
 
@@ -300,53 +300,53 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 		}
 	}
 
-	{
-		const auto localResult = s_sprite1.CleanUp();
-		if (!localResult)
-		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
-		}
-	}
+	//{
+	//	const auto localResult = s_sprite1.CleanUp();
+	//	if (!localResult)
+	//	{
+	//		EAE6320_ASSERT(false);
+	//		if (result)
+	//		{
+	//			result = localResult;
+	//		}
+	//	}
+	//}
 
-	{
-		const auto localResult = s_sprite2.CleanUp();
-		if (!localResult)
-		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
-		}
-	}
+	//{
+	//	const auto localResult = s_sprite2.CleanUp();
+	//	if (!localResult)
+	//	{
+	//		EAE6320_ASSERT(false);
+	//		if (result)
+	//		{
+	//			result = localResult;
+	//		}
+	//	}
+	//}
 
-	{
-		const auto localResult = s_effect1.CleanUp();
-		if (!localResult)
-		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
-		}
-	}
+	//{
+	//	const auto localResult = s_effect1.CleanUp();
+	//	if (!localResult)
+	//	{
+	//		EAE6320_ASSERT(false);
+	//		if (result)
+	//		{
+	//			result = localResult;
+	//		}
+	//	}
+	//}
 
-	{
-		const auto localResult = s_effect2.CleanUp();
-		if (!localResult)
-		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
-		}
-	}
+	//{
+	//	const auto localResult = s_effect2.CleanUp();
+	//	if (!localResult)
+	//	{
+	//		EAE6320_ASSERT(false);
+	//		if (result)
+	//		{
+	//			result = localResult;
+	//		}
+	//	}
+	//}
 
 	{
 		const auto localResult = s_constantBuffer_perFrame.CleanUp();

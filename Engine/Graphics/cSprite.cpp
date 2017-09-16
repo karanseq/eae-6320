@@ -6,6 +6,7 @@
 #include "VertexFormats.h"
 
 #include <Engine/Asserts/Asserts.h>
+#include <Engine/Logging/Logging.h>
 #include <Engine/Math/sVector2d.h>
 
 // Interface
@@ -13,6 +14,51 @@
 
 // Initialization / Clean Up
 //--------------------------
+
+eae6320::cResult eae6320::Graphics::cSprite::Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents)
+{
+	auto result = Results::Success;
+
+	cSprite* newSprite = nullptr;
+
+	// Allocate a new sprite
+	{
+		newSprite = new (std::nothrow) cSprite();
+		if (newSprite == nullptr)
+		{
+			result = Results::OutOfMemory;
+			EAE6320_ASSERTF(false, "Couldn't allocate memory for the new sprite!");
+			Logging::OutputError("Failed to allocated memory for the new sprite!");
+			goto OnExit;
+		}
+	}
+
+	// Initialize the new sprite's geometry
+	if (!(result = newSprite->Initialize(i_origin, i_extents)))
+	{
+		EAE6320_ASSERTF(false, "Could not initialize the new sprite!");
+		goto OnExit;
+	}
+
+OnExit:
+
+	if (result)
+	{
+		EAE6320_ASSERT(newSprite);
+		o_sprite = newSprite;
+	}
+	else
+	{
+		if (newSprite)
+		{
+			newSprite->DecrementReferenceCount();
+			newSprite = nullptr;
+		}
+		o_sprite = nullptr;
+	}
+
+	return result;
+}
 
 eae6320::Graphics::cSprite::~cSprite()
 {
