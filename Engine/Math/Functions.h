@@ -25,6 +25,10 @@ namespace eae6320
 		// If the multiple is known to be a power-of-2 this is cheaper than the previous function
 		template<typename tUnsignedInteger, class EnforceUnsigned = typename std::enable_if<std::is_unsigned<tUnsignedInteger>::value>::type>
 			tUnsignedInteger RoundUpToMultiple_powerOf2( const tUnsignedInteger i_value, const tUnsignedInteger i_multipleWhichIsAPowerOf2 );
+
+		// Clamp a value between a minimum and maximum; inclusive
+		template<typename T>
+		T Clamp(const T i_value, const T i_min, const T i_max);
 	}
 }
 

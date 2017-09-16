@@ -1,5 +1,5 @@
 /*
-This struct represents a position or direction
+	This struct represents a position or direction
 */
 
 #ifndef EAE6320_MATH_SVECTOR2D_H
