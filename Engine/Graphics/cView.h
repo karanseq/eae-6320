@@ -20,6 +20,14 @@
 	struct ID3D11DepthStencilView;
 #endif
 
+namespace eae6320
+{
+	namespace Graphics
+	{
+		struct sColor;
+	}
+}
+
 // Class Declaration
 //==================
 
@@ -37,7 +45,7 @@ namespace eae6320
 			// Render
 			//-------
 
-			void Clear(const float i_red, const float i_green, const float i_blue, const float i_alpha) const;
+			void Clear(const sColor& i_color) const;
 			void Swap() const;
 
 			// Initialization / Clean Up

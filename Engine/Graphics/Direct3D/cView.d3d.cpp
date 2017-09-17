@@ -4,6 +4,7 @@
 #include "../cView.h"
 
 #include "Includes.h"
+#include "../sColor.h"
 #include "../sContext.h"
 
 #include <Engine/Asserts/Asserts.h>
@@ -15,7 +16,7 @@
 // Render
 //-------
 
-void eae6320::Graphics::cView::Clear(const float i_red, const float i_green, const float i_blue, const float i_alpha) const
+void eae6320::Graphics::cView::Clear(const sColor& i_color) const
 {
 	auto* const direct3dImmediateContext = sContext::g_context.direct3dImmediateContext;
 	EAE6320_ASSERT(direct3dImmediateContext);
@@ -23,7 +24,7 @@ void eae6320::Graphics::cView::Clear(const float i_red, const float i_green, con
 	EAE6320_ASSERT(m_renderTargetView);
 
 	// Black is usually used
-	const float clearColor[4] = { i_red, i_green, i_blue, i_alpha };
+	const float clearColor[4] = { i_color.r, i_color.g, i_color.b, i_color.a };
 	direct3dImmediateContext->ClearRenderTargetView(m_renderTargetView, clearColor);
 }
 

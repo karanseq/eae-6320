@@ -8,6 +8,7 @@
 // Include Files
 //==============
 
+#include <Engine/Assets/ReferenceCountedAssets.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/Results/Results.h>
 
@@ -56,22 +57,34 @@ namespace eae6320
 			// Initialization / Clean Up
 			//--------------------------
 
-			eae6320::cResult Initialize();
+			static eae6320::cResult Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+
+		public:
+
+			// Reference Counting
+			//-------------------
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS();
+
+			EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(cSprite);
+
+		private:
+
+			eae6320::cResult Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
 			eae6320::cResult CleanUp();
 
-			cSprite(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+			cSprite() = default;
 			~cSprite();
 
 		private:
+
 			// Generates vertex data for a quad in counter-clockwise winding, based on origin and extents
-			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData) const;
+			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
 
 			// Data
 			//=====
 
 		private:
-			eae6320::Math::sVector2d m_origin;
-			eae6320::Math::sVector2d m_extents;
 
 #if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex
@@ -80,6 +93,8 @@ namespace eae6320
 			// with the input from a vertex shader
 			ID3D11InputLayout* m_vertexInputLayout = nullptr;
 #endif
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNT();
 
 #if defined( EAE6320_PLATFORM_GL )
 			// A vertex buffer holds the data for each vertex

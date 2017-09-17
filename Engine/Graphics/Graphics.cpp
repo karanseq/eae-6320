@@ -10,6 +10,7 @@
 #include "cSprite.h"
 #include "cView.h"
 #include "sContext.h"
+#include "sColor.h"
 
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Concurrency/cEvent.h>
@@ -18,7 +19,9 @@
 #include <Engine/Platform/Platform.h>
 #include <Engine/Time/Time.h>
 #include <Engine/UserOutput/UserOutput.h>
+
 #include <utility>
+#include <vector>
 
 // Static Data Initialization
 //===========================
@@ -37,11 +40,19 @@ namespace
 	// Submission Data
 	//----------------
 
+	struct sDataRequiredToRenderASprite
+	{
+		eae6320::Graphics::cEffect* constantData_effect = nullptr;
+		eae6320::Graphics::cSprite* constantData_sprite = nullptr;
+	};
+
 	// This struct's data is populated at submission time;
 	// it must cache whatever is necessary in order to render a frame
 	struct sDataRequiredToRenderAFrame
 	{
+		std::vector<sDataRequiredToRenderASprite> spriteRenderDataList;
 		eae6320::Graphics::ConstantBufferFormats::sPerFrame constantData_perFrame;
+		eae6320::Graphics::sColor backgroundColor;
 	};
 	// In our class there will be two copies of the data required to render a frame:
 	//	* One of them will be getting populated by the data currently being submitted by the application loop thread
@@ -59,31 +70,6 @@ namespace
 	// and the application loop thread can start submitting data for the following frame
 	// (the application loop thread waits for the signal)
 	eae6320::Concurrency::cEvent s_whenDataForANewFrameCanBeSubmittedFromApplicationThread;
-
-	// Shading Data
-	//-------------
-
-	eae6320::Graphics::cEffect s_effect1(
-		/* i_vertexShaderName = */ std::string("sprite"),
-		/* i_fragmentShaderName = */ std::string("spriteBasic")
-		);
-	eae6320::Graphics::cEffect s_effect2(
-		/* i_vertexShaderName = */ std::string("sprite"),
-		/* i_fragmentShaderName = */ std::string("spriteAnimated")
-		);
-
-	// Geometry Data
-	//--------------
-
-	eae6320::Graphics::cSprite s_sprite1(
-		/* i_origin = */ eae6320::Math::sVector2d(0.5f, 0.25f), 
-		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.25f)
-	);
-
-	eae6320::Graphics::cSprite s_sprite2(
-		/* i_origin = */ eae6320::Math::sVector2d(-0.6f, 0.0f),
-		/* i_extents = */ eae6320::Math::sVector2d(0.25f, 0.5f)
-	);
 }
 
 // Interface
@@ -98,6 +84,25 @@ void eae6320::Graphics::SubmitElapsedTime(const float i_elapsedSecondCount_syste
 	auto& constantData_perFrame = s_dataBeingSubmittedByApplicationThread->constantData_perFrame;
 	constantData_perFrame.g_elapsedSecondCount_systemTime = i_elapsedSecondCount_systemTime;
 	constantData_perFrame.g_elapsedSecondCount_simulationTime = i_elapsedSecondCount_simulationTime;
+}
+
+void eae6320::Graphics::SubmitBackgroundColor(const sColor& i_backgroundColor)
+{
+	EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+	s_dataBeingSubmittedByApplicationThread->backgroundColor = i_backgroundColor;
+}
+
+void eae6320::Graphics::SubmitSpriteAndEffect(cSprite* i_spriteToBeDrawn, cEffect* i_effectToDrawSpriteWith)
+{
+	EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+
+	sDataRequiredToRenderASprite spriteRenderData;
+	spriteRenderData.constantData_effect = i_effectToDrawSpriteWith;
+	spriteRenderData.constantData_effect->IncrementReferenceCount();
+	spriteRenderData.constantData_sprite = i_spriteToBeDrawn;
+	spriteRenderData.constantData_sprite->IncrementReferenceCount();
+
+	s_dataBeingSubmittedByApplicationThread->spriteRenderDataList.push_back(spriteRenderData);
 }
 
 eae6320::cResult eae6320::Graphics::WaitUntilDataForANewFrameCanBeSubmitted(const unsigned int i_timeToWait_inMilliseconds)
@@ -144,15 +149,15 @@ void eae6320::Graphics::RenderFrame()
 		}
 	}
 
+	EAE6320_ASSERT(s_dataBeingRenderedByRenderThread);
+
 	// Every frame an entirely new image will be created.
 	// Before drawing anything, then, the previous image will be erased
 	// by "clearing" the image buffer (filling it with a solid color)
 	{
 		// Black is usually used
-		s_view.Clear(0.5f, 0.5f, 0.5f, 1.0f);
+		s_view.Clear(s_dataBeingRenderedByRenderThread->backgroundColor);
 	}
-
-	EAE6320_ASSERT(s_dataBeingRenderedByRenderThread);
 
 	// Update the per-frame constant buffer
 	{
@@ -161,18 +166,13 @@ void eae6320::Graphics::RenderFrame()
 		s_constantBuffer_perFrame.Update(&constantData_perFrame);
 	}
 
+	// Draw the sprites
 	{
-		// Bind the shading data
-		s_effect1.Bind();
-		// Draw the geometry
-		s_sprite1.Draw();
-	}
-
-	{
-		// Bind the shading data
-		s_effect2.Bind();
-		// Draw the geometry
-		s_sprite2.Draw();
+		for (const auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
+		{
+			spriteRenderData.constantData_effect->Bind();
+			spriteRenderData.constantData_sprite->Draw();
+		}
 	}
 
 	// Everything has been drawn to the "back buffer", which is just an image in memory.
@@ -186,7 +186,12 @@ void eae6320::Graphics::RenderFrame()
 	// should be cleaned up and cleared.
 	// so that the struct can be re-used (i.e. so that data for a new frame can be submitted to it)
 	{
-		// (At this point in the class there isn't anything that needs to be cleaned up)
+		for (const auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
+		{
+			spriteRenderData.constantData_effect->DecrementReferenceCount();
+			spriteRenderData.constantData_sprite->DecrementReferenceCount();
+		}
+		s_dataBeingRenderedByRenderThread->spriteRenderDataList.clear();
 	}
 }
 
@@ -261,24 +266,6 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 			goto OnExit;
 		}
 	}
-	// Initialize the shading data
-	{
-		if (!(result = s_effect1.Initialize()) ||
-			!(result = s_effect2.Initialize()))
-		{
-			EAE6320_ASSERT(false);
-			goto OnExit;
-		}
-	}
-	// Initialize the geometry
-	{
-		if (!(result = s_sprite1.Initialize()) ||
-			!(result = s_sprite2.Initialize()))
-		{
-			EAE6320_ASSERT(false);
-			goto OnExit;
-		}
-	}
 
 OnExit:
 
@@ -301,52 +288,24 @@ eae6320::cResult eae6320::Graphics::CleanUp()
 		}
 	}
 
+	if (!s_dataBeingSubmittedByApplicationThread->spriteRenderDataList.empty())
 	{
-		const auto localResult = s_sprite1.CleanUp();
-		if (!localResult)
+		for (const auto& spriteRenderData : s_dataBeingSubmittedByApplicationThread->spriteRenderDataList)
 		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
+			spriteRenderData.constantData_effect->DecrementReferenceCount();
+			spriteRenderData.constantData_sprite->DecrementReferenceCount();
 		}
+		s_dataBeingSubmittedByApplicationThread->spriteRenderDataList.clear();
 	}
 
+	if (!s_dataBeingRenderedByRenderThread->spriteRenderDataList.empty())
 	{
-		const auto localResult = s_sprite2.CleanUp();
-		if (!localResult)
+		for (const auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
 		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
+			spriteRenderData.constantData_effect->DecrementReferenceCount();
+			spriteRenderData.constantData_sprite->DecrementReferenceCount();
 		}
-	}
-
-	{
-		const auto localResult = s_effect1.CleanUp();
-		if (!localResult)
-		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
-		}
-	}
-
-	{
-		const auto localResult = s_effect2.CleanUp();
-		if (!localResult)
-		{
-			EAE6320_ASSERT(false);
-			if (result)
-			{
-				result = localResult;
-			}
-		}
+		s_dataBeingRenderedByRenderThread->spriteRenderDataList.clear();
 	}
 
 	{

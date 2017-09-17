@@ -23,8 +23,6 @@ inline eae6320::Math::sVector2d operator *(const float i_lhs, const eae6320::Mat
 inline eae6320::Math::sVector2d::sVector2d(const float i_x, const float i_y)
 	:
 	x(i_x), y(i_y)
-{
-
-}
+{}
 
 #endif	// EAE6320_MATH_SVECTOR2D_INL

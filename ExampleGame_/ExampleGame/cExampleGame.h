@@ -9,11 +9,30 @@
 //==============
 
 #include <Engine/Application/cbApplication.h>
+#include <Engine/Graphics/sColor.h>
 #include <Engine/Results/Results.h>
+#include <vector>
 
 #if defined( EAE6320_PLATFORM_WINDOWS )
 	#include "Resource Files/Resource.h"
 #endif
+
+// Forward Declarations
+//=====================
+
+namespace eae6320
+{
+	namespace Graphics
+	{
+		class cEffect;
+		class cSprite;
+	}
+
+	namespace Math
+	{
+		struct sVector2d;
+	}
+}
 
 // Class Declaration
 //==================
@@ -71,12 +90,34 @@ namespace eae6320
 		//----
 
 		virtual void UpdateBasedOnInput() override;
+		virtual void UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
+
+		virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
 		// Initialization / Clean Up
 		//--------------------------
 
 		virtual cResult Initialize() override;
 		virtual cResult CleanUp() override;
+
+		cResult InitializeEffects();
+		cResult InitializeSprites();
+
+		void GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const;
+		void GetRandomExtentsForSprite(eae6320::Math::sVector2d& o_extents) const;
+
+		// Data
+		//=====
+
+	private:
+
+		eae6320::Graphics::sColor m_backgroundColor = eae6320::Graphics::sColor::ORANGE;
+		std::vector<eae6320::Graphics::cEffect*> m_effectList;
+		std::vector<eae6320::Graphics::cSprite*> m_spriteList;
+
+		static const std::string s_vertexShaderFilePath;
+		static const std::string s_simpleFragmentShaderFilePath;
+		static const std::string s_animatedFragmentShaderFilePath;
 
 	};
 }

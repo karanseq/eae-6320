@@ -48,4 +48,10 @@ template<typename tUnsignedInteger, class EnforceUnsigned>
 	return returnValue;
 }
 
+template<typename T>
+T eae6320::Math::Clamp(const T i_value, const T i_min, const T i_max)
+{
+	return i_value < i_min ? i_min : (i_value > i_max ? i_max : i_value);
+}
+
 #endif	// EAE6320_MATH_FUNCTIONS_INL
