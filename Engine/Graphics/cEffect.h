@@ -60,6 +60,7 @@ namespace eae6320
 			~cEffect();
 
 		private:
+
 			void BindPlatform() const;
 			eae6320::cResult InitializePlatform();
 			eae6320::cResult CleanUpPlatform();
@@ -68,8 +69,10 @@ namespace eae6320
 			//=====
 
 		private:
+
 			eae6320::Graphics::cShader::Handle m_vertexShader;
 			eae6320::Graphics::cShader::Handle m_fragmentShader;
+
 #if defined( EAE6320_PLATFORM_GL )
 			GLuint m_programId = 0;
 #endif

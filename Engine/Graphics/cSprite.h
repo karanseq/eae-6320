@@ -77,6 +77,7 @@ namespace eae6320
 			~cSprite();
 
 		private:
+
 			// Generates vertex data for a quad in counter-clockwise winding, based on origin and extents
 			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
 
@@ -85,8 +86,6 @@ namespace eae6320
 
 		private:
 
-			EAE6320_ASSETS_DECLAREREFERENCECOUNT();
-
 #if defined( EAE6320_PLATFORM_D3D )
 			// A vertex buffer holds the data for each vertex
 			ID3D11Buffer* m_vertexBuffer = nullptr;
@@ -94,6 +93,8 @@ namespace eae6320
 			// with the input from a vertex shader
 			ID3D11InputLayout* m_vertexInputLayout = nullptr;
 #endif
+
+			EAE6320_ASSETS_DECLAREREFERENCECOUNT();
 
 #if defined( EAE6320_PLATFORM_GL )
 			// A vertex buffer holds the data for each vertex

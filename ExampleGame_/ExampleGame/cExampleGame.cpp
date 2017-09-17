@@ -160,6 +160,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 	const eae6320::Math::sVector2d extents(size, size);
 
 	m_spriteList.reserve(numSprites);
+
 	for (uint8_t i = 0; i < numSprites; ++i)
 	{
 		eae6320::Graphics::cSprite* sprite = nullptr;
