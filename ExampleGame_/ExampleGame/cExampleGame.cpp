@@ -110,6 +110,9 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 {
 	eae6320::cResult result = eae6320::Results::Success;
 
+	constexpr uint8_t numEffects = 2;
+	m_effectList.reserve(numEffects);
+
 	// initilize the simple effect
 	{
 		eae6320::Graphics::cEffect* effect = nullptr;
@@ -156,6 +159,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 	constexpr float offset = size * float(numColumns * 2 - 2);
 	const eae6320::Math::sVector2d extents(size, size);
 
+	m_spriteList.reserve(numSprites);
 	for (uint8_t i = 0; i < numSprites; ++i)
 	{
 		eae6320::Graphics::cSprite* sprite = nullptr;
