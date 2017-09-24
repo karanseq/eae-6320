@@ -8,4 +8,7 @@
     <ClInclude Include="cbBuilder.h" />
     <ClInclude Include="Functions.h" />
   </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="AssetBuildFunctions.lua" />
+  </ItemGroup>
 </Project>
