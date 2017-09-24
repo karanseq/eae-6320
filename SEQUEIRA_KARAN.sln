@@ -14,6 +14,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetBuildExe", "Tools\AssetBuildExe\AssetBuildExe.vcxproj", "{5FE0EAD5-3429-4525-A533-8CF75C85D4F1}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AssetBuildLibrary", "Tools\AssetBuildLibrary\AssetBuildLibrary.vcxproj", "{4438BC28-0C79-4907-BD5C-ABAD0DD78AEC}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0B19945A-9CA2-4ED3-84D8-0924B5428925} = {0B19945A-9CA2-4ED3-84D8-0924B5428925}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Assets", "Engine\Assets\Assets.vcxproj", "{E803347F-34D1-43AC-B234-5F8940FAB26A}"
 EndProject

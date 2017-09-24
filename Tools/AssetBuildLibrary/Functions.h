@@ -18,6 +18,8 @@ namespace eae6320
 {
 	namespace Assets
 	{
+		eae6320::cResult BuildAssets();
+
 		// Error / Warning Output
 		//-----------------------
 
