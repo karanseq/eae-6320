@@ -192,6 +192,20 @@ function BuildAssets()
 			end
 		end
 	end
+	-- Copy the game settings to the installation location
+	do
+		local settingsFileName = "settings.ini"
+		local sourcePath = OutputDir .. settingsFileName
+		local targetPath = GameInstallDir .. settingsFileName
+		local result, errorMessage = CopyFile( sourcePath, targetPath )
+		if result then
+			-- Display a message
+			print( "Copied " .. settingsFileName )
+		else
+			wereThereErrors = true
+			OutputErrorMessage( "The settings file \"" .. settingsFileName .. "\" couldn't be copied to \"" .. targetPath .. "\": " .. errorMessage )
+		end
+	end
 
 	return not wereThereErrors
 end
