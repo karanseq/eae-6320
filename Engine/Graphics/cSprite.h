@@ -1,5 +1,5 @@
 /*
-	TODO
+    TODO
 */
 
 #ifndef EAE6320_GRAPHICS_CSPRITE_H
@@ -20,19 +20,19 @@
 //=====================
 
 #ifdef EAE6320_PLATFORM_D3D
-	struct ID3D11Buffer;
-	struct ID3D11InputLayout;
+    struct ID3D11Buffer;
+    struct ID3D11InputLayout;
 #endif
 
 namespace eae6320
 {
-	namespace Graphics
-	{
-		namespace VertexFormats
-		{
-			struct sSprite;
-		}
-	}
+    namespace Graphics
+    {
+        namespace VertexFormats
+        {
+            struct sSprite;
+        }
+    }
 }
 
 // Class Declaration
@@ -40,73 +40,76 @@ namespace eae6320
 
 namespace eae6320
 {
-	namespace Graphics
-	{
-		class cSprite
-		{
-			// Interface
-			//==========
+    namespace Graphics
+    {
+        class cSprite
+        {
+            // Interface
+            //==========
 
-		public:
+        public:
 
-			// Render
-			//-------
+            // Render
+            //-------
 
-			void Draw() const;
+            void Draw() const;
 
-			// Initialization / Clean Up
-			//--------------------------
+            // Initialization / Clean Up
+            //--------------------------
 
-			static eae6320::cResult Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+            static eae6320::cResult Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
 
-		public:
+        public:
 
-			// Reference Counting
-			//-------------------
+            // Reference Counting
+            //-------------------
 
-			EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS();
+            EAE6320_ASSETS_DECLAREREFERENCECOUNTINGFUNCTIONS();
 
-			EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(cSprite);
+            EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(cSprite);
 
-		private:
+        private:
 
-			eae6320::cResult Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
-			eae6320::cResult CleanUp();
+            eae6320::cResult Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+            eae6320::cResult CleanUp();
 
-			cSprite() = default;
-			~cSprite();
+            cSprite() = default;
+            ~cSprite();
 
-		private:
+        private:
 
-			// Generates vertex data for a quad in counter-clockwise winding, based on origin and extents
-			void GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
+            // Generates vertex positions for a quad in counter-clockwise winding, based on origin and extents
+            void GetVertexPositions(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
 
-			// Data
-			//=====
+            // Generates texture coordinates for a quad, based on origin and extents
+            void GetVertexTextureCoordinates(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
 
-		private:
+            // Data
+            //=====
+
+        private:
 
 #if defined( EAE6320_PLATFORM_D3D )
-			// A vertex buffer holds the data for each vertex
-			ID3D11Buffer* m_vertexBuffer = nullptr;
-			// D3D has an "input layout" object that associates the layout of the vertex format struct
-			// with the input from a vertex shader
-			ID3D11InputLayout* m_vertexInputLayout = nullptr;
+            // A vertex buffer holds the data for each vertex
+            ID3D11Buffer* m_vertexBuffer = nullptr;
+            // D3D has an "input layout" object that associates the layout of the vertex format struct
+            // with the input from a vertex shader
+            ID3D11InputLayout* m_vertexInputLayout = nullptr;
 #endif
 
-			EAE6320_ASSETS_DECLAREREFERENCECOUNT();
+            EAE6320_ASSETS_DECLAREREFERENCECOUNT();
 
 #if defined( EAE6320_PLATFORM_GL )
-			// A vertex buffer holds the data for each vertex
-			GLuint m_vertexBufferId = 0;
-			// A vertex array encapsulates the vertex data as well as the vertex input layout
-			GLuint m_vertexArrayId = 0;
+            // A vertex buffer holds the data for each vertex
+            GLuint m_vertexBufferId = 0;
+            // A vertex array encapsulates the vertex data as well as the vertex input layout
+            GLuint m_vertexArrayId = 0;
 #endif
 
 
-		}; // class cSprite
+        }; // class cSprite
 
-	} // namespace Graphics
+    } // namespace Graphics
 
 } // namespace eae6320
 
