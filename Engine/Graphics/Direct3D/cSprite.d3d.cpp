@@ -72,31 +72,47 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVe
 		{
 			// Create the vertex layout
 
-			// These elements must match the VertexFormats::sGeometry layout struct exactly.
+			// These elements must match the VertexFormats::sSprite layout struct exactly.
 			// They instruct Direct3D how to match the binary data in the vertex buffer
 			// to the input elements in a vertex shader
 			// (by using so-called "semantic" names so that, for example,
-			// "POSITION" here matches with "POSITION" in shader code).
+			// "POSITION" here matches with "POSITION" in shader code.
+            // "TEXCOORD" here matches with "TEXCOORD" in shader code).
 			// Note that OpenGL uses arbitrarily assignable number IDs to do the same thing.
-			constexpr unsigned int vertexElementCount = 1;
+			constexpr unsigned int vertexElementCount = 2;
 			D3D11_INPUT_ELEMENT_DESC layoutDescription[vertexElementCount] = {};
-			{
-				// Slot 0
+            {
+                // Slot 0
 
-				// POSITION
-				// 2 floats == 8 bytes
-				// Offset = 0
-				{
-					auto& positionElement = layoutDescription[0];
+                // POSITION
+                // 2 floats == 8 bytes
+                // Offset = 0
+                {
+                    auto& positionElement = layoutDescription[0];
 
-					positionElement.SemanticName = "POSITION";
-					positionElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
-					positionElement.Format = DXGI_FORMAT_R32G32_FLOAT;
-					positionElement.InputSlot = 0;
-					positionElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sSprite, x);
-					positionElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-					positionElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
-				}
+                    positionElement.SemanticName = "POSITION";
+                    positionElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    positionElement.Format = DXGI_FORMAT_R32G32_FLOAT;
+                    positionElement.InputSlot = 0;
+                    positionElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sSprite, x);
+                    positionElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                    positionElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                }
+
+                // TEXCOORD
+                // 2 floats == 8 bytes
+                // Offset = 8
+                {
+                    auto& textureCoordElement = layoutDescription[1];
+
+                    textureCoordElement.SemanticName = "TEXCOORD";
+                    textureCoordElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    textureCoordElement.Format = DXGI_FORMAT_R32G32_FLOAT;
+                    textureCoordElement.InputSlot = 0;
+                    textureCoordElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sSprite, u);
+                    textureCoordElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                    textureCoordElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                }
 			}
 
 			const auto d3dResult = direct3dDevice->CreateInputLayout(layoutDescription, vertexElementCount,
