@@ -30,12 +30,14 @@ const std::string eae6320::cExampleGame::s_textureFolderPath("data/Textures/");
 void eae6320::cExampleGame::UpdateBasedOnInput()
 {
     // Is the user pressing the ESC key?
-    if ( UserInput::IsKeyPressed( UserInput::KeyCodes::Escape ) )
+    if (UserInput::IsKeyPressed(UserInput::KeyCodes::Escape))
     {
         // Exit the application
         const auto result = Exit( EXIT_SUCCESS );
-        EAE6320_ASSERT( result );
+        EAE6320_ASSERT(result);
     }
+
+    m_swapSpritesBasedOnInput = UserInput::IsKeyPressed(UserInput::KeyCodes::Space);
 }
 
 void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
@@ -48,20 +50,56 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
         m_backgroundColor.g = 1.0f + (sinf(systemTime) * 0.5f) - 0.5f;
         m_backgroundColor.b = 1.0f + (acosf(systemTime) * 0.5f) - 0.5f;
     }
+
+    UpdateSpriteRenderData();
+
+    if (m_spriteSwapTicker > 0.0f)
+    {
+        m_spriteSwapTicker -= i_elapsedSecondCount_sinceLastUpdate;
+        if (m_spriteSwapTicker < 0.0f)
+        {
+            m_swapSpritesBasedOnTime = !m_swapSpritesBasedOnTime;
+            m_spriteSwapTicker = m_spriteSwapInterval;
+        }
+    }
 }
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
     eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
 
-    uint8_t counter = 0;
-    const size_t numTextures = m_textureList.size();
-    for (const auto sprite : m_spriteList)
+    for (auto& spriteRenderData : m_spriteRenderDataList)
     {
-        auto* effect = (counter % 3) ? m_effectList[1] : m_effectList[0];
-        auto& texture = m_textureList[counter % numTextures];
-        eae6320::Graphics::SubmitDataToBeRendered(sprite, effect, texture);
-        ++counter;
+        eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, spriteRenderData.m_texture);
+    }
+}
+
+void eae6320::cExampleGame::UpdateSpriteRenderData()
+{
+    // Swap textures based on user input.
+    {
+        eae6320::Graphics::cTexture::Handle textureToUse = m_swapSpritesBasedOnInput ? m_textureList[1] : m_textureList[0];
+        m_spriteRenderDataList[0].m_texture = textureToUse;
+        m_spriteRenderDataList[m_numColumns - 1].m_texture = textureToUse;
+        m_spriteRenderDataList[m_numColumns * (m_numRows - 1)].m_texture = textureToUse;
+        m_spriteRenderDataList[m_numColumns * m_numRows - 1].m_texture = textureToUse;
+
+        // This one is special
+        m_spriteRenderDataList[m_numColumns * m_numRows / 2].m_texture = m_swapSpritesBasedOnInput ? m_textureList[2] : m_textureList[0];
+    }
+
+    // Swap effects based on user input
+    {
+        m_spriteRenderDataList[m_numColumns * m_numRows / 2].m_effect = m_swapSpritesBasedOnInput ? m_effectList[1] : m_effectList[0];
+    }
+
+    // Swap textures based on time.
+    {
+        eae6320::Graphics::cTexture::Handle textureToUse = m_swapSpritesBasedOnTime ? m_textureList[1] : m_textureList[3];
+        m_spriteRenderDataList[m_numColumns / 2].m_texture = textureToUse;
+        m_spriteRenderDataList[m_numColumns * (m_numRows / 2)].m_texture = textureToUse;
+        m_spriteRenderDataList[m_numColumns * (m_numRows / 2) + m_numColumns - 1].m_texture = textureToUse;
+        m_spriteRenderDataList[m_numColumns * m_numRows - m_numColumns / 2 - 1].m_texture = textureToUse;
     }
 }
 
@@ -91,6 +129,8 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
     {
         goto OnExit;
     }
+
+    InitializeSpriteRenderDataList();
 
 OnExit:
 
@@ -125,6 +165,8 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
         sprite->DecrementReferenceCount();
     }
     m_spriteList.clear();
+
+    m_spriteRenderDataList.clear();
 
     return result;
 }
@@ -208,11 +250,9 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
     eae6320::cResult result = eae6320::Results::Success;
 
-    constexpr uint8_t numColumns = 5;
-    constexpr uint8_t numRows = 5;
-    constexpr uint8_t numSprites = numColumns * numRows;
+    const uint8_t numSprites = m_numColumns * m_numRows;
     constexpr float size = 0.1f;
-    constexpr float offset = size * float(numColumns * 2 - 2);
+    const float offset = size * float(m_numColumns * 2 - 2);
     const eae6320::Math::sVector2d extents(size, size);
 
     m_spriteList.reserve(numSprites);
@@ -221,7 +261,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
     {
         eae6320::Graphics::cSprite* sprite = nullptr;
 
-        eae6320::Math::sVector2d origin(i % numColumns * size * 4 - offset, i / numColumns * size * 4 - offset);
+        eae6320::Math::sVector2d origin(i % m_numColumns * size * 4 - offset, i / m_numColumns * size * 4 - offset);
 
         if (!(result = eae6320::Graphics::cSprite::Create(sprite, origin, extents)))
         {
@@ -237,6 +277,21 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 OnExit:
 
     return result;
+}
+
+void eae6320::cExampleGame::InitializeSpriteRenderDataList()
+{
+    const size_t numSprites = m_spriteList.size();
+    for (size_t i = 0; i < numSprites; ++i)
+    {
+        sSpriteRenderData spriteRenderData;
+        {
+            spriteRenderData.m_effect = m_effectList[0];
+            spriteRenderData.m_texture = m_textureList[0];
+            spriteRenderData.m_sprite = m_spriteList[i];
+        }
+        m_spriteRenderDataList.push_back(spriteRenderData);
+    }
 }
 
 void eae6320::cExampleGame::GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const

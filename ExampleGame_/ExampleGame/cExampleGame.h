@@ -95,6 +95,8 @@ namespace eae6320
 
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
+        void UpdateSpriteRenderData();
+
         // Initialization / Clean Up
         //--------------------------
 
@@ -104,6 +106,7 @@ namespace eae6320
         cResult InitializeEffects();
         cResult InitializeTextures();
         cResult InitializeSprites();
+        void InitializeSpriteRenderDataList();
 
         void GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const;
         void GetRandomExtentsForSprite(eae6320::Math::sVector2d& o_extents) const;
@@ -113,10 +116,28 @@ namespace eae6320
 
     private:
 
+        struct sSpriteRenderData
+        {
+            eae6320::Graphics::cEffect* m_effect = nullptr;
+            eae6320::Graphics::cTexture::Handle m_texture;
+            eae6320::Graphics::cSprite* m_sprite = nullptr;
+        };
+
         eae6320::Graphics::sColor m_backgroundColor = eae6320::Graphics::sColor::ORANGE;
         std::vector<eae6320::Graphics::cEffect*> m_effectList;
         std::vector<eae6320::Graphics::cTexture::Handle> m_textureList;
         std::vector<eae6320::Graphics::cSprite*> m_spriteList;
+        std::vector<sSpriteRenderData> m_spriteRenderDataList;
+
+        const float m_spriteSwapInterval = 0.5f;
+        float m_spriteSwapTicker = m_spriteSwapInterval;
+
+        // Odd numbers make it prettier.
+        const uint8_t m_numColumns = 5;
+        const uint8_t m_numRows = 5;
+
+        bool m_swapSpritesBasedOnInput = false;
+        bool m_swapSpritesBasedOnTime = false;
 
         static const std::string s_vertexShaderFilePath;
         static const std::string s_simpleFragmentShaderFilePath;
