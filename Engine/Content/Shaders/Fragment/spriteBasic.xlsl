@@ -49,16 +49,9 @@ void main(
 
     )
 {
-    // Output solid white
-    o_color = float4(
-        // R
-        1.0,
-        // G
-        1.0,
-        // B
-        1.0,
-        // Alpha
-        1.0 );
+    const float4 sampledColor = g_color_texture.Sample( g_color_samplerState, i_uv );
+
+    o_color = sampledColor;
 
     // EAE6320_TODO: Change the color based on time!
     // The value g_elapsedSecondCount_simulationTime constantly changes as the simulation progresses, and so by doing something like:
@@ -118,16 +111,9 @@ out vec4 o_color;
 
 void main()
 {
-    // Output solid white
-    o_color = vec4(
-        // R
-        1.0,
-        // G
-        1.0,
-        // B
-        1.0,
-        // Alpha
-        1.0 );
+    vec4 sampledColor = texture2D( g_color_texture, i_uv );
+
+    o_color = sampledColor;
 
     // EAE6320_TODO: Change the color based on time!
     // The value g_elapsedSecondCount_simulationTime constantly changes as the simulation progresses, and so by doing something like:
