@@ -196,9 +196,9 @@ void eae6320::Graphics::cSprite::GetVertexTextureCoordinates(eae6320::Graphics::
 {
     EAE6320_ASSERT(o_vertexData);
 
-    // bottom-right
-    o_vertexData[0].u = 1;
-    o_vertexData[0].v = 1;
+    // top-left
+    o_vertexData[0].u = 0;
+    o_vertexData[0].v = 0;
 
     // top-right
     o_vertexData[1].u = 1;
@@ -208,7 +208,7 @@ void eae6320::Graphics::cSprite::GetVertexTextureCoordinates(eae6320::Graphics::
     o_vertexData[2].u = 0;
     o_vertexData[2].v = 1;
 
-    // top-left
-    o_vertexData[3].u = 0;
-    o_vertexData[3].v = 0;
+    // bottom-right
+    o_vertexData[3].u = 1;
+    o_vertexData[3].v = 1;
 }
