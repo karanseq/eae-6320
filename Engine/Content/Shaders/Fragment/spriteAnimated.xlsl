@@ -49,7 +49,10 @@ void main(
 
     )
 {
-    const float4 sampledColor = g_color_texture.Sample( g_color_samplerState, i_uv );
+    // Animate the UVs
+    const float animatedUV = 0.75 + sin(g_elapsedSecondCount_simulationTime) * 0.25;
+
+    const float4 sampledColor = g_color_texture.Sample( g_color_samplerState, i_uv * animatedUV );
 
     const float4 animatedColor = float4(
         // R
@@ -121,7 +124,10 @@ out vec4 o_color;
 
 void main()
 {
-    vec4 sampledColor = texture2D( g_color_texture, i_uv );
+    // Animate the UVs
+    const float animatedUV = 0.75 + sin(g_elapsedSecondCount_simulationTime) * 0.25;
+
+    vec4 sampledColor = texture2D( g_color_texture, i_uv * animatedUV );
 
     vec4 animatedColor = vec4(
         // R
