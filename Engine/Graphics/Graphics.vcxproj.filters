@@ -70,6 +70,13 @@
     </ClCompile>
     <ClCompile Include="cView.cpp" />
     <ClCompile Include="sColor.cpp" />
+    <ClCompile Include="cTexture.cpp" />
+    <ClCompile Include="Direct3D\cTexture.d3d.cpp">
+      <Filter>Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\cTexture.gl.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Direct3D\Includes.h">
@@ -94,6 +101,8 @@
     <ClInclude Include="cSprite.h" />
     <ClInclude Include="cView.h" />
     <ClInclude Include="sColor.h" />
+    <ClInclude Include="cTexture.h" />
+    <ClInclude Include="TextureFormats.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cRenderState.inl" />
