@@ -4,10 +4,6 @@
 // HLSL
 //=================================
 
-/*
-	This is an example vertex shader used to render geometry
-*/
-
 #include <Shaders/shaders.inc>
 
 // Constant Buffers
@@ -15,21 +11,21 @@
 
 cbuffer g_constantBuffer_perFrame : register( b0 )
 {
-	float g_elapsedSecondCount_systemTime;
-	float g_elapsedSecondCount_simulationTime;
-	// For float4 alignment
-	float2 g_padding;
+    float g_elapsedSecondCount_systemTime;
+    float g_elapsedSecondCount_simulationTime;
+    // For float4 alignment
+    float2 g_padding;
 }
 
 cbuffer g_constantBuffer_perMaterial : register( b1 )
 {
-	float4 g_color;
+    float4 g_color;
 }
 
 cbuffer g_constantBuffer_perDrawCall : register( b2 )
 {
-	// This is a placeholder to prevent an empty constant buffer declaration
-	float4 DUMMY;
+    // This is a placeholder to prevent an empty constant buffer declaration
+    float4 DUMMY;
 }
 
 // Entry Point
@@ -37,46 +33,50 @@ cbuffer g_constantBuffer_perDrawCall : register( b2 )
 
 void main(
 
-	// Input
-	//======
+    // Input
+    //======
 
-	// The "semantics" (the keywords in all caps after the colon) are arbitrary,
-	// but must match the C call to CreateInputLayout()
+    // The "semantics" (the keywords in all caps after the colon) are arbitrary,
+    // but must match the C call to CreateInputLayout()
 
-	// These values come from one of the VertexFormats::sGeometry that the vertex buffer was filled with in C code
-	in const float2 i_position : POSITION,
+    // These values come from one of the VertexFormats::sSprite that the vertex buffer was filled with in C code
+    in const float2 i_position : POSITION,
+    in const float2 i_uv : TEXCOORD0,
 
-	// Output
-	//=======
+    // Output
+    //=======
 
-	// An SV_POSITION value must always be output from every vertex shader
-	// so that the GPU can figure out which fragments need to be shaded
-	out float4 o_position : SV_POSITION
+    // An SV_POSITION value must always be output from every vertex shader
+    // so that the GPU can figure out which fragments need to be shaded
+    out float4 o_position : SV_POSITION,
+    out float2 o_uv : TEXCOORD0
 
-	)
+    )
 {
-	// Calculate the position of this vertex on screen
-	{
-		// This example shader sets the "out" position directly from the "in" position:
-		o_position = float4( i_position.x, i_position.y, 0.0, 1.0 );
+    // Calculate the position of this vertex on screen
+    {
+        // This example shader sets the "out" position directly from the "in" position:
+        o_position = float4( i_position.x, i_position.y, 0.0, 1.0 );
 
-		// o_position = float4( i_position.x + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, i_position.y + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, 0.0, 1.0 );
+        // o_position = float4( i_position.x + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, i_position.y + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, 0.0, 1.0 );
 
-		// Both of the following lines are exactly equivalent to the one above
-		// o_position = float4( i_position.xy, 0.0, 1.0 );
-		// o_position = float4( i_position, 0.0, 1.0 );
-	}
+        // Both of the following lines are exactly equivalent to the one above
+        // o_position = float4( i_position.xy, 0.0, 1.0 );
+        // o_position = float4( i_position, 0.0, 1.0 );
 
-	// EAE6320_TODO: Change the position based on time!
-	// The value g_elapsedSecondCount_simulationTime constantly changes as the simulation progresses, and so by doing something like:
-	//	sin( g_elapsedSecondCount_simulationTime ) or cos( g_elapsedSecondCount_simulationTime )
-	// you can get a value that will oscillate between [-1,1].
-	// You should change at least one position element so that the triangle animates.
-	// For example, to change X you would do something kind of like:
-	//		o_position.x = ? sin( g_elapsedSecondCount_simulationTime ) ?
-	// You can change .x and .y (but leave .z as 0.0 and .w as 1.0).
-	// The screen dimensions are already [1,1], so you may want to do some math
-	// on the result of the sinusoid function to keep the triangle mostly on screen.
+        o_uv = i_uv
+    }
+
+    // EAE6320_TODO: Change the position based on time!
+    // The value g_elapsedSecondCount_simulationTime constantly changes as the simulation progresses, and so by doing something like:
+    //	sin( g_elapsedSecondCount_simulationTime ) or cos( g_elapsedSecondCount_simulationTime )
+    // you can get a value that will oscillate between [-1,1].
+    // You should change at least one position element so that the triangle animates.
+    // For example, to change X you would do something kind of like:
+    //		o_position.x = ? sin( g_elapsedSecondCount_simulationTime ) ?
+    // You can change .x and .y (but leave .z as 0.0 and .w as 1.0).
+    // The screen dimensions are already [1,1], so you may want to do some math
+    // on the result of the sinusoid function to keep the triangle mostly on screen.
 }
 
 #elif defined( EAE6320_PLATFORM_GL )
@@ -85,10 +85,6 @@ void main(
 // GLSL
 //=================================
 
-/*
-	This is an example vertex shader used to render geometry
-*/
-
 #include <Shaders/shaders.inc>
 
 // Constant Buffers
@@ -96,21 +92,21 @@ void main(
 
 layout( std140, binding = 0 ) uniform g_constantBuffer_perFrame
 {
-	float g_elapsedSecondCount_systemTime;
-	float g_elapsedSecondCount_simulationTime;
-	// For vec4 alignment
-	vec2 g_padding;
+    float g_elapsedSecondCount_systemTime;
+    float g_elapsedSecondCount_simulationTime;
+    // For vec4 alignment
+    vec2 g_padding;
 };
 
 layout( std140, binding = 1 ) uniform g_constantBuffer_perMaterial
 {
-	vec4 g_color;
+    vec4 g_color;
 };
 
 layout( std140, binding = 2 ) uniform g_constantBuffer_perDrawCall
 {
-	// This is a placeholder to prevent an empty constant buffer declaration
-	vec4 DUMMY;
+    // This is a placeholder to prevent an empty constant buffer declaration
+    vec4 DUMMY;
 };
 
 // Input
@@ -119,8 +115,9 @@ layout( std140, binding = 2 ) uniform g_constantBuffer_perDrawCall
 // The locations assigned are arbitrary
 // but must match the C calls to glVertexAttribPointer()
 
-// These values come from one of the VertexFormats::sGeometry that the vertex buffer was filled with in C code
+// These values come from one of the VertexFormats::sSprite that the vertex buffer was filled with in C code
 layout( location = 0 ) in vec2 i_position;
+layout( location = 1 ) in vec2 i_uv;
 
 // Output
 //=======
@@ -129,33 +126,37 @@ layout( location = 0 ) in vec2 i_position;
 // but unlike HLSL where the value is explicit
 // GLSL has an automatically-required variable named "gl_Position"
 
+layout( location = 0 ) out vec2 o_uv
+
 // Entry Point
 //============
 
 void main()
 {
-	// Calculate the position of this vertex on screen
-	{
-		// This example shader sets the "out" position directly from the "in" position:
-		gl_Position = vec4( i_position.x, i_position.y, 0.0, 1.0 );
+    // Calculate the position of this vertex on screen
+    {
+        // This example shader sets the "out" position directly from the "in" position:
+        gl_Position = vec4( i_position.x, i_position.y, 0.0, 1.0 );
 
-		// gl_Position = vec4( i_position.x + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, i_position.y + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, 0.0, 1.0 );
-		
-		// Both of the following lines are exactly equivalent to the one above
-		// gl_Position = vec4( i_position.xy, 0.0, 1.0 );
-		// gl_Position = vec4( i_position, 0.0, 1.0 );
-	}
+        // gl_Position = vec4( i_position.x + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, i_position.y + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5, 0.0, 1.0 );
+        
+        // Both of the following lines are exactly equivalent to the one above
+        // gl_Position = vec4( i_position.xy, 0.0, 1.0 );
+        // gl_Position = vec4( i_position, 0.0, 1.0 );
 
-	// EAE6320_TODO: Change the position based on time!
-	// The value g_elapsedSecondCount_simulationTime constantly changes as the simulation progresses, and so by doing something like:
-	//	sin( g_elapsedSecondCount_simulationTime ) or cos( g_elapsedSecondCount_simulationTime )
-	// you can get a value that will oscillate between [-1,1].
-	// You should change at least one position element so that the triangle animates.
-	// For example, to change X you would do something kind of like:
-	//		gl_Position.x = ? sin( g_elapsedSecondCount_simulationTime ) ?
-	// You can change .x and .y (but leave .z as 0.0 and .w as 1.0).
-	// The screen dimensions are already [1,1], so you may want to do some math
-	// on the result of the sinusoid function to keep the triangle mostly on screen.
+        o_uv = i_uv;
+    }
+
+    // EAE6320_TODO: Change the position based on time!
+    // The value g_elapsedSecondCount_simulationTime constantly changes as the simulation progresses, and so by doing something like:
+    //	sin( g_elapsedSecondCount_simulationTime ) or cos( g_elapsedSecondCount_simulationTime )
+    // you can get a value that will oscillate between [-1,1].
+    // You should change at least one position element so that the triangle animates.
+    // For example, to change X you would do something kind of like:
+    //		gl_Position.x = ? sin( g_elapsedSecondCount_simulationTime ) ?
+    // You can change .x and .y (but leave .z as 0.0 and .w as 1.0).
+    // The screen dimensions are already [1,1], so you may want to do some math
+    // on the result of the sinusoid function to keep the triangle mostly on screen.
 }
 
 
