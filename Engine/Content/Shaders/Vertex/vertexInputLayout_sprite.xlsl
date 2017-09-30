@@ -16,7 +16,7 @@ void main(
     // but must match the C call to CreateInputLayout()
 
     in const float2 i_position : POSITION,
-    in const float2 i_uv : TEXCOORD0
+    in const float2 i_uv : TEXCOORD0,
 
     // Output
     //=======
@@ -31,4 +31,5 @@ void main(
     // The shader program is only used to generate a vertex input layout object;
     // the actual shading code is never used
     o_position = float4( i_position, 0.0, 1.0 );
+    o_uv = i_uv;
 }

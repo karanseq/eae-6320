@@ -64,7 +64,7 @@ void main(
         // o_position = float4( i_position.xy, 0.0, 1.0 );
         // o_position = float4( i_position, 0.0, 1.0 );
 
-        o_uv = i_uv
+        o_uv = i_uv;
     }
 
     // EAE6320_TODO: Change the position based on time!
@@ -126,7 +126,7 @@ layout( location = 1 ) in vec2 i_uv;
 // but unlike HLSL where the value is explicit
 // GLSL has an automatically-required variable named "gl_Position"
 
-layout( location = 0 ) out vec2 o_uv
+layout( location = 0 ) out vec2 o_uv;
 
 // Entry Point
 //============
