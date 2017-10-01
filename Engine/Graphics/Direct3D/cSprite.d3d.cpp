@@ -138,9 +138,15 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVe
         const auto vertexCount = 4;
         eae6320::Graphics::VertexFormats::sSprite vertexData[vertexCount];
         GetVertexPositions(vertexData, i_origin, i_extents);
-        // D3D uses clockwise winding so swap the vertices appropriately
-        std::swap(vertexData[0], vertexData[3]);
         GetVertexTextureCoordinates(vertexData, i_origin, i_extents);
+
+        {
+            // D3D uses clockwise winding so swap the vertices appropriately
+            std::swap(vertexData[0], vertexData[3]);
+            // D3D uses top-to-bottom UVs so swap the Vs appropriately
+            std::swap(vertexData[0].v, vertexData[2].v);
+            std::swap(vertexData[1].v, vertexData[3].v);
+        }
 
         D3D11_BUFFER_DESC bufferDescription{};
         {
@@ -190,25 +196,4 @@ eae6320::cResult eae6320::Graphics::cSprite::CleanUp()
     }
 
     return result;
-}
-
-void eae6320::Graphics::cSprite::GetVertexTextureCoordinates(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const
-{
-    EAE6320_ASSERT(o_vertexData);
-
-    // top-left
-    o_vertexData[0].u = 0;
-    o_vertexData[0].v = 0;
-
-    // top-right
-    o_vertexData[1].u = 1;
-    o_vertexData[1].v = 0;
-
-    // bottom-left
-    o_vertexData[2].u = 0;
-    o_vertexData[2].v = 1;
-
-    // bottom-right
-    o_vertexData[3].u = 1;
-    o_vertexData[3].v = 1;
 }

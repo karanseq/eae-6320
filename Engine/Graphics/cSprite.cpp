@@ -87,3 +87,24 @@ void eae6320::Graphics::cSprite::GetVertexPositions(eae6320::Graphics::VertexFor
     o_vertexData[3].x = i_origin.x - i_extents.x;
     o_vertexData[3].y = i_origin.y + i_extents.y;
 }
+
+void eae6320::Graphics::cSprite::GetVertexTextureCoordinates(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const
+{
+    EAE6320_ASSERT(o_vertexData);
+
+    // bottom-right
+    o_vertexData[0].u = 1;
+    o_vertexData[0].v = 0;
+
+    // top-right
+    o_vertexData[1].u = 1;
+    o_vertexData[1].v = 1;
+
+    // bottom-left
+    o_vertexData[2].u = 0;
+    o_vertexData[2].v = 0;
+
+    // top-left
+    o_vertexData[3].u = 0;
+    o_vertexData[3].v = 1;
+}
