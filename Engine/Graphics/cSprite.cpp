@@ -19,71 +19,92 @@
 
 eae6320::cResult eae6320::Graphics::cSprite::Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents)
 {
-	auto result = Results::Success;
+    auto result = Results::Success;
 
-	cSprite* newSprite = nullptr;
+    cSprite* newSprite = nullptr;
 
-	// Allocate a new sprite
-	{
-		newSprite = new (std::nothrow) cSprite();
-		if (newSprite == nullptr)
-		{
-			result = Results::OutOfMemory;
-			EAE6320_ASSERTF(false, "Couldn't allocate memory for the new sprite!");
-			Logging::OutputError("Failed to allocated memory for the new sprite!");
-			goto OnExit;
-		}
-	}
+    // Allocate a new sprite
+    {
+        newSprite = new (std::nothrow) cSprite();
+        if (newSprite == nullptr)
+        {
+            result = Results::OutOfMemory;
+            EAE6320_ASSERTF(false, "Couldn't allocate memory for the new sprite!");
+            Logging::OutputError("Failed to allocated memory for the new sprite!");
+            goto OnExit;
+        }
+    }
 
-	// Initialize the new sprite's geometry
-	if (!(result = newSprite->Initialize(i_origin, i_extents)))
-	{
-		EAE6320_ASSERTF(false, "Could not initialize the new sprite!");
-		goto OnExit;
-	}
+    // Initialize the new sprite's geometry
+    if (!(result = newSprite->Initialize(i_origin, i_extents)))
+    {
+        EAE6320_ASSERTF(false, "Could not initialize the new sprite!");
+        goto OnExit;
+    }
 
 OnExit:
 
-	if (result)
-	{
-		EAE6320_ASSERT(newSprite);
-		o_sprite = newSprite;
-	}
-	else
-	{
-		if (newSprite)
-		{
-			newSprite->DecrementReferenceCount();
-			newSprite = nullptr;
-		}
-		o_sprite = nullptr;
-	}
+    if (result)
+    {
+        EAE6320_ASSERT(newSprite);
+        o_sprite = newSprite;
+    }
+    else
+    {
+        if (newSprite)
+        {
+            newSprite->DecrementReferenceCount();
+            newSprite = nullptr;
+        }
+        o_sprite = nullptr;
+    }
 
-	return result;
+    return result;
 }
 
 eae6320::Graphics::cSprite::~cSprite()
 {
-	CleanUp();
+    CleanUp();
 }
 
-void eae6320::Graphics::cSprite::GetVertexData(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const
+void eae6320::Graphics::cSprite::GetVertexPositions(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const
 {
-	EAE6320_ASSERT(o_vertexData);
+    EAE6320_ASSERT(o_vertexData);
 
-	// bottom-right
-	o_vertexData[0].x = i_origin.x + i_extents.x;
-	o_vertexData[0].y = i_origin.y - i_extents.y;
+    // bottom-right
+    o_vertexData[0].x = i_origin.x + i_extents.x;
+    o_vertexData[0].y = i_origin.y - i_extents.y;
 
-	// top-right
-	o_vertexData[1].x = i_origin.x + i_extents.x;
-	o_vertexData[1].y = i_origin.y + i_extents.y;
+    // top-right
+    o_vertexData[1].x = i_origin.x + i_extents.x;
+    o_vertexData[1].y = i_origin.y + i_extents.y;
 
-	// bottom-left
-	o_vertexData[2].x = i_origin.x - i_extents.x;
-	o_vertexData[2].y = i_origin.y - i_extents.y;
+    // bottom-left
+    o_vertexData[2].x = i_origin.x - i_extents.x;
+    o_vertexData[2].y = i_origin.y - i_extents.y;
 
-	// top-left
-	o_vertexData[3].x = i_origin.x - i_extents.x;
-	o_vertexData[3].y = i_origin.y + i_extents.y;
+    // top-left
+    o_vertexData[3].x = i_origin.x - i_extents.x;
+    o_vertexData[3].y = i_origin.y + i_extents.y;
+}
+
+void eae6320::Graphics::cSprite::GetVertexTextureCoordinates(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const
+{
+    EAE6320_ASSERT(o_vertexData);
+
+    // bottom-right
+    o_vertexData[0].u = 1;
+    o_vertexData[0].v = 0;
+
+    // top-right
+    o_vertexData[1].u = 1;
+    o_vertexData[1].v = 1;
+
+    // bottom-left
+    o_vertexData[2].u = 0;
+    o_vertexData[2].v = 0;
+
+    // top-left
+    o_vertexData[3].u = 0;
+    o_vertexData[3].v = 1;
 }
