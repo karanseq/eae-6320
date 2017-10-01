@@ -83,9 +83,6 @@ void eae6320::cExampleGame::UpdateSpriteRenderData()
         m_spriteRenderDataList[m_numColumns - 1].m_texture = textureToUse;
         m_spriteRenderDataList[m_numColumns * (m_numRows - 1)].m_texture = textureToUse;
         m_spriteRenderDataList[m_numColumns * m_numRows - 1].m_texture = textureToUse;
-
-        // This one is special
-        m_spriteRenderDataList[m_numColumns * m_numRows / 2].m_texture = m_swapSpritesBasedOnInput ? m_textureList[2] : m_textureList[0];
     }
 
     // Swap effects based on user input
@@ -292,6 +289,9 @@ void eae6320::cExampleGame::InitializeSpriteRenderDataList()
         }
         m_spriteRenderDataList.push_back(spriteRenderData);
     }
+
+    // This one is special
+    m_spriteRenderDataList[m_numColumns * m_numRows / 2].m_texture = m_textureList[2];
 }
 
 void eae6320::cExampleGame::GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const
