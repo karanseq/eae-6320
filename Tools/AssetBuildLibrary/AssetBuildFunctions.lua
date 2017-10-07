@@ -90,7 +90,7 @@ function BuildAssets()
         end
     end
 
-    -- Build the shaders and copy them to the installation location
+    -- Build the textures and copy them to the installation location
     do
         local textureDirs = { DustTextureDir, ForestTextureDir, RampsTextureDir }
 
@@ -148,7 +148,7 @@ function BuildShader(shaderName, shaderType)
     local path_shaderBuilder = OutputDir .. "ShaderBuilder.exe"
     do
         local shader_authored = EngineSourceContentDir .. shaderName .. ".xlsl"
-        local shader_built = GameInstallDir .. "data" .. shaderName .. ".shd"
+        local shader_built = GameInstallDir .. "data/" .. shaderName .. ".shd"
         CreateDirectoryIfItDoesntExist( shader_built )
         local command = "\"" .. path_shaderBuilder .. "\""
             .. " \"" .. shader_authored .. "\" \"" .. shader_built .. "\" " .. shaderType
@@ -182,7 +182,7 @@ function BuildTexture(textureName, textureExtension)
     local path_textureBuilder = OutputDir .. "TextureBuilder.exe"
     do
         local texture_authored = GameSourceContentDir .. textureName .. textureExtension
-        local texture_built = GameInstallDir .. textureName .. ".tex"
+        local texture_built = GameInstallDir .. "data/" .. textureName .. ".tex"
         CreateDirectoryIfItDoesntExist( texture_built )
         local command = "\"" .. path_textureBuilder .. "\""
             .. " \"" .. texture_authored .. "\" \"" .. texture_built
