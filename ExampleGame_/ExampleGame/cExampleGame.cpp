@@ -20,7 +20,7 @@
 const std::string eae6320::cExampleGame::s_vertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
 const std::string eae6320::cExampleGame::s_simpleFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
 const std::string eae6320::cExampleGame::s_animatedFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
-const std::string eae6320::cExampleGame::s_textureFolderPath("data/Textures/");
+const std::string eae6320::cExampleGame::s_textureFolderList[s_numTextureFolders] = { "data/Textures/Dust/", "data/Textures/Forest/", "data/Textures/Ramps/" };
 
 // Inherited Implementation
 //=========================
@@ -52,17 +52,7 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
         m_backgroundColor.b = 1.0f + (acosf(systemTime) * 0.5f) - 0.5f;
     }
 
-    UpdateSpriteRenderData();
-
-    if (m_spriteSwapTicker > 0.0f)
-    {
-        m_spriteSwapTicker -= i_elapsedSecondCount_sinceLastUpdate;
-        if (m_spriteSwapTicker < 0.0f)
-        {
-            m_swapSpritesBasedOnTime = !m_swapSpritesBasedOnTime;
-            m_spriteSwapTicker = m_spriteSwapInterval;
-        }
-    }
+    UpdateSpriteRenderData(i_elapsedSecondCount_sinceLastUpdate);
 }
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
@@ -71,34 +61,30 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
     {
-        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(spriteRenderData.m_texture);
+        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
         eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
     }
 }
 
-void eae6320::cExampleGame::UpdateSpriteRenderData()
+void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    // Swap textures based on user input.
-    {
-        eae6320::Graphics::cTexture::Handle textureToUse = m_swapSpritesBasedOnInput ? m_textureList[1] : m_textureList[0];
-        m_spriteRenderDataList[0].m_texture = textureToUse;
-        m_spriteRenderDataList[m_numColumns - 1].m_texture = textureToUse;
-        m_spriteRenderDataList[m_numColumns * (m_numRows - 1)].m_texture = textureToUse;
-        m_spriteRenderDataList[m_numColumns * m_numRows - 1].m_texture = textureToUse;
-    }
-
     // Swap effects based on user input
     {
-        m_spriteRenderDataList[m_numColumns * m_numRows / 2].m_effect = m_swapSpritesBasedOnInput ? m_effectList[1] : m_effectList[0];
+        m_spriteRenderDataList[0].m_effect = m_swapSpritesBasedOnInput ? m_effectList[1] : m_effectList[0];
     }
 
     // Swap textures based on time.
     {
-        eae6320::Graphics::cTexture::Handle textureToUse = m_swapSpritesBasedOnTime ? m_textureList[1] : m_textureList[3];
-        m_spriteRenderDataList[m_numColumns / 2].m_texture = textureToUse;
-        m_spriteRenderDataList[m_numColumns * (m_numRows / 2)].m_texture = textureToUse;
-        m_spriteRenderDataList[m_numColumns * (m_numRows / 2) + m_numColumns - 1].m_texture = textureToUse;
-        m_spriteRenderDataList[m_numColumns * m_numRows - m_numColumns / 2 - 1].m_texture = textureToUse;
+        for (auto& spriteRenderData : m_spriteRenderDataList)
+        {
+            spriteRenderData.m_waitUntilNextFrame -= i_elapsedSecondCount_sinceLastUpdate;
+            if (spriteRenderData.m_waitUntilNextFrame < 0.0f)
+            {
+                ++spriteRenderData.m_currentFrameIndex;
+                spriteRenderData.m_currentFrameIndex = spriteRenderData.m_currentFrameIndex - spriteRenderData.m_firstFrameIndex >= s_numFrames ? spriteRenderData.m_firstFrameIndex : spriteRenderData.m_currentFrameIndex;
+                spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
+            }
+        }
     }
 }
 
@@ -216,27 +202,29 @@ eae6320::cResult eae6320::cExampleGame::InitializeTextures()
 {
     eae6320::cResult result = eae6320::Results::Success;
 
-    constexpr uint8_t numTextures = 4;
+    constexpr uint8_t numTextures = s_numTextureFolders * s_numFrames;
     m_textureList.reserve(numTextures);
 
-    const std::string africaTwinTextureBaseName(s_textureFolderPath + std::string("africa_twin_0"));
-    const std::string textureFileExtension(".tex");
+    static const std::string textureNameSuffix("frame_");
+    static const std::string textureFileExtension(".tex");
 
-    // initialize the four africa twin textures
-    for (uint8_t i = 0; i < numTextures; ++i)
+    for (const auto& textureFolder : s_textureFolderList)
     {
-        const std::string africaTwinTextureName = africaTwinTextureBaseName + std::to_string(i + 1) + textureFileExtension;
-
-        eae6320::Graphics::cTexture::Handle africaTwinTexture;
-        if (!(result = eae6320::Graphics::cTexture::s_manager.Load(africaTwinTextureName.c_str(),
-            africaTwinTexture)))
+        const std::string textureBaseName(textureFolder + textureNameSuffix);
+        for (uint8_t i = 0; i < s_numFrames; ++i)
         {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_textureList.push_back(africaTwinTexture);
+            const std::string textureName = textureBaseName + std::to_string(i) + textureFileExtension;
+            eae6320::Graphics::cTexture::Handle textureHandle;
+            if (!(result = eae6320::Graphics::cTexture::s_manager.Load(textureName.c_str(),
+                textureHandle)))
+            {
+                EAE6320_ASSERT(false);
+                goto OnExit;
+            }
+            else
+            {
+                m_textureList.push_back(textureHandle);
+            }
         }
     }
 
@@ -249,20 +237,16 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
     eae6320::cResult result = eae6320::Results::Success;
 
-    const uint8_t numSprites = m_numColumns * m_numRows;
-    constexpr float size = 0.1f;
-    const float offset = size * float(m_numColumns * 2 - 2);
-    const eae6320::Math::sVector2d extents(size, size);
+    const eae6320::Math::sVector2d origins[3] = { { 0.0f, -0.5f }, { -0.5f, 0.5f }, { 0.6f, 0.5f } };
+    const eae6320::Math::sVector2d extents[3] = { { 0.75f, 0.35f }, { 0.4f, 0.3f } , { 0.3f, 0.3f } };
 
-    m_spriteList.reserve(numSprites);
+    m_spriteList.reserve(s_numTextureFolders);
 
-    for (uint8_t i = 0; i < numSprites; ++i)
+    for (uint8_t i = 0; i < s_numTextureFolders; ++i)
     {
         eae6320::Graphics::cSprite* sprite = nullptr;
 
-        eae6320::Math::sVector2d origin(i % m_numColumns * size * 4 - offset, i / m_numColumns * size * 4 - offset);
-
-        if (!(result = eae6320::Graphics::cSprite::Create(sprite, origin, extents)))
+        if (!(result = eae6320::Graphics::cSprite::Create(sprite, origins[i], extents[i])))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -281,19 +265,19 @@ OnExit:
 void eae6320::cExampleGame::InitializeSpriteRenderDataList()
 {
     const size_t numSprites = m_spriteList.size();
-    for (size_t i = 0; i < numSprites; ++i)
+    for (uint8_t i = 0; i < numSprites; ++i)
     {
         sSpriteRenderData spriteRenderData;
         {
+            spriteRenderData.m_firstFrameIndex = i * s_numFrames;
+            spriteRenderData.m_currentFrameIndex = i * s_numFrames;
+            spriteRenderData.m_frameRate = 0.125f + float(i) * 0.05f;
+            spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
             spriteRenderData.m_effect = m_effectList[0];
-            spriteRenderData.m_texture = m_textureList[0];
             spriteRenderData.m_sprite = m_spriteList[i];
         }
         m_spriteRenderDataList.push_back(spriteRenderData);
     }
-
-    // This one is special
-    m_spriteRenderDataList[m_numColumns * m_numRows / 2].m_texture = m_textureList[2];
 }
 
 void eae6320::cExampleGame::GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const

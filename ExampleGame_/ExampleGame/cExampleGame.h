@@ -95,7 +95,7 @@ namespace eae6320
 
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
-        void UpdateSpriteRenderData();
+        void UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate);
 
         // Initialization / Clean Up
         //--------------------------
@@ -118,8 +118,11 @@ namespace eae6320
 
         struct sSpriteRenderData
         {
+            uint8_t m_firstFrameIndex = 0;
+            uint8_t m_currentFrameIndex = 0;
+            float m_frameRate = 0.0f;
+            float m_waitUntilNextFrame = 0.0f;
             eae6320::Graphics::cEffect* m_effect = nullptr;
-            eae6320::Graphics::cTexture::Handle m_texture;
             eae6320::Graphics::cSprite* m_sprite = nullptr;
         };
 
@@ -129,20 +132,14 @@ namespace eae6320
         std::vector<eae6320::Graphics::cSprite*> m_spriteList;
         std::vector<sSpriteRenderData> m_spriteRenderDataList;
 
-        const float m_spriteSwapInterval = 0.5f;
-        float m_spriteSwapTicker = m_spriteSwapInterval;
-
-        // Odd numbers make it prettier.
-        const uint8_t m_numColumns = 5;
-        const uint8_t m_numRows = 5;
-
         bool m_swapSpritesBasedOnInput = false;
-        bool m_swapSpritesBasedOnTime = false;
 
+        static constexpr uint8_t s_numTextureFolders = 3;
+        static constexpr uint8_t s_numFrames = 6;
         static const std::string s_vertexShaderFilePath;
         static const std::string s_simpleFragmentShaderFilePath;
         static const std::string s_animatedFragmentShaderFilePath;
-        static const std::string s_textureFolderPath;
+        static const std::string s_textureFolderList[s_numTextureFolders];
 
     };
 }
