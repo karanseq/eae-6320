@@ -41,9 +41,34 @@
 #if defined( EAE6320_PLATFORM_D3D )
 
 	#define DeclareConstantBuffer( i_name, i_id ) cbuffer i_name : register( b##i_id )
+	#define DeclareTexture( i_name, i_id ) Texture2D i_name : register( t##i_id )
+	#define DeclareSamplerState( i_name, i_id ) SamplerState i_name : register( s##i_id )
+	#define GetSampledColor( i_color_texture, i_uv, i_color_samplerState ) i_color_texture.Sample( i_color_samplerState, i_uv )
 
 #elif defined( EAE6320_PLATFORM_GL )
 
 	#define DeclareConstantBuffer( i_name, i_id ) layout( std140, binding = i_id ) uniform i_name
+	#define DeclareTexture( i_name, i_id ) layout( binding = i_id ) uniform sampler2D i_name
+	#define DeclareSamplerState( i_name, i_id )
+	#define GetSampledColor( i_color_texture, i_uv, i_color_samplerState ) texture2D( i_color_texture, i_uv )
 
 #endif
+
+DeclareConstantBuffer( g_constantBuffer_perFrame, 0 )
+{
+    float g_elapsedSecondCount_systemTime;
+    float g_elapsedSecondCount_simulationTime;
+    // For float4 alignment
+    float2 g_padding;
+};
+
+DeclareConstantBuffer( g_constantBuffer_perMaterial, 1 )
+{
+    float4 g_color;
+};
+
+DeclareConstantBuffer( g_constantBuffer_perDrawCall, 2 )
+{
+    // This is a placeholder to prevent an empty constant buffer declaration
+    float4 DUMMY;
+};
