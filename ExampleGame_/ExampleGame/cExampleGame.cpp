@@ -12,6 +12,7 @@
 #include <Engine/UserInput/UserInput.h>
 
 #include <ctime>
+#include <string>
 
 // Static Data Initialization
 //===========================
@@ -70,7 +71,8 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
     {
-        eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, spriteRenderData.m_texture);
+        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(spriteRenderData.m_texture);
+        eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
     }
 }
 

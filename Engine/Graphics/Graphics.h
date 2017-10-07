@@ -9,7 +9,6 @@
 //==============
 
 #include "Configuration.h"
-#include "cTexture.h"
 
 #include <cstdint>
 #include <Engine/Results/Results.h>
@@ -27,6 +26,7 @@ namespace eae6320
     {
         class cEffect;
         class cSprite;
+        class cTexture;
         struct sColor;
     }
 }
@@ -51,7 +51,7 @@ namespace eae6320
 
         void SubmitBackgroundColor( const sColor& i_backgroundColor );
 
-        void SubmitDataToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture::Handle& i_textureToBind);
+        void SubmitDataToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind);
 
         // When the application is ready to submit data for a new frame
         // it should call this before submitting anything
