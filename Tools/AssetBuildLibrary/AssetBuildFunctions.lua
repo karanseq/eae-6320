@@ -99,11 +99,6 @@ function BuildAssets()
                 wereThereErrors = BuildTexture(v .. FrameTexureSuffix .. j, ".png") or wereThereErrors
             end
         end
-
-        for i = 1, 4 do
-            wereThereErrors = BuildTexture("Textures/africa_twin_0" .. i, ".jpg") or wereThereErrors
-        end
-
     end
 
     -- Copy the licenses to the installation location
