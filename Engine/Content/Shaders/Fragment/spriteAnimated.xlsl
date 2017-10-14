@@ -60,7 +60,7 @@ void main()
         // B
         1.0 + (sin(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5,
         // Alpha
-        1.0 );
+        0.75 + (cos(g_elapsedSecondCount_simulationTime) * 0.5) - 0.5);
 
     o_color = sampledColor * animatedColor;
 }
