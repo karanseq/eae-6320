@@ -59,17 +59,18 @@ namespace eae6320
                 const char*                             textureName = nullptr;
                 
                 // The position in screen-coordinates.
-                // Bottom-Left          => -1.0f, -1.0f
-                // Top-Right            => 1.0f, 1.0f
-                // Center               => 0.5f, 0.5f
+                // Bottom-Left                          => -1.0f, -1.0f
+                // Top-Right                            => 1.0f, 1.0f
+                // Center                               => 0.5f, 0.5f
                 Math::sVector2d                         position;
                 
                 // The anchor around which the position is calculated.
-                // Bottom-Left          => 0.0f, 0.0f
-                // Top-Right            => 1.0f, 1.0f
-                // Center               => 0.5f, 0.5f
+                // Bottom-Left                          => 0.0f, 0.0f
+                // Top-Right                            => 1.0f, 1.0f
+                // Center                               => 0.5f, 0.5f
                 Math::sVector2d                         anchor = { 0.5f, 0.5f };
                 
+                // The amount this widget is scaled relative to its texture size.
                 Math::sVector2d                         scale = { 1.0f, 1.0f };
             };
 
@@ -99,6 +100,7 @@ namespace eae6320
             //===============
 
             void GetSpriteOriginAndExtents(Math::sVector2d& o_origin, Math::sVector2d& o_extents, const sInitializationParameters& i_params) const;
+            void GetCurrentResolution(Math::sVector2d& o_resolution) const;
 
             // Data
             //=====

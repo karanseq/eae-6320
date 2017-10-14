@@ -70,6 +70,7 @@ local VertexInputLayoutShaderName = "vertexInputLayout_sprite"
 local DustTextureDir = "Textures/Dust/"
 local ForestTextureDir = "Textures/Forest/"
 local RampsTextureDir = "Textures/Ramps/"
+local ArrowsTextureDir = "Textures/Arrows/"
 local FrameTexureSuffix = "frame_"
 local NumberFrames = 6
 
@@ -98,6 +99,10 @@ function BuildAssets()
             for j = 0, NumberFrames-1 do
                 wereThereErrors = BuildTexture(v .. FrameTexureSuffix .. j, ".png") or wereThereErrors
             end
+        end
+
+        for i = 0, 3 do
+            wereThereErrors = BuildTexture(ArrowsTextureDir .. FrameTexureSuffix .. i, ".png") or wereThereErrors
         end
     end
 

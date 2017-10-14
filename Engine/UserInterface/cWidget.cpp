@@ -3,11 +3,13 @@
 
 #include "cWidget.h"
 
+#include <Engine/Application/cbApplication.h>
 #include <Engine/Graphics/cEffect.h>
 #include <Engine/Graphics/cSprite.h>
 #include <Engine/Graphics/cTexture.h>
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/UserSettings/UserSettings.h>
 
 #include <new>
 
@@ -183,12 +185,24 @@ eae6320::UserInterface::cWidget::~cWidget()
 
 void eae6320::UserInterface::cWidget::GetSpriteOriginAndExtents(Math::sVector2d& o_origin, Math::sVector2d& o_extents, const sInitializationParameters& i_params) const
 {
+    eae6320::Math::sVector2d resolution;
+    GetCurrentResolution(resolution);
+
     eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_texture);
 
-    o_extents.x = 0.5f * texture->GetWidth() / float(800) * i_params.scale.x;
-    o_extents.y = 0.5f * texture->GetHeight() / float(800) * i_params.scale.y;
+    o_extents.x = 0.5f * texture->GetWidth() / resolution.x * i_params.scale.x;
+    o_extents.y = 0.5f * texture->GetHeight() / resolution.y * i_params.scale.y;
 
     o_origin.x = i_params.position.x + (0.5f - i_params.anchor.x) * o_extents.x * 2.0f;
     o_origin.y = i_params.position.y + (0.5f - i_params.anchor.y) * o_extents.y * 2.0f;
 }
 
+void eae6320::UserInterface::cWidget::GetCurrentResolution(Math::sVector2d& o_resolution) const
+{
+    uint16_t desiredResolutionWidth = eae6320::Application::cbApplication::s_defaultInitialResolution_width;
+    uint16_t desiredResolutionHeight = eae6320::Application::cbApplication::s_defaultInitialResolution_height;
+    eae6320::UserSettings::GetDesiredInitialResolutionWidth(desiredResolutionWidth);
+    eae6320::UserSettings::GetDesiredInitialResolutionHeight(desiredResolutionHeight);
+    o_resolution.x = float(desiredResolutionWidth);
+    o_resolution.y = float(desiredResolutionHeight);
+}
