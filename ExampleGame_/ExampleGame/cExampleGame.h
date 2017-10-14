@@ -33,6 +33,11 @@ namespace eae6320
     {
         struct sVector2d;
     }
+
+    namespace UserInterface
+    {
+        class cWidget;
+    }
 }
 
 // Class Declaration
@@ -107,6 +112,7 @@ namespace eae6320
         cResult InitializeTextures();
         cResult InitializeSprites();
         void InitializeSpriteRenderDataList();
+        cResult InitializeWidgets();
 
         void GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const;
         void GetRandomExtentsForSprite(eae6320::Math::sVector2d& o_extents) const;
@@ -131,6 +137,7 @@ namespace eae6320
         std::vector<eae6320::Graphics::cTexture::Handle> m_textureList;
         std::vector<eae6320::Graphics::cSprite*> m_spriteList;
         std::vector<sSpriteRenderData> m_spriteRenderDataList;
+        std::vector<eae6320::UserInterface::cWidget*> m_widgetList;
 
         bool m_swapSpritesBasedOnInput = false;
 

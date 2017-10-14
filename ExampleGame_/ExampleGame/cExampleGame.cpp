@@ -10,6 +10,7 @@
 #include <Engine/Logging/Logging.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/UserInput/UserInput.h>
+#include <Engine/UserInterface/cWidget.h>
 
 #include <ctime>
 #include <string>
@@ -59,10 +60,15 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 {
     eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
 
-    for (auto& spriteRenderData : m_spriteRenderDataList)
+    //for (auto& spriteRenderData : m_spriteRenderDataList)
+    //{
+    //    eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
+    //    eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+    //}
+
+    for (auto& widget : m_widgetList)
     {
-        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
-        eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+        widget->SubmitDataToBeRendered(i_elapsedSecondCount_systemTime, i_elapsedSecondCount_sinceLastSimulationUpdate);
     }
 }
 
@@ -117,6 +123,12 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
 
     InitializeSpriteRenderDataList();
 
+    // Initialize widgets
+    if (!(result = InitializeWidgets()))
+    {
+        goto OnExit;
+    }
+
 OnExit:
 
     return result;
@@ -153,6 +165,12 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 
     m_spriteRenderDataList.clear();
 
+    for (const auto& widget : m_widgetList)
+    {
+        widget->DecrementReferenceCount();
+    }
+    m_widgetList.clear();
+
     return result;
 }
 
@@ -167,7 +185,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
     {
         eae6320::Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Load(effect, s_vertexShaderFilePath.c_str(), s_simpleFragmentShaderFilePath.c_str())))
+        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_vertexShaderFilePath.c_str(), s_simpleFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -182,7 +200,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
     {
         eae6320::Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Load(effect, s_vertexShaderFilePath.c_str(), s_animatedFragmentShaderFilePath.c_str())))
+        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_vertexShaderFilePath.c_str(), s_animatedFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -278,6 +296,38 @@ void eae6320::cExampleGame::InitializeSpriteRenderDataList()
         }
         m_spriteRenderDataList.push_back(spriteRenderData);
     }
+}
+
+eae6320::cResult eae6320::cExampleGame::InitializeWidgets()
+{
+    eae6320::cResult result = eae6320::Results::Success;
+
+    {
+        eae6320::UserInterface::cWidget::sInitializationParameters params;
+        params.vertexShaderName = eae6320::cExampleGame::s_vertexShaderFilePath.c_str();
+        params.fragmentShaderName = eae6320::cExampleGame::s_simpleFragmentShaderFilePath.c_str();
+
+        std::string textureName = eae6320::cExampleGame::s_textureFolderList[2] + std::string("frame_0.tex");
+        params.textureName = textureName.c_str();
+        params.position = { -1.0f, -1.0f };
+        params.anchor = { 0.0f, 0.0f };
+
+        eae6320::UserInterface::cWidget* widget = nullptr;
+
+        if (!(result = eae6320::UserInterface::cWidget::Create(widget, params)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_widgetList.push_back(widget);
+        }
+    }
+
+OnExit:
+
+    return result;
 }
 
 void eae6320::cExampleGame::GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const

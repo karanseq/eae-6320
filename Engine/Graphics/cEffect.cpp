@@ -23,7 +23,7 @@ void eae6320::Graphics::cEffect::Bind() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cEffect::Load(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName)
+eae6320::cResult eae6320::Graphics::cEffect::Create(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName)
 {
     auto result = eae6320::Results::Success;
 
