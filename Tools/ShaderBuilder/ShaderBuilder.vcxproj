@@ -35,6 +35,9 @@
     <ClInclude Include="Windows\ExternalLibraries.win.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Platform\Platform.vcxproj">
+      <Project>{7462d3a7-9936-442e-877c-89efda754596}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\External\Mcpp\Mcpp.vcxproj">
       <Project>{dd1b3bf3-3c86-49f6-abf4-e021ebcdaf80}</Project>
     </ProjectReference>

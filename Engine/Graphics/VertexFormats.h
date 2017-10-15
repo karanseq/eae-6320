@@ -20,14 +20,6 @@ namespace eae6320
     {
         namespace VertexFormats
         {
-            struct sGeometry
-            {
-                // POSITION
-                // 2 floats == 8 bytes
-                // Offset = 0
-                float x, y;
-            }; // struct sGeometry
-
             struct sSprite
             {
                 // POSITION

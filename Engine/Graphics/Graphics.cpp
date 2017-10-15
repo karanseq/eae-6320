@@ -8,6 +8,7 @@
 #include "cEffect.h"
 #include "cSamplerState.h"
 #include "cSprite.h"
+#include "cTexture.h"
 #include "cView.h"
 #include "sContext.h"
 #include "sColor.h"
@@ -42,7 +43,7 @@ namespace
 
     struct sDataRequiredToRenderASprite
     {
-        eae6320::Graphics::cTexture::Handle constantData_texture;
+        eae6320::Graphics::cTexture* constantData_texture = nullptr;
         eae6320::Graphics::cEffect* constantData_effect = nullptr;
         eae6320::Graphics::cSprite* constantData_sprite = nullptr;
     };
@@ -93,19 +94,16 @@ void eae6320::Graphics::SubmitBackgroundColor(const sColor& i_backgroundColor)
     s_dataBeingSubmittedByApplicationThread->backgroundColor = i_backgroundColor;
 }
 
-void eae6320::Graphics::SubmitDataToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture::Handle& i_textureToBind)
+void eae6320::Graphics::SubmitDataToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind)
 {
     EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+    EAE6320_ASSERT(i_spriteToDraw && i_effectToBind && i_textureToBind);
 
     sDataRequiredToRenderASprite spriteRenderData;
     
     {
         spriteRenderData.constantData_texture = i_textureToBind;
-        auto* texture = cTexture::s_manager.Get(spriteRenderData.constantData_texture);
-        if (texture)
-        {
-            texture->IncrementReferenceCount();
-        }
+        spriteRenderData.constantData_texture->IncrementReferenceCount();
     }
     
     {
@@ -187,11 +185,9 @@ void eae6320::Graphics::RenderFrame()
         for (const auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
         {
             spriteRenderData.constantData_effect->Bind();
-            auto* texture = cTexture::s_manager.Get(spriteRenderData.constantData_texture);
-            if (texture)
             {
                 constexpr unsigned int id = 0;
-                texture->Bind(id);
+                spriteRenderData.constantData_texture->Bind(id);
             }
             spriteRenderData.constantData_sprite->Draw();
         }
@@ -210,7 +206,7 @@ void eae6320::Graphics::RenderFrame()
     {
         for (auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
         {
-            cTexture::s_manager.Release(spriteRenderData.constantData_texture);
+            spriteRenderData.constantData_texture->DecrementReferenceCount();
             spriteRenderData.constantData_effect->DecrementReferenceCount();
             spriteRenderData.constantData_sprite->DecrementReferenceCount();
         }
@@ -315,7 +311,7 @@ eae6320::cResult eae6320::Graphics::CleanUp()
     {
         for (auto& spriteRenderData : s_dataBeingSubmittedByApplicationThread->spriteRenderDataList)
         {
-            cTexture::s_manager.Release(spriteRenderData.constantData_texture);
+            spriteRenderData.constantData_texture->DecrementReferenceCount();
             spriteRenderData.constantData_effect->DecrementReferenceCount();
             spriteRenderData.constantData_sprite->DecrementReferenceCount();
         }
@@ -326,7 +322,7 @@ eae6320::cResult eae6320::Graphics::CleanUp()
     {
         for (auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
         {
-            cTexture::s_manager.Release(spriteRenderData.constantData_texture);
+            spriteRenderData.constantData_texture->DecrementReferenceCount();
             spriteRenderData.constantData_effect->DecrementReferenceCount();
             spriteRenderData.constantData_sprite->DecrementReferenceCount();
         }

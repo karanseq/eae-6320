@@ -67,6 +67,9 @@ eae6320::Graphics::cSprite::~cSprite()
     CleanUp();
 }
 
+// Implementation
+//===============
+
 void eae6320::Graphics::cSprite::GetVertexPositions(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const
 {
     EAE6320_ASSERT(o_vertexData);

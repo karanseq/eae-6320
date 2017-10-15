@@ -57,7 +57,7 @@ namespace eae6320
             // Initialization / Clean Up
             //--------------------------
 
-            static eae6320::cResult Create(cSprite*& o_sprite, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
+            static cResult Create(cSprite*& o_sprite, const Math::sVector2d& i_origin, const Math::sVector2d& i_extents);
 
         public:
 
@@ -70,19 +70,22 @@ namespace eae6320
 
         private:
 
-            eae6320::cResult Initialize(const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents);
-            eae6320::cResult CleanUp();
+            cResult Initialize(const Math::sVector2d& i_origin, const Math::sVector2d& i_extents);
+            cResult CleanUp();
 
             cSprite() = default;
             ~cSprite();
 
         private:
 
+            // Implementation
+            //===============
+
             // Generates vertex positions for a quad in counter-clockwise winding, based on origin and extents
-            void GetVertexPositions(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
+            void GetVertexPositions(VertexFormats::sSprite* o_vertexData, const Math::sVector2d& i_origin, const Math::sVector2d& i_extents) const;
 
             // Generates texture coordinates for a quad, based on origin and extents
-            void GetVertexTextureCoordinates(eae6320::Graphics::VertexFormats::sSprite* o_vertexData, const eae6320::Math::sVector2d& i_origin, const eae6320::Math::sVector2d& i_extents) const;
+            void GetVertexTextureCoordinates(VertexFormats::sSprite* o_vertexData, const Math::sVector2d& i_origin, const Math::sVector2d& i_extents) const;
 
             // Data
             //=====

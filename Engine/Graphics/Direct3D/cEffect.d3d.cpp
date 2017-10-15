@@ -8,8 +8,8 @@
 
 #include <Engine/Asserts/Asserts.h>
 
-// Interface
-//==========
+// Implementation
+//===============
 
 // Render
 //-------
