@@ -62,7 +62,7 @@ namespace eae6320
                 // Bottom-Left                          => -1.0f, -1.0f
                 // Top-Right                            => 1.0f, 1.0f
                 // Center                               => 0.5f, 0.5f
-                Math::sVector2d                         position;
+                Math::sVector2d                         position = { 0.0f, 0.0f };
                 
                 // The anchor around which the position is calculated.
                 // Bottom-Left                          => 0.0f, 0.0f

@@ -336,7 +336,6 @@ eae6320::cResult eae6320::cExampleGame::InitializeWidgets()
         }
     }
 
-
 OnExit:
 
     return result;
