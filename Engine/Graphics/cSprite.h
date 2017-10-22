@@ -87,10 +87,10 @@ namespace eae6320
             // Generates texture coordinates for a quad, based on origin and extents
             void GetVertexTextureCoordinates(VertexFormats::sSprite* o_vertexData, const Math::sVector2d& i_origin, const Math::sVector2d& i_extents) const;
 
+        private:
+
             // Data
             //=====
-
-        private:
 
 #if defined( EAE6320_PLATFORM_D3D )
             // A vertex buffer holds the data for each vertex
@@ -108,7 +108,6 @@ namespace eae6320
             // A vertex array encapsulates the vertex data as well as the vertex input layout
             GLuint m_vertexArrayId = 0;
 #endif
-
 
         }; // class cSprite
 
