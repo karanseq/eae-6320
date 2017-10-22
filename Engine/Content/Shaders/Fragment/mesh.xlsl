@@ -1,0 +1,44 @@
+#include <Shaders/shaders.inc>
+
+// Entry Point
+//============
+
+#if defined( EAE6320_PLATFORM_D3D )
+
+void main (
+
+	// Input
+    //======
+
+    in const float4 i_color : COLOR0
+
+    // Output
+    //=======
+
+    // Whatever color value is output from the fragment shader
+    // will determine the color of the corresponding pixel on the screen
+    out float4 o_color : SV_TARGET
+
+)
+
+#elif defined( EAE6320_PLATFORM_GL )
+
+// Input
+//======
+
+layout( location = 0 ) in vec4 i_color;
+
+// Output
+//=======
+
+// Whatever color value is output from the fragment shader
+// will determine the color of the corresponding pixel on the screen
+out vec4 o_color;
+
+void main()
+
+#endif
+
+{
+	o_color = i_color;
+}
