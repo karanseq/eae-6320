@@ -2,6 +2,7 @@
 //==============
 
 #include "cExampleGame.h"
+#include "cGameObject.h"
 
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Graphics/cEffect.h>
@@ -63,13 +64,12 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
     //eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
-    eae6320::Graphics::SubmitBackgroundColor(eae6320::Graphics::sColor::EMERALD);
 
-    for (auto& mesh : m_meshList)
-    {
-        static Math::sVector position;
-        eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], position);
-    }
+    //for (auto& mesh : m_meshList)
+    //{
+    //    static Math::sVector position;
+    //    eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], position);
+    //}
 
     //for (auto& spriteRenderData : m_spriteRenderDataList)
     //{
@@ -81,6 +81,11 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     //{
     //    widget->SubmitDataToBeRendered(i_elapsedSecondCount_systemTime, i_elapsedSecondCount_sinceLastSimulationUpdate);
     //}
+
+    for (auto& gameObject : m_gameObjectList)
+    {
+        gameObject->SubmitDataToBeRendered(i_elapsedSecondCount_systemTime, i_elapsedSecondCount_sinceLastSimulationUpdate);
+    }
 }
 
 void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate)
@@ -146,6 +151,12 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
+    // Initialize game objects
+    if (!(result = InitializeGameObjects()))
+    {
+        goto OnExit;
+    }
+
 OnExit:
 
     return result;
@@ -193,6 +204,12 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
         widget->DecrementReferenceCount();
     }
     m_widgetList.clear();
+
+    for (auto& gameObject : m_gameObjectList)
+    {
+        cGameObject::Destroy(gameObject);
+    }
+    m_gameObjectList.clear();
 
     return result;
 }
@@ -410,6 +427,27 @@ eae6320::cResult eae6320::cExampleGame::InitializeWidgets()
         {
             m_widgetList.push_back(widget);
         }
+    }
+
+OnExit:
+
+    return result;
+}
+
+eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
+{
+    cResult result = eae6320::Results::Success;
+
+    cGameObject* gameObject = nullptr;
+
+    if (!(result = cGameObject::Create(gameObject, Math::sVector(), Graphics::sColor::RED, Graphics::sColor::YELLOW)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
+    }
+    else
+    {
+        m_gameObjectList.push_back(gameObject);
     }
 
 OnExit:
