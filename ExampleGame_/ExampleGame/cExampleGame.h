@@ -26,6 +26,7 @@ namespace eae6320
     namespace Graphics
     {
         class cEffect;
+        class cMesh;
         class cSprite;
     }
 
@@ -110,6 +111,7 @@ namespace eae6320
 
         cResult InitializeEffects();
         cResult InitializeTextures();
+        cResult InitializeMeshes();
         cResult InitializeSprites();
         void InitializeSpriteRenderDataList();
         cResult InitializeWidgets();
@@ -136,16 +138,20 @@ namespace eae6320
         std::vector<eae6320::Graphics::cEffect*> m_effectList;
         std::vector<eae6320::Graphics::cTexture::Handle> m_textureList;
         std::vector<eae6320::Graphics::cSprite*> m_spriteList;
+        std::vector<eae6320::Graphics::cMesh*> m_meshList;
         std::vector<sSpriteRenderData> m_spriteRenderDataList;
         std::vector<eae6320::UserInterface::cWidget*> m_widgetList;
+
 
         bool m_swapSpritesBasedOnInput = false;
 
         static constexpr uint8_t s_numTextureFolders = 3;
         static constexpr uint8_t s_numFrames = 6;
-        static const std::string s_vertexShaderFilePath;
-        static const std::string s_simpleFragmentShaderFilePath;
-        static const std::string s_animatedFragmentShaderFilePath;
+        static const std::string s_meshVertexShaderFilePath;
+        static const std::string s_meshFragmentShaderFilePath;
+        static const std::string s_spriteVertexShaderFilePath;
+        static const std::string s_spriteFragmentShaderFilePath;
+        static const std::string s_animatedSpriteFragmentShaderFilePath;
         static const std::string s_textureFolderList[s_numTextureFolders];
 
     };

@@ -5,9 +5,11 @@
 
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Graphics/cEffect.h>
+#include <Engine/Graphics/cMesh.h>
 #include <Engine/Graphics/cSprite.h>
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/sVector.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/UserInput/UserInput.h>
 #include <Engine/UserInterface/cWidget.h>
@@ -18,9 +20,11 @@
 // Static Data Initialization
 //===========================
 
-const std::string eae6320::cExampleGame::s_vertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
-const std::string eae6320::cExampleGame::s_simpleFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
-const std::string eae6320::cExampleGame::s_animatedFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
+const std::string eae6320::cExampleGame::s_meshVertexShaderFilePath("data/Shaders/Vertex/mesh.shd");
+const std::string eae6320::cExampleGame::s_meshFragmentShaderFilePath("data/Shaders/Fragment/mesh.shd");
+const std::string eae6320::cExampleGame::s_spriteVertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
+const std::string eae6320::cExampleGame::s_spriteFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
+const std::string eae6320::cExampleGame::s_animatedSpriteFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
 const std::string eae6320::cExampleGame::s_textureFolderList[s_numTextureFolders] = { "data/Textures/Dust/", "data/Textures/Forest/", "data/Textures/Ramps/" };
 
 // Inherited Implementation
@@ -58,25 +62,32 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
-    eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
+    //eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
+    eae6320::Graphics::SubmitBackgroundColor(eae6320::Graphics::sColor::EMERALD);
 
-    for (auto& spriteRenderData : m_spriteRenderDataList)
+    for (auto& mesh : m_meshList)
     {
-        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
-        eae6320::Graphics::SubmitDataToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+        static Math::sVector position;
+        eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], position);
     }
 
-    for (auto& widget : m_widgetList)
-    {
-        widget->SubmitDataToBeRendered(i_elapsedSecondCount_systemTime, i_elapsedSecondCount_sinceLastSimulationUpdate);
-    }
+    //for (auto& spriteRenderData : m_spriteRenderDataList)
+    //{
+    //    eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
+    //    eae6320::Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+    //}
+
+    //for (auto& widget : m_widgetList)
+    //{
+    //    widget->SubmitDataToBeRendered(i_elapsedSecondCount_systemTime, i_elapsedSecondCount_sinceLastSimulationUpdate);
+    //}
 }
 
 void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     // Swap effects based on user input
     {
-        m_spriteRenderDataList[0].m_effect = m_swapSpritesBasedOnInput ? m_effectList[1] : m_effectList[0];
+        m_spriteRenderDataList[0].m_effect = m_swapSpritesBasedOnInput ? m_effectList[2] : m_effectList[1];
     }
 
     // Swap textures based on time.
@@ -111,6 +122,12 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
 
     // Initialize textures
     if (!(result = InitializeTextures()))
+    {
+        goto OnExit;
+    }
+
+    // Initialize meshes
+    if (!(result = InitializeMeshes()))
     {
         goto OnExit;
     }
@@ -157,6 +174,12 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
         }
     }
 
+    for (const auto& mesh : m_meshList)
+    {
+        mesh->DecrementReferenceCount();
+    }
+    m_meshList.clear();
+
     for (const auto& sprite : m_spriteList)
     {
         sprite->DecrementReferenceCount();
@@ -178,14 +201,14 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 {
     eae6320::cResult result = eae6320::Results::Success;
 
-    constexpr uint8_t numEffects = 2;
+    constexpr uint8_t numEffects = 3;
     m_effectList.reserve(numEffects);
 
-    // initialize the simple effect
+    // initialize the mesh effect
     {
         eae6320::Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_vertexShaderFilePath.c_str(), s_simpleFragmentShaderFilePath.c_str())))
+        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -196,11 +219,26 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
         }
     }
 
-    // initialize the animated effect
+    // initialize the simple sprite effect
     {
         eae6320::Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_vertexShaderFilePath.c_str(), s_animatedFragmentShaderFilePath.c_str())))
+        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str())))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_effectList.push_back(effect);
+        }
+    }
+
+    // initialize the animated sprite effect
+    {
+        eae6320::Graphics::cEffect* effect = nullptr;
+
+        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -251,6 +289,42 @@ OnExit:
     return result;
 }
 
+eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
+{
+    eae6320::cResult result = eae6320::Results::Success;
+
+    {
+        constexpr uint16_t vertexCount = 3;
+        
+        const eae6320::Math::sVector vertices[vertexCount] = { 
+            { 0.0f, 0.0f, 0.0f },
+            { 0.25f, 0.0f, 0.0f },
+            { 0.125f, 0.25f, 0.0f }
+        };
+
+        const eae6320::Graphics::sColor colors[vertexCount] = { 
+            eae6320::Graphics::sColor::RED, 
+            eae6320::Graphics::sColor::GREEN,
+            eae6320::Graphics::sColor::BLUE
+        };
+
+        eae6320::Graphics::cMesh* mesh = nullptr;
+        if (!(result = eae6320::Graphics::cMesh::Create(mesh, vertexCount, vertices, colors)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_meshList.push_back(mesh);
+        }
+    }
+
+OnExit:
+
+    return result;
+}
+
 eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
     eae6320::cResult result = eae6320::Results::Success;
@@ -291,7 +365,7 @@ void eae6320::cExampleGame::InitializeSpriteRenderDataList()
             spriteRenderData.m_currentFrameIndex = i * s_numFrames;
             spriteRenderData.m_frameRate = 0.125f + float(i) * 0.05f;
             spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
-            spriteRenderData.m_effect = m_effectList[0];
+            spriteRenderData.m_effect = m_effectList[1];
             spriteRenderData.m_sprite = m_spriteList[i];
         }
         m_spriteRenderDataList.push_back(spriteRenderData);
@@ -303,8 +377,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeWidgets()
     eae6320::cResult result = eae6320::Results::Success;
 
     eae6320::UserInterface::cWidget::sInitializationParameters params;
-    params.vertexShaderName = eae6320::cExampleGame::s_vertexShaderFilePath.c_str();
-    params.fragmentShaderName = eae6320::cExampleGame::s_simpleFragmentShaderFilePath.c_str();
+    params.vertexShaderName = eae6320::cExampleGame::s_spriteVertexShaderFilePath.c_str();
+    params.fragmentShaderName = eae6320::cExampleGame::s_spriteFragmentShaderFilePath.c_str();
     params.scale = { 0.25f, 0.25f };
 
     const std::string texturePath = std::string("data/Textures/Arrows/frame_");
