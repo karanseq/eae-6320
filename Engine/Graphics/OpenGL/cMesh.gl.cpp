@@ -38,7 +38,7 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors)
 {
     auto result = eae6320::Results::Success;
 
@@ -174,7 +174,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             Logging::OutputError("Failed to allocated memory for the mesh's index data!");
             goto OnExit;
         }
-        GetIndexBufferData(indexData, i_vertexCount, i_vertices);
+        GetIndexBufferData(indexData, i_vertexCount, i_indices);
 
         const auto bufferSize = i_vertexCount * sizeof(uint16_t);
         EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(GLsizeiptr) * 8)));

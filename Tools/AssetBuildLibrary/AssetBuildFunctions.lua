@@ -63,6 +63,7 @@ local VertexShaderDir = "Shaders/Vertex/"
 local FragmentShaderDir = "Shaders/Fragment/"
 local MeshVertexShaderName = "mesh"
 local MeshFragmentShaderName = "mesh"
+local MeshVertexInputLayoutShaderName = "vertexInputLayout_mesh"
 local SpriteVertexShaderName = "sprite"
 local BasicSpriteFragmentShaderName = "spriteBasic"
 local AnimatedSpriteFragmentShaderName = "spriteAnimated"
@@ -91,6 +92,7 @@ function BuildAssets()
         wereThereErrors = BuildShader(FragmentShaderDir .. AnimatedSpriteFragmentShaderName, "fragment") or wereThereErrors
 
         if EAE6320_PLATFORM_D3D then
+            wereThereErrors = BuildShader(VertexShaderDir .. MeshVertexInputLayoutShaderName, "vertex") or wereThereErrors
             wereThereErrors = BuildShader(VertexShaderDir .. SpriteVertexInputLayoutShaderName, "vertex") or wereThereErrors
         end
     end

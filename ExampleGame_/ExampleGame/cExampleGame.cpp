@@ -302,6 +302,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
             { 0.125f, 0.25f, 0.0f }
         };
 
+        const uint16_t indices[vertexCount] = { 0, 1, 2 };
+
         const eae6320::Graphics::sColor colors[vertexCount] = { 
             eae6320::Graphics::sColor::RED, 
             eae6320::Graphics::sColor::GREEN,
@@ -309,7 +311,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
         };
 
         eae6320::Graphics::cMesh* mesh = nullptr;
-        if (!(result = eae6320::Graphics::cMesh::Create(mesh, vertexCount, vertices, colors)))
+        if (!(result = eae6320::Graphics::cMesh::Create(mesh, vertexCount, vertices, indices, colors)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;

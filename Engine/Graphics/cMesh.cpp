@@ -18,7 +18,7 @@
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors)
+eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors)
 {
     auto result = Results::Success;
 
@@ -36,6 +36,13 @@ eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t
             result = Results::Failure;
             EAE6320_ASSERTF(false, "Invalid vertex data!");
             Logging::OutputError("Invalid vertex data!");
+            goto OnExit;
+        }
+        else if (i_indices == nullptr)
+        {
+            result = Results::Failure;
+            EAE6320_ASSERTF(false, "Invalid index data!");
+            Logging::OutputError("Invalid index data!");
             goto OnExit;
         }
         else if (i_colors == nullptr)
@@ -62,7 +69,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t
     }
 
     // Initialize the new mesh's geometry
-    if (!(result = newMesh->Initialize(i_vertexCount, i_vertices, i_colors)))
+    if (!(result = newMesh->Initialize(i_vertexCount, i_vertices, i_indices, i_colors)))
     {
         EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
         goto OnExit;
@@ -111,12 +118,12 @@ void eae6320::Graphics::cMesh::GetVertexBufferData(VertexFormats::sMesh* o_verte
     }
 }
 
-void eae6320::Graphics::cMesh::GetIndexBufferData(uint16_t* o_indexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices) const
+void eae6320::Graphics::cMesh::GetIndexBufferData(uint16_t* o_indexData, const uint16_t i_vertexCount, const uint16_t* i_indices) const
 {
     EAE6320_ASSERT(o_indexData != nullptr && i_vertexCount % s_verticesPerTriangle == 0);
 
     for (uint16_t i = 0; i < i_vertexCount; ++i)
     {
-        o_indexData[i] = i;
+        o_indexData[i] = i_indices[i];
     }
 }

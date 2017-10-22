@@ -10,7 +10,8 @@ void main (
 	// Input
     //======
 
-    in const float4 i_color : COLOR0
+    in const float4 i_position : SV_POSITION,
+    in const float4 i_color : COLOR0,
 
     // Output
     //=======

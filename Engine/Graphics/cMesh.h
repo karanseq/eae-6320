@@ -62,7 +62,7 @@ namespace eae6320
             // Initialization / Clean Up
             //--------------------------
 
-            static cResult Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors);
+            static cResult Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors);
 
         public:
 
@@ -75,7 +75,7 @@ namespace eae6320
 
         private:
 
-            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors);
+            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors);
             cResult CleanUp();
 
             cMesh() = default;
@@ -88,7 +88,7 @@ namespace eae6320
 
             void GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors) const;
 
-            void GetIndexBufferData(uint16_t* o_indexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices) const;
+            void GetIndexBufferData(uint16_t* o_indexData, const uint16_t i_vertexCount, const uint16_t* i_indices) const;
 
         private:
 
