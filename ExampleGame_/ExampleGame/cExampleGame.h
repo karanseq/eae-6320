@@ -100,9 +100,12 @@ namespace eae6320
 
         virtual void UpdateBasedOnInput() override;
         virtual void UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
+        virtual void UpdateSimulationBasedOnInput() override;
+        virtual void UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
 
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
+        void UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate);
         void UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate);
 
         // Initialization / Clean Up
@@ -116,7 +119,6 @@ namespace eae6320
         cResult InitializeMeshes();
         cResult InitializeSprites();
         void InitializeSpriteRenderDataList();
-        cResult InitializeWidgets();
         cResult InitializeGameObjects();
 
         void GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const;
@@ -154,11 +156,13 @@ namespace eae6320
         std::vector<eae6320::Graphics::cSprite*> m_spriteList;
         std::vector<eae6320::Graphics::cMesh*> m_meshList;
         std::vector<sSpriteRenderData> m_spriteRenderDataList;
-        std::vector<eae6320::UserInterface::cWidget*> m_widgetList;
 
         std::vector<eae6320::cGameObject*> m_gameObjectList;
 
-        bool m_swapSpritesBasedOnInput = false;
+        bool m_isUpPressed = false;
+        bool m_isDownPressed = false;
+        bool m_isLeftPressed = false;
+        bool m_isRightPressed = false;
 
     };
 }

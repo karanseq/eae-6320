@@ -10,13 +10,14 @@
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Graphics/sColor.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/Functions.h>
 
 #include <new>
 
 // Static Data Initialization
 //===========================
-const float eae6320::cGameObject::s_maxVelocityLengthSquared = 25.0f;
-const float eae6320::cGameObject::s_linearDamping = 1.0f;
+const float eae6320::cGameObject::s_maxVelocity = 0.75f;
+const float eae6320::cGameObject::s_linearDamping = 0.05f;
 
 // Interface
 //==========
@@ -153,12 +154,26 @@ eae6320::cGameObject::~cGameObject()
     CleanUp();
 }
 
+// Behavior
+//---------
+
+void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
+{
+    m_velocity += i_impulse;
+    m_velocity.x = eae6320::Math::Clamp<float>(m_velocity.x, -s_maxVelocity, s_maxVelocity);
+    m_velocity.y = eae6320::Math::Clamp<float>(m_velocity.y, -s_maxVelocity, s_maxVelocity);
+}
+
 // Update
 //-------
 
 void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
+    // Apply drag
+    m_velocity.x -= fabsf(m_velocity.x) > 0.0f ? m_velocity.x * s_linearDamping : 0.0f;
+    m_velocity.y -= fabsf(m_velocity.y) > 0.0f ? m_velocity.y * s_linearDamping : 0.0f;
 
+    m_position += m_velocity * i_elapsedSecondCount_sinceLastUpdate;
 }
 
 // Render
@@ -166,5 +181,6 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
 
 void eae6320::cGameObject::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
-    eae6320::Graphics::SubmitMeshToBeRendered(m_mesh, m_effect, m_position);
+    const Math::sVector predictedPosition = m_position + m_velocity * i_elapsedSecondCount_sinceLastSimulationUpdate;
+    eae6320::Graphics::SubmitMeshToBeRendered(m_mesh, m_effect, predictedPosition);
 }

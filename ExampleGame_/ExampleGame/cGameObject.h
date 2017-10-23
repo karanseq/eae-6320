@@ -42,6 +42,11 @@ namespace eae6320
         static cResult Create(cGameObject*& o_gameObject, const Math::sVector& i_position, const Graphics::sColor& i_innerColor, const Graphics::sColor& i_outerColor);
         static cResult Destroy(cGameObject*& i_gameObject);
 
+        // Behavior
+        //---------
+
+        void AddImpulse(const Math::sVector& i_impulse);
+
         // Update
         //-------
 
@@ -64,7 +69,7 @@ namespace eae6320
         //=====
 
     public:
-        static const float                  s_maxVelocityLengthSquared;
+        static const float                  s_maxVelocity;
         static const float                  s_linearDamping;
 
     private:

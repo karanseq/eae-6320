@@ -1,5 +1,5 @@
 /*
-	This struct represents a position or direction
+    This struct represents a position or direction
 */
 
 #ifndef EAE6320_MATH_SVECTOR2D_H
@@ -10,71 +10,72 @@
 
 namespace eae6320
 {
-	namespace Math
-	{
-		struct sVector2d
-		{
-			// Data
-			//=====
+    namespace Math
+    {
+        struct sVector2d
+        {
+            // Data
+            //=====
 
-			float x = 0.0f, y = 0.0f;
+            float x = 0.0f, y = 0.0f;
 
-			// Interface
-			//==========
+            // Interface
+            //==========
 
-			// Addition
-			//---------
+            // Addition
+            //---------
 
-			sVector2d operator +(const sVector2d& i_rhs) const;
-			sVector2d& operator +=(const sVector2d& i_rhs);
+            sVector2d operator +(const sVector2d& i_rhs) const;
+            sVector2d& operator +=(const sVector2d& i_rhs);
 
-			// Subtraction / Negation
-			//-----------------------
+            // Subtraction / Negation
+            //-----------------------
 
-			sVector2d operator -(const sVector2d& i_rhs) const;
-			sVector2d& operator -=(const sVector2d& i_rhs);
-			sVector2d operator -() const;
+            sVector2d operator -(const sVector2d& i_rhs) const;
+            sVector2d& operator -=(const sVector2d& i_rhs);
+            sVector2d operator -() const;
 
-			// Multiplication
-			//---------------
+            // Multiplication
+            //---------------
 
-			sVector2d operator *(const float i_rhs) const;
-			sVector2d& operator *=(const float i_rhs);
-			friend sVector2d operator *(const float i_lhs, const sVector2d& i_rhs);
+            sVector2d operator *(const float i_rhs) const;
+            sVector2d& operator *=(const float i_rhs);
+            friend sVector2d operator *(const float i_lhs, const sVector2d& i_rhs);
 
-			// Division
-			//---------
+            // Division
+            //---------
 
-			sVector2d operator /(const float i_rhs) const;
-			sVector2d& operator /=(const float i_rhs);
+            sVector2d operator /(const float i_rhs) const;
+            sVector2d& operator /=(const float i_rhs);
 
-			// Length / Normalization
-			//-----------------------
+            // Length / Normalization
+            //-----------------------
 
-			float GetLength() const;
-			float Normalize();
-			sVector2d GetNormalized() const;
+            float GetLength() const;
+            float GetLengthSquared() const;
+            float Normalize();
+            sVector2d GetNormalized() const;
 
-			// Products
-			//---------
+            // Products
+            //---------
 
-			friend float Dot(const sVector2d& i_lhs, const sVector2d& i_rhs);
+            friend float Dot(const sVector2d& i_lhs, const sVector2d& i_rhs);
 
-			// Comparison
-			//-----------
+            // Comparison
+            //-----------
 
-			bool operator ==(const sVector2d& i_rhs) const;
-			bool operator !=(const sVector2d& i_rhs) const;
+            bool operator ==(const sVector2d& i_rhs) const;
+            bool operator !=(const sVector2d& i_rhs) const;
 
-			// Initialization / Shut Down
-			//---------------------------
+            // Initialization / Shut Down
+            //---------------------------
 
-			sVector2d() = default;
-			sVector2d(const float i_x, const float i_y);
-		};
-	}
+            sVector2d() = default;
+            sVector2d(const float i_x, const float i_y);
+        };
+    }
 }
 
 #include "sVector2d.inl"
 
-#endif	// EAE6320_MATH_SVECTOR2D_H
+#endif  // EAE6320_MATH_SVECTOR2D_H
