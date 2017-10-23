@@ -1,0 +1,67 @@
+#include <Shaders/shaders.inc>
+
+// Entry Point
+//============
+
+#if defined( EAE6320_PLATFORM_D3D )
+
+void main(
+
+    // Input
+    //======
+
+    // The "semantics" (the keywords in all caps after the colon) are arbitrary,
+    // but must match the C call to CreateInputLayout()
+
+    // These values come from one of the VertexFormats::sMesh that the vertex buffer was filled with in C code
+    in const float2 i_position : POSITION,
+    in const float4 i_color : COLOR0,
+
+    // Output
+    //=======
+
+    // An SV_POSITION value must always be output from every vertex shader
+    // so that the GPU can figure out which fragments need to be shaded
+    out float4 o_position : SV_POSITION,
+    out float4 o_color : COLOR0
+
+    )
+
+#elif defined( EAE6320_PLATFORM_GL )
+
+// Input
+//======
+
+// The locations assigned are arbitrary
+// but must match the C calls to glVertexAttribPointer()
+
+// These values come from one of the VertexFormats::sMesh that the vertex buffer was filled with in C code
+layout( location = 0 ) in vec2 i_position;
+layout( location = 1 ) in vec4 i_color;
+
+// Output
+//=======
+
+// The vertex shader must always output a position value,
+// but unlike HLSL where the value is explicit
+// GLSL has an automatically-required variable named "gl_Position"
+#define o_position gl_Position
+layout( location = 0 ) out vec4 o_color;
+
+// Entry Point
+//============
+
+void main()
+
+#endif
+
+{
+    // Calculate the position of this vertex on screen
+    {
+        // This shader adds the position from the constant buffer to the "in" position
+        o_position = float4( g_position.x + i_position.x, g_position.y + i_position.y, 0.0, 1.0 );
+
+        // Pass the colors that were inputs
+        o_color = i_color;
+    }
+}

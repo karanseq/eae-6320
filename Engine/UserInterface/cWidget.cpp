@@ -22,7 +22,7 @@
 void eae6320::UserInterface::cWidget::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
     eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_texture);
-    eae6320::Graphics::SubmitDataToBeRendered(m_sprite, m_effect, texture);
+    eae6320::Graphics::SubmitSpriteToBeRendered(m_sprite, m_effect, texture);
 }
 
 // Initialization / Clean Up

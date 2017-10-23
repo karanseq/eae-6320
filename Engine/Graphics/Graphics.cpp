@@ -6,6 +6,7 @@
 #include "cConstantBuffer.h"
 #include "ConstantBufferFormats.h"
 #include "cEffect.h"
+#include "cMesh.h"
 #include "cSamplerState.h"
 #include "cSprite.h"
 #include "cTexture.h"
@@ -16,6 +17,7 @@
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Concurrency/cEvent.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/sVector.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/Platform/Platform.h>
 #include <Engine/Time/Time.h>
@@ -33,8 +35,9 @@ namespace
     // In Direct3D, it is also responsible for initializing the render target & depth/stencil views
     eae6320::Graphics::cView s_view;
 
-    // Constant buffer object
+    // Constant buffer objects
     eae6320::Graphics::cConstantBuffer s_constantBuffer_perFrame(eae6320::Graphics::ConstantBufferTypes::PerFrame);
+    eae6320::Graphics::cConstantBuffer s_constantBuffer_perDrawCall(eae6320::Graphics::ConstantBufferTypes::PerDrawCall);
     // In our class we will only have a single sampler state
     eae6320::Graphics::cSamplerState s_samplerState;
 
@@ -48,12 +51,21 @@ namespace
         eae6320::Graphics::cSprite* constantData_sprite = nullptr;
     };
 
+    struct sDataRequiredToRenderAMesh
+    {
+        eae6320::Graphics::cEffect* constantData_effect = nullptr;
+        eae6320::Graphics::cMesh* constantData_mesh = nullptr;
+        eae6320::Math::sVector constantData_position;
+    };
+
     // This struct's data is populated at submission time;
     // it must cache whatever is necessary in order to render a frame
     struct sDataRequiredToRenderAFrame
     {
+        std::vector<sDataRequiredToRenderAMesh> meshRenderDataList;
         std::vector<sDataRequiredToRenderASprite> spriteRenderDataList;
         eae6320::Graphics::ConstantBufferFormats::sPerFrame constantData_perFrame;
+        eae6320::Graphics::ConstantBufferFormats::sPerDrawCall constantData_perDrawCall;
         eae6320::Graphics::sColor backgroundColor;
     };
     // In our class there will be two copies of the data required to render a frame:
@@ -94,7 +106,31 @@ void eae6320::Graphics::SubmitBackgroundColor(const sColor& i_backgroundColor)
     s_dataBeingSubmittedByApplicationThread->backgroundColor = i_backgroundColor;
 }
 
-void eae6320::Graphics::SubmitDataToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind)
+void eae6320::Graphics::SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position)
+{
+    EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+    EAE6320_ASSERT(i_meshToDraw && i_effectToBind);
+
+    sDataRequiredToRenderAMesh meshRenderData;
+
+    {
+        meshRenderData.constantData_mesh = i_meshToDraw;
+        meshRenderData.constantData_mesh->IncrementReferenceCount();
+    }
+
+    {
+        meshRenderData.constantData_effect = i_effectToBind;
+        meshRenderData.constantData_effect->IncrementReferenceCount();
+    }
+
+    {
+        meshRenderData.constantData_position = i_position;
+    }
+
+    s_dataBeingSubmittedByApplicationThread->meshRenderDataList.push_back(meshRenderData);
+}
+
+void eae6320::Graphics::SubmitSpriteToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind)
 {
     EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
     EAE6320_ASSERT(i_spriteToDraw && i_effectToBind && i_textureToBind);
@@ -180,6 +216,24 @@ void eae6320::Graphics::RenderFrame()
         s_constantBuffer_perFrame.Update(&constantData_perFrame);
     }
 
+    // Draw the meshes
+    {
+        for (const auto& meshRenderData : s_dataBeingRenderedByRenderThread->meshRenderDataList)
+        {
+            auto& constantData_perDrawCall = s_dataBeingRenderedByRenderThread->constantData_perDrawCall;
+            {
+                constantData_perDrawCall.g_position.x = meshRenderData.constantData_position.x;
+                constantData_perDrawCall.g_position.y = meshRenderData.constantData_position.y;
+                constantData_perDrawCall.g_position.z = meshRenderData.constantData_position.z;
+                constantData_perDrawCall.g_position.w = 1;
+            }
+            s_constantBuffer_perDrawCall.Update(&constantData_perDrawCall);
+
+            meshRenderData.constantData_effect->Bind();
+            meshRenderData.constantData_mesh->Draw();
+        }
+    }
+
     // Draw the sprites
     {
         for (const auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
@@ -204,6 +258,13 @@ void eae6320::Graphics::RenderFrame()
     // should be cleaned up and cleared.
     // so that the struct can be re-used (i.e. so that data for a new frame can be submitted to it)
     {
+        for (auto& meshRenderData : s_dataBeingRenderedByRenderThread->meshRenderDataList)
+        {
+            meshRenderData.constantData_effect->DecrementReferenceCount();
+            meshRenderData.constantData_mesh->DecrementReferenceCount();
+        }
+        s_dataBeingRenderedByRenderThread->meshRenderDataList.clear();
+
         for (auto& spriteRenderData : s_dataBeingRenderedByRenderThread->spriteRenderDataList)
         {
             spriteRenderData.constantData_texture->DecrementReferenceCount();
@@ -227,6 +288,7 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
         EAE6320_ASSERT(false);
         goto OnExit;
     }
+
     // Initialize the asset managers
     {
         if (!(result = cShader::s_manager.Initialize()))
@@ -238,6 +300,7 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
 
     // Initialize the platform-independent graphics objects
     {
+        // Initialize per-frame constant buffer
         if (result = s_constantBuffer_perFrame.Initialize())
         {
             // There is only a single per-frame constant buffer that is re-used
@@ -251,6 +314,22 @@ eae6320::cResult eae6320::Graphics::Initialize(const sInitializationParameters& 
             EAE6320_ASSERT(false);
             goto OnExit;
         }
+
+        // Initialize per-draw-call constant buffer
+        if (result = s_constantBuffer_perDrawCall.Initialize())
+        {
+            // There is only a single per-frame constant buffer that is re-used
+            // and so it can be bound at initialization time and never unbound
+            s_constantBuffer_perDrawCall.Bind(
+                // In our class both vertex and fragment shaders use per-frame constant data
+                ShaderTypes::Vertex | ShaderTypes::Fragment);
+        }
+        else
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+
         if (result = s_samplerState.Initialize())
         {
             // There is only a single sampler state that is re-used
@@ -307,6 +386,16 @@ eae6320::cResult eae6320::Graphics::CleanUp()
         }
     }
 
+    if (!s_dataBeingSubmittedByApplicationThread->meshRenderDataList.empty())
+    {
+        for (auto& meshRenderData : s_dataBeingSubmittedByApplicationThread->meshRenderDataList)
+        {
+            meshRenderData.constantData_effect->DecrementReferenceCount();
+            meshRenderData.constantData_mesh->DecrementReferenceCount();
+        }
+        s_dataBeingSubmittedByApplicationThread->meshRenderDataList.clear();
+    }
+
     if (!s_dataBeingSubmittedByApplicationThread->spriteRenderDataList.empty())
     {
         for (auto& spriteRenderData : s_dataBeingSubmittedByApplicationThread->spriteRenderDataList)
@@ -316,6 +405,16 @@ eae6320::cResult eae6320::Graphics::CleanUp()
             spriteRenderData.constantData_sprite->DecrementReferenceCount();
         }
         s_dataBeingSubmittedByApplicationThread->spriteRenderDataList.clear();
+    }
+
+    if (!s_dataBeingRenderedByRenderThread->meshRenderDataList.empty())
+    {
+        for (auto& meshRenderData : s_dataBeingRenderedByRenderThread->meshRenderDataList)
+        {
+            meshRenderData.constantData_effect->DecrementReferenceCount();
+            meshRenderData.constantData_mesh->DecrementReferenceCount();
+        }
+        s_dataBeingRenderedByRenderThread->meshRenderDataList.clear();
     }
 
     if (!s_dataBeingRenderedByRenderThread->spriteRenderDataList.empty())
@@ -340,6 +439,19 @@ eae6320::cResult eae6320::Graphics::CleanUp()
             }
         }
     }
+
+    {
+        const auto localResult = s_constantBuffer_perDrawCall.CleanUp();
+        if (!localResult)
+        {
+            EAE6320_ASSERT(false);
+            if (result)
+            {
+                result = localResult;
+            }
+        }
+    }
+
     {
         const auto localResult = s_samplerState.CleanUp();
         if (!localResult)

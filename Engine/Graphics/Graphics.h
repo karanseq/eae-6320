@@ -25,9 +25,14 @@ namespace eae6320
     namespace Graphics
     {
         class cEffect;
+        class cMesh;
         class cSprite;
         class cTexture;
         struct sColor;
+    }
+    namespace Math
+    {
+        struct sVector;
     }
 }
 
@@ -51,7 +56,8 @@ namespace eae6320
 
         void SubmitBackgroundColor( const sColor& i_backgroundColor );
 
-        void SubmitDataToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind);
+        void SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position);
+        void SubmitSpriteToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind);
 
         // When the application is ready to submit data for a new frame
         // it should call this before submitting anything

@@ -26,6 +26,7 @@ namespace eae6320
     namespace Graphics
     {
         class cEffect;
+        class cMesh;
         class cSprite;
     }
 
@@ -38,6 +39,8 @@ namespace eae6320
     {
         class cWidget;
     }
+
+    class cGameObject;
 }
 
 // Class Declaration
@@ -97,9 +100,12 @@ namespace eae6320
 
         virtual void UpdateBasedOnInput() override;
         virtual void UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
+        virtual void UpdateSimulationBasedOnInput() override;
+        virtual void UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate) override;
 
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
+        void UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate);
         void UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate);
 
         // Initialization / Clean Up
@@ -110,15 +116,27 @@ namespace eae6320
 
         cResult InitializeEffects();
         cResult InitializeTextures();
+        cResult InitializeMeshes();
         cResult InitializeSprites();
         void InitializeSpriteRenderDataList();
-        cResult InitializeWidgets();
+        cResult InitializeGameObjects();
 
         void GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const;
         void GetRandomExtentsForSprite(eae6320::Math::sVector2d& o_extents) const;
 
         // Data
         //=====
+
+    public:
+
+        static constexpr uint8_t s_numTextureFolders = 3;
+        static constexpr uint8_t s_numFrames = 6;
+        static const std::string s_meshVertexShaderFilePath;
+        static const std::string s_meshFragmentShaderFilePath;
+        static const std::string s_spriteVertexShaderFilePath;
+        static const std::string s_spriteFragmentShaderFilePath;
+        static const std::string s_animatedSpriteFragmentShaderFilePath;
+        static const std::string s_textureFolderList[s_numTextureFolders];
 
     private:
 
@@ -136,17 +154,15 @@ namespace eae6320
         std::vector<eae6320::Graphics::cEffect*> m_effectList;
         std::vector<eae6320::Graphics::cTexture::Handle> m_textureList;
         std::vector<eae6320::Graphics::cSprite*> m_spriteList;
+        std::vector<eae6320::Graphics::cMesh*> m_meshList;
         std::vector<sSpriteRenderData> m_spriteRenderDataList;
-        std::vector<eae6320::UserInterface::cWidget*> m_widgetList;
 
-        bool m_swapSpritesBasedOnInput = false;
+        std::vector<eae6320::cGameObject*> m_gameObjectList;
 
-        static constexpr uint8_t s_numTextureFolders = 3;
-        static constexpr uint8_t s_numFrames = 6;
-        static const std::string s_vertexShaderFilePath;
-        static const std::string s_simpleFragmentShaderFilePath;
-        static const std::string s_animatedFragmentShaderFilePath;
-        static const std::string s_textureFolderList[s_numTextureFolders];
+        bool m_isUpPressed = false;
+        bool m_isDownPressed = false;
+        bool m_isLeftPressed = false;
+        bool m_isRightPressed = false;
 
     };
 }

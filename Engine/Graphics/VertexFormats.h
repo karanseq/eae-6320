@@ -33,6 +33,20 @@ namespace eae6320
                 float u, v;
 
             }; // struct sSprite
+
+            struct sMesh
+            {
+                // POSITION
+                // 2 floats == 8 bytes
+                // Offset = 0
+                float x, y;
+
+                // COLOR0
+                // 4 8-bit ints == 4 bytes
+                // Offset = 8
+                uint8_t r, g, b, a;
+
+            }; // struct sMesh
         }
     }
 }

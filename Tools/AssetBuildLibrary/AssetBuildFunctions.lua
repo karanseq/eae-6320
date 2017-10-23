@@ -61,10 +61,13 @@ end
 -- Shaders
 local VertexShaderDir = "Shaders/Vertex/"
 local FragmentShaderDir = "Shaders/Fragment/"
-local VertexShaderName = "sprite"
-local BasicFragmentShaderName = "spriteBasic"
-local AnimatedFragmentShaderName = "spriteAnimated"
-local VertexInputLayoutShaderName = "vertexInputLayout_sprite"
+local MeshVertexShaderName = "mesh"
+local MeshFragmentShaderName = "mesh"
+local MeshVertexInputLayoutShaderName = "vertexInputLayout_mesh"
+local SpriteVertexShaderName = "sprite"
+local BasicSpriteFragmentShaderName = "spriteBasic"
+local AnimatedSpriteFragmentShaderName = "spriteAnimated"
+local SpriteVertexInputLayoutShaderName = "vertexInputLayout_sprite"
 
 -- Textures
 local DustTextureDir = "Textures/Dust/"
@@ -82,12 +85,15 @@ function BuildAssets()
 
     -- Build the shaders and copy them to the installation location
     do
-        wereThereErrors = BuildShader(VertexShaderDir .. VertexShaderName, "vertex") or wereThereErrors
-        wereThereErrors = BuildShader(FragmentShaderDir .. BasicFragmentShaderName, "fragment") or wereThereErrors
-        wereThereErrors = BuildShader(FragmentShaderDir .. AnimatedFragmentShaderName, "fragment") or wereThereErrors
+        wereThereErrors = BuildShader(VertexShaderDir .. MeshVertexShaderName, "vertex") or wereThereErrors
+        wereThereErrors = BuildShader(FragmentShaderDir .. MeshFragmentShaderName, "fragment") or wereThereErrors
+        wereThereErrors = BuildShader(VertexShaderDir .. SpriteVertexShaderName, "vertex") or wereThereErrors
+        wereThereErrors = BuildShader(FragmentShaderDir .. BasicSpriteFragmentShaderName, "fragment") or wereThereErrors
+        wereThereErrors = BuildShader(FragmentShaderDir .. AnimatedSpriteFragmentShaderName, "fragment") or wereThereErrors
 
         if EAE6320_PLATFORM_D3D then
-            wereThereErrors = BuildShader(VertexShaderDir .. VertexInputLayoutShaderName, "vertex") or wereThereErrors
+            wereThereErrors = BuildShader(VertexShaderDir .. MeshVertexInputLayoutShaderName, "vertex") or wereThereErrors
+            wereThereErrors = BuildShader(VertexShaderDir .. SpriteVertexInputLayoutShaderName, "vertex") or wereThereErrors
         end
     end
 

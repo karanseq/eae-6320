@@ -1,5 +1,5 @@
 /*
-	This struct represents a position or direction
+    This struct represents a position or direction
 */
 
 #ifndef EAE6320_MATH_SVECTOR_H
@@ -10,72 +10,73 @@
 
 namespace eae6320
 {
-	namespace Math
-	{
-		struct sVector
-		{
-			// Data
-			//=====
+    namespace Math
+    {
+        struct sVector
+        {
+            // Data
+            //=====
 
-			float x = 0.0f, y = 0.0f, z = 0.0f;
+            float x = 0.0f, y = 0.0f, z = 0.0f;
 
-			// Interface
-			//==========
+            // Interface
+            //==========
 
-			// Addition
-			//---------
+            // Addition
+            //---------
 
-			sVector operator +( const sVector& i_rhs ) const;
-			sVector& operator +=( const sVector& i_rhs );
+            sVector operator +( const sVector& i_rhs ) const;
+            sVector& operator +=( const sVector& i_rhs );
 
-			// Subtraction / Negation
-			//-----------------------
+            // Subtraction / Negation
+            //-----------------------
 
-			sVector operator -( const sVector& i_rhs ) const;
-			sVector& operator -=( const sVector& i_rhs );
-			sVector operator -() const;
+            sVector operator -( const sVector& i_rhs ) const;
+            sVector& operator -=( const sVector& i_rhs );
+            sVector operator -() const;
 
-			// Multiplication
-			//---------------
+            // Multiplication
+            //---------------
 
-			sVector operator *( const float i_rhs ) const;
-			sVector& operator *=( const float i_rhs );
-			friend sVector operator *( const float i_lhs, const sVector& i_rhs );
+            sVector operator *( const float i_rhs ) const;
+            sVector& operator *=( const float i_rhs );
+            friend sVector operator *( const float i_lhs, const sVector& i_rhs );
 
-			// Division
-			//---------
+            // Division
+            //---------
 
-			sVector operator /( const float i_rhs ) const;
-			sVector& operator /=( const float i_rhs );
+            sVector operator /( const float i_rhs ) const;
+            sVector& operator /=( const float i_rhs );
 
-			// Length / Normalization
-			//-----------------------
+            // Length / Normalization
+            //-----------------------
 
-			float GetLength() const;
-			float Normalize();
-			sVector GetNormalized() const;
+            float GetLength() const;
+            float GetLengthSquared() const;
+            float Normalize();
+            sVector GetNormalized() const;
 
-			// Products
-			//---------
+            // Products
+            //---------
 
-			friend float Dot( const sVector& i_lhs, const sVector& i_rhs );
-			friend sVector Cross( const sVector& i_lhs, const sVector& i_rhs );
+            friend float Dot( const sVector& i_lhs, const sVector& i_rhs );
+            friend sVector Cross( const sVector& i_lhs, const sVector& i_rhs );
 
-			// Comparison
-			//-----------
+            // Comparison
+            //-----------
 
-			bool operator ==( const sVector& i_rhs ) const;
-			bool operator !=( const sVector& i_rhs ) const;
+            bool operator ==( const sVector& i_rhs ) const;
+            bool operator !=( const sVector& i_rhs ) const;
 
-			// Initialization / Shut Down
-			//---------------------------
+            // Initialization / Shut Down
+            //---------------------------
 
-			sVector() = default;
-			sVector( const float i_x, const float i_y, const float i_z );
-		};
-	}
+            sVector() = default;
+            sVector( const float i_x, const float i_y, const float i_z );
+        };
+    }
 }
 
 #include "sVector.inl"
 
-#endif	// EAE6320_MATH_SVECTOR_H
+#endif  // EAE6320_MATH_SVECTOR_H
