@@ -76,6 +76,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TextureBuilder", "Tools\Tex
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UserInterface", "Engine\UserInterface\UserInterface.vcxproj", "{91DD0B43-2A23-4198-928B-21E4470DEBDB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Physics", "Engine\Physics\Physics.vcxproj", "{30E6BB9F-138D-4B44-9733-869263F7BAD5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -300,6 +302,14 @@ Global
 		{91DD0B43-2A23-4198-928B-21E4470DEBDB}.Release|x64.Build.0 = Release|x64
 		{91DD0B43-2A23-4198-928B-21E4470DEBDB}.Release|x86.ActiveCfg = Release|Win32
 		{91DD0B43-2A23-4198-928B-21E4470DEBDB}.Release|x86.Build.0 = Release|Win32
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Debug|x64.ActiveCfg = Debug|x64
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Debug|x64.Build.0 = Debug|x64
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Debug|x86.ActiveCfg = Debug|Win32
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Debug|x86.Build.0 = Debug|Win32
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Release|x64.ActiveCfg = Release|x64
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Release|x64.Build.0 = Release|x64
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Release|x86.ActiveCfg = Release|Win32
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -333,6 +343,7 @@ Global
 		{F59DDA89-7CC8-4FBF-8BAA-F7D83B908E5B} = {E5C51EF7-81D3-4030-A4CE-0D2D666CEF4F}
 		{37D50792-7ACF-496D-9239-2D656A57509C} = {31B05C03-4BB2-4A0D-B621-B41DA6B0F57E}
 		{91DD0B43-2A23-4198-928B-21E4470DEBDB} = {E5C51EF7-81D3-4030-A4CE-0D2D666CEF4F}
+		{30E6BB9F-138D-4B44-9733-869263F7BAD5} = {E5C51EF7-81D3-4030-A4CE-0D2D666CEF4F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {A89F366F-0B7F-464F-90A8-A4828B273298}
