@@ -9,6 +9,7 @@
 //==============
 
 #include <Engine/Math/sVector.h>
+#include <Engine/Physics/sRigidBodyState.h>
 #include <Engine/Results/Results.h>
 
 // Forward Declarations
@@ -75,8 +76,7 @@ namespace eae6320
     private:
         Graphics::cEffect*                  m_effect = nullptr;
         Graphics::cMesh*                    m_mesh = nullptr;
-        Math::sVector                       m_position;
-        Math::sVector                       m_velocity;
+        Physics::sRigidBodyState            m_rigidBodyState;
 
     }; // class cGameObject
 

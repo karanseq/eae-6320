@@ -84,7 +84,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
     auto result = Results::Success;
 
     // Save the position
-    m_position = i_position;
+    m_rigidBodyState.position = i_position;
 
     // Initialize the effect
     {
@@ -159,9 +159,9 @@ eae6320::cGameObject::~cGameObject()
 
 void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 {
-    m_velocity += i_impulse;
-    m_velocity.x = eae6320::Math::Clamp<float>(m_velocity.x, -s_maxVelocity, s_maxVelocity);
-    m_velocity.y = eae6320::Math::Clamp<float>(m_velocity.y, -s_maxVelocity, s_maxVelocity);
+    m_rigidBodyState.velocity += i_impulse;
+    m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.x, -s_maxVelocity, s_maxVelocity);
+    m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.y, -s_maxVelocity, s_maxVelocity);
 }
 
 // Update
@@ -170,10 +170,10 @@ void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     // Apply drag
-    m_velocity.x -= fabsf(m_velocity.x) > 0.0f ? m_velocity.x * s_linearDamping : 0.0f;
-    m_velocity.y -= fabsf(m_velocity.y) > 0.0f ? m_velocity.y * s_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * s_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * s_linearDamping : 0.0f;
 
-    m_position += m_velocity * i_elapsedSecondCount_sinceLastUpdate;
+    m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
 }
 
 // Render
@@ -181,6 +181,6 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
 
 void eae6320::cGameObject::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
-    const Math::sVector predictedPosition = m_position + m_velocity * i_elapsedSecondCount_sinceLastSimulationUpdate;
+    const Math::sVector predictedPosition = m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
     eae6320::Graphics::SubmitMeshToBeRendered(m_mesh, m_effect, predictedPosition);
 }
