@@ -161,11 +161,6 @@ namespace eae6320
 
         std::vector<cGameObject*>                           m_gameObjectList;
 
-        bool                                                m_isUpPressed = false;
-        bool                                                m_isDownPressed = false;
-        bool                                                m_isLeftPressed = false;
-        bool                                                m_isRightPressed = false;
-
     };
 }
 

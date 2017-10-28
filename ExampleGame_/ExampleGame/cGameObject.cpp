@@ -18,8 +18,8 @@
 
 // Static Data Initialization
 //===========================
-const float eae6320::cGameObject::s_maxVelocity = 0.75f;
-const float eae6320::cGameObject::s_linearDamping = 0.05f;
+const float eae6320::cGameObject::s_maxVelocity = 2.5f;
+const float eae6320::cGameObject::s_linearDamping = 0.1f;
 
 // Interface
 //==========
@@ -183,6 +183,7 @@ void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
     m_rigidBodyState.velocity += i_impulse;
     m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.x, -s_maxVelocity, s_maxVelocity);
     m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.y, -s_maxVelocity, s_maxVelocity);
+    m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.z, -s_maxVelocity, s_maxVelocity);
 }
 
 // Update
@@ -193,6 +194,7 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
     // Apply drag
     m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * s_linearDamping : 0.0f;
     m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * s_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.z -= fabsf(m_rigidBodyState.velocity.z) > 0.0f ? m_rigidBodyState.velocity.z * s_linearDamping : 0.0f;
 
     m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
 }
