@@ -11,12 +11,15 @@
 #include "cSprite.h"
 #include "cTexture.h"
 #include "cView.h"
+#include "sCamera.h"
 #include "sContext.h"
 #include "sColor.h"
 
 #include <Engine/Asserts/Asserts.h>
 #include <Engine/Concurrency/cEvent.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/cMatrix_transformation.h>
+#include <Engine/Math/cQuaternion.h>
 #include <Engine/Math/sVector.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/Platform/Platform.h>
@@ -56,6 +59,7 @@ namespace
         eae6320::Graphics::cEffect* constantData_effect = nullptr;
         eae6320::Graphics::cMesh* constantData_mesh = nullptr;
         eae6320::Math::sVector constantData_position;
+        eae6320::Math::cQuaternion constantData_orientation;
     };
 
     // This struct's data is populated at submission time;
@@ -106,25 +110,27 @@ void eae6320::Graphics::SubmitBackgroundColor(const sColor& i_backgroundColor)
     s_dataBeingSubmittedByApplicationThread->backgroundColor = i_backgroundColor;
 }
 
-void eae6320::Graphics::SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position)
+void eae6320::Graphics::SubmitCamera(const sCamera& i_camera, const Math::sVector& i_position, const Math::cQuaternion& i_orientation)
+{
+    EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+    auto& constantData_perFrame = s_dataBeingSubmittedByApplicationThread->constantData_perFrame;
+    constantData_perFrame.g_transform_worldToCamera = Math::cMatrix_transformation::CreateWorldToCameraTransform(i_orientation, i_position);
+    constantData_perFrame.g_transform_cameraToProjected = Math::cMatrix_transformation::CreateCameraToProjectedTransform_perspective(i_camera.m_verticalFieldOfView_inRadians, i_camera.m_aspectRatio, i_camera.m_z_nearPlane, i_camera.m_z_farPlane);
+}
+    
+void eae6320::Graphics::SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position, const Math::cQuaternion& i_orientation)
 {
     EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
     EAE6320_ASSERT(i_meshToDraw && i_effectToBind);
 
     sDataRequiredToRenderAMesh meshRenderData;
-
     {
         meshRenderData.constantData_mesh = i_meshToDraw;
         meshRenderData.constantData_mesh->IncrementReferenceCount();
-    }
-
-    {
         meshRenderData.constantData_effect = i_effectToBind;
         meshRenderData.constantData_effect->IncrementReferenceCount();
-    }
-
-    {
         meshRenderData.constantData_position = i_position;
+        meshRenderData.constantData_orientation = i_orientation;
     }
 
     s_dataBeingSubmittedByApplicationThread->meshRenderDataList.push_back(meshRenderData);
@@ -135,19 +141,12 @@ void eae6320::Graphics::SubmitSpriteToBeRendered(cSprite* i_spriteToDraw, cEffec
     EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
     EAE6320_ASSERT(i_spriteToDraw && i_effectToBind && i_textureToBind);
 
-    sDataRequiredToRenderASprite spriteRenderData;
-    
+    sDataRequiredToRenderASprite spriteRenderData;    
     {
         spriteRenderData.constantData_texture = i_textureToBind;
         spriteRenderData.constantData_texture->IncrementReferenceCount();
-    }
-    
-    {
         spriteRenderData.constantData_effect = i_effectToBind;
         spriteRenderData.constantData_effect->IncrementReferenceCount();
-    }
-
-    {
         spriteRenderData.constantData_sprite = i_spriteToDraw;
         spriteRenderData.constantData_sprite->IncrementReferenceCount();
     }
@@ -222,10 +221,7 @@ void eae6320::Graphics::RenderFrame()
         {
             auto& constantData_perDrawCall = s_dataBeingRenderedByRenderThread->constantData_perDrawCall;
             {
-                constantData_perDrawCall.g_position.x = meshRenderData.constantData_position.x;
-                constantData_perDrawCall.g_position.y = meshRenderData.constantData_position.y;
-                constantData_perDrawCall.g_position.z = meshRenderData.constantData_position.z;
-                constantData_perDrawCall.g_position.w = 1;
+                constantData_perDrawCall.g_transform_localToWorld = Math::cMatrix_transformation(meshRenderData.constantData_orientation, meshRenderData.constantData_position);
             }
             s_constantBuffer_perDrawCall.Update(&constantData_perDrawCall);
 

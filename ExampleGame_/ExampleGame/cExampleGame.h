@@ -10,6 +10,7 @@
 
 #include <Engine/Application/cbApplication.h>
 #include <Engine/Graphics/cTexture.h>
+#include <Engine/Graphics/sCamera.h>
 #include <Engine/Graphics/sColor.h>
 #include <Engine/Results/Results.h>
 #include <vector>
@@ -121,48 +122,49 @@ namespace eae6320
         void InitializeSpriteRenderDataList();
         cResult InitializeGameObjects();
 
-        void GetRandomOriginForSprite(eae6320::Math::sVector2d& o_origin) const;
-        void GetRandomExtentsForSprite(eae6320::Math::sVector2d& o_extents) const;
+        void GetRandomOriginForSprite(Math::sVector2d& o_origin) const;
+        void GetRandomExtentsForSprite(Math::sVector2d& o_extents) const;
 
         // Data
         //=====
 
     public:
 
-        static constexpr uint8_t s_numTextureFolders = 3;
-        static constexpr uint8_t s_numFrames = 6;
-        static const std::string s_meshVertexShaderFilePath;
-        static const std::string s_meshFragmentShaderFilePath;
-        static const std::string s_spriteVertexShaderFilePath;
-        static const std::string s_spriteFragmentShaderFilePath;
-        static const std::string s_animatedSpriteFragmentShaderFilePath;
-        static const std::string s_textureFolderList[s_numTextureFolders];
+        static constexpr uint8_t                            s_numTextureFolders = 3;
+        static constexpr uint8_t                            s_numFrames = 6;
+        static const std::string                            s_meshVertexShaderFilePath;
+        static const std::string                            s_meshFragmentShaderFilePath;
+        static const std::string                            s_spriteVertexShaderFilePath;
+        static const std::string                            s_spriteFragmentShaderFilePath;
+        static const std::string                            s_animatedSpriteFragmentShaderFilePath;
+        static const std::string                            s_textureFolderList[s_numTextureFolders];
 
     private:
 
         struct sSpriteRenderData
         {
-            uint8_t m_firstFrameIndex = 0;
-            uint8_t m_currentFrameIndex = 0;
-            float m_frameRate = 0.0f;
-            float m_waitUntilNextFrame = 0.0f;
-            eae6320::Graphics::cEffect* m_effect = nullptr;
-            eae6320::Graphics::cSprite* m_sprite = nullptr;
+            uint8_t                                         m_firstFrameIndex = 0;
+            uint8_t                                         m_currentFrameIndex = 0;
+            float                                           m_frameRate = 0.0f;
+            float                                           m_waitUntilNextFrame = 0.0f;
+            Graphics::cEffect*                              m_effect = nullptr;
+            Graphics::cSprite*                              m_sprite = nullptr;
         };
 
-        eae6320::Graphics::sColor m_backgroundColor = eae6320::Graphics::sColor::ORANGE;
-        std::vector<eae6320::Graphics::cEffect*> m_effectList;
-        std::vector<eae6320::Graphics::cTexture::Handle> m_textureList;
-        std::vector<eae6320::Graphics::cSprite*> m_spriteList;
-        std::vector<eae6320::Graphics::cMesh*> m_meshList;
-        std::vector<sSpriteRenderData> m_spriteRenderDataList;
+        Graphics::sCamera                                   m_camera;
+        Graphics::sColor                                    m_backgroundColor = Graphics::sColor::ORANGE;
+        std::vector<Graphics::cEffect*>                     m_effectList;
+        std::vector<Graphics::cTexture::Handle>             m_textureList;
+        std::vector<Graphics::cSprite*>                     m_spriteList;
+        std::vector<Graphics::cMesh*>                       m_meshList;
+        std::vector<sSpriteRenderData>                      m_spriteRenderDataList;
 
-        std::vector<eae6320::cGameObject*> m_gameObjectList;
+        std::vector<cGameObject*>                           m_gameObjectList;
 
-        bool m_isUpPressed = false;
-        bool m_isDownPressed = false;
-        bool m_isLeftPressed = false;
-        bool m_isRightPressed = false;
+        bool                                                m_isUpPressed = false;
+        bool                                                m_isDownPressed = false;
+        bool                                                m_isLeftPressed = false;
+        bool                                                m_isRightPressed = false;
 
     };
 }

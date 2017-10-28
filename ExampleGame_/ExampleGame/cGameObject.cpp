@@ -182,5 +182,5 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
 void eae6320::cGameObject::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
     const Math::sVector predictedPosition = m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
-    eae6320::Graphics::SubmitMeshToBeRendered(m_mesh, m_effect, predictedPosition);
+    eae6320::Graphics::SubmitMeshToBeRendered(m_mesh, m_effect, predictedPosition, m_rigidBodyState.orientation);
 }

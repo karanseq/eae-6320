@@ -28,10 +28,12 @@ namespace eae6320
         class cMesh;
         class cSprite;
         class cTexture;
+        struct sCamera;
         struct sColor;
     }
     namespace Math
     {
+        class cQuaternion;
         struct sVector;
     }
 }
@@ -56,7 +58,8 @@ namespace eae6320
 
         void SubmitBackgroundColor( const sColor& i_backgroundColor );
 
-        void SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position);
+        void SubmitCamera(const sCamera& i_camera, const Math::sVector& i_position, const Math::cQuaternion& i_orientation);
+        void SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position, const Math::cQuaternion& i_orientation);
         void SubmitSpriteToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind);
 
         // When the application is ready to submit data for a new frame

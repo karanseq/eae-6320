@@ -73,18 +73,23 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSec
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
-    eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
+    Graphics::SubmitBackgroundColor(m_backgroundColor);
+
+    {
+        const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        const Math::sVector predictedPosition = m_camera.m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
+    }
 
     for (auto& mesh : m_meshList)
     {
-        static Math::sVector position(0.75f, 0.75f, 0.0f);
-        eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], position);
+        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(), Math::cQuaternion());
     }
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
     {
-        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
-        eae6320::Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
+        Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
     }
 
     for (auto& gameObject : m_gameObjectList)
@@ -96,14 +101,16 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     {
-        static const float impulseMagnitude = 0.1f;
+        static const float impulseMagnitude = 2.0f;
         Math::sVector impulse;
         impulse.x = m_isLeftPressed ? -impulseMagnitude : 0.0f + m_isRightPressed ? impulseMagnitude : 0.0f;
         impulse.y = m_isDownPressed ? -impulseMagnitude : 0.0f + m_isUpPressed ? impulseMagnitude : 0.0f;
 
-        m_gameObjectList[0]->AddImpulse(impulse);
+        //m_gameObjectList[0]->AddImpulse(impulse);
+        m_camera.m_rigidBodyState.velocity = impulse;
     }
 
+    m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
     for (const auto& gameObject : m_gameObjectList)
     {
         gameObject->UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
@@ -132,7 +139,7 @@ void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCo
 
 eae6320::cResult eae6320::cExampleGame::Initialize()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
@@ -162,11 +169,13 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
 
     InitializeSpriteRenderDataList();
 
-    // Initialize game objects
-    if (!(result = InitializeGameObjects()))
-    {
-        goto OnExit;
-    }
+    //// Initialize game objects
+    //if (!(result = InitializeGameObjects()))
+    //{
+    //    goto OnExit;
+    //}
+
+    m_camera.m_rigidBodyState.position.z = 10;
 
 OnExit:
 
@@ -175,7 +184,7 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::CleanUp()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     for (const auto& effect : m_effectList)
     {
@@ -185,7 +194,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 
     for (auto& texture : m_textureList)
     {
-        const auto localResult = eae6320::Graphics::cTexture::s_manager.Release(texture);
+        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
         if (!localResult)
         {
             EAE6320_ASSERT(false);
@@ -221,16 +230,16 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 
 eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     constexpr uint8_t numEffects = 3;
     m_effectList.reserve(numEffects);
 
     // initialize the mesh effect
     {
-        eae6320::Graphics::cEffect* effect = nullptr;
+        Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -243,9 +252,9 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 
     // initialize the simple sprite effect
     {
-        eae6320::Graphics::cEffect* effect = nullptr;
+        Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -258,9 +267,9 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 
     // initialize the animated sprite effect
     {
-        eae6320::Graphics::cEffect* effect = nullptr;
+        Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str())))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -278,7 +287,7 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::InitializeTextures()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     constexpr uint8_t numTextures = s_numTextureFolders * s_numFrames;
     m_textureList.reserve(numTextures);
@@ -292,8 +301,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeTextures()
         for (uint8_t i = 0; i < s_numFrames; ++i)
         {
             const std::string textureName = textureBaseName + std::to_string(i) + textureFileExtension;
-            eae6320::Graphics::cTexture::Handle textureHandle;
-            if (!(result = eae6320::Graphics::cTexture::s_manager.Load(textureName.c_str(),
+            Graphics::cTexture::Handle textureHandle;
+            if (!(result = Graphics::cTexture::s_manager.Load(textureName.c_str(),
                 textureHandle)))
             {
                 EAE6320_ASSERT(false);
@@ -313,27 +322,59 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     {
-        constexpr uint16_t vertexCount = 3;
+        constexpr uint16_t vertexCount = 36;
         
-        const eae6320::Math::sVector vertices[vertexCount] = { 
-            { 0.0f, 0.0f, 0.0f },
-            { 0.25f, 0.0f, 0.0f },
-            { 0.125f, 0.25f, 0.0f }
+        const Math::sVector vertices[vertexCount] = { 
+            { -1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f },            // front-down
+            { -1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },            // front-up
+
+            { -1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },         // left-down
+            { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, -1.0f },         // left-up
+
+            { 1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f },           // right-down
+            { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f },             // right-up
+
+            { 1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },        // back-down
+            { 1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f },          // back-up
+
+            { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f },             // top-down
+            { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },           // top-up
+
+            { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, 1.0f },         // bottom-down
+            { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }          // bottom-up
         };
 
-        const uint16_t indices[vertexCount] = { 0, 1, 2 };
+        uint16_t indices[vertexCount];
+        for (uint16_t i = 0; i < vertexCount; ++i)
+        {
+            indices[i] = i;
+        }
 
-        const eae6320::Graphics::sColor colors[vertexCount] = { 
-            eae6320::Graphics::sColor::RED, 
-            eae6320::Graphics::sColor::GREEN,
-            eae6320::Graphics::sColor::BLUE
+        const Graphics::sColor colors[vertexCount] = {
+            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,        // front-down
+            Graphics::sColor::RED, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,        // front-up
+
+            Graphics::sColor::RED, Graphics::sColor::RED, Graphics::sColor::PURPLE,         // left-down
+            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::PURPLE,      // left-up
+
+            Graphics::sColor::PURPLE, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,     // right-down
+            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::BLUE,       // right-up
+
+            Graphics::sColor::PURPLE, Graphics::sColor::RED, Graphics::sColor::PURPLE,      // back-down
+            Graphics::sColor::PURPLE, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,     // back-up
+
+            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::BLUE,       // top-down
+            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,     // top-up
+
+            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::PURPLE,      // bottom-down
+            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::RED,         // bottom-up
         };
 
-        eae6320::Graphics::cMesh* mesh = nullptr;
-        if (!(result = eae6320::Graphics::cMesh::Create(mesh, vertexCount, vertices, indices, colors)))
+        Graphics::cMesh* mesh = nullptr;
+        if (!(result = Graphics::cMesh::Create(mesh, vertexCount, vertices, indices, colors)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -351,18 +392,18 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
-    const eae6320::Math::sVector2d origins[s_numTextureFolders] = { { 0.0f, -0.5f }, { -0.4f, 0.5f }, { -0.75f, 0.75f } };
-    const eae6320::Math::sVector2d extents[s_numTextureFolders] = { { 0.75f, 0.35f }, { 0.4f, 0.3f } , { 0.3f, 0.3f } };
+    const Math::sVector2d origins[s_numTextureFolders] = { { 0.0f, -0.5f }, { -0.4f, 0.5f }, { -0.75f, 0.75f } };
+    const Math::sVector2d extents[s_numTextureFolders] = { { 0.75f, 0.35f }, { 0.4f, 0.3f } , { 0.3f, 0.3f } };
 
     m_spriteList.reserve(s_numTextureFolders);
 
     for (uint8_t i = 0; i < s_numTextureFolders; ++i)
     {
-        eae6320::Graphics::cSprite* sprite = nullptr;
+        Graphics::cSprite* sprite = nullptr;
 
-        if (!(result = eae6320::Graphics::cSprite::Create(sprite, origins[i], extents[i])))
+        if (!(result = Graphics::cSprite::Create(sprite, origins[i], extents[i])))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -399,7 +440,7 @@ void eae6320::cExampleGame::InitializeSpriteRenderDataList()
 
 eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 {
-    cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     cGameObject* gameObject = nullptr;
 

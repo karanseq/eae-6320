@@ -7,7 +7,7 @@
 
 void main (
 
-	// Input
+    // Input
     //======
 
     in const float4 i_position : SV_POSITION,
@@ -41,5 +41,5 @@ void main()
 #endif
 
 {
-	o_color = i_color;
+    o_color = i_color;
 }

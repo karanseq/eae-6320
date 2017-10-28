@@ -11,5 +11,5 @@
 
 eae6320::Graphics::cView::~cView()
 {
-	CleanUp();
+    CleanUp();
 }
