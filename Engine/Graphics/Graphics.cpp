@@ -36,58 +36,59 @@ namespace
 {
     // A view is responsible for clearing the render target and swapping the buffers
     // In Direct3D, it is also responsible for initializing the render target & depth/stencil views
-    eae6320::Graphics::cView s_view;
+    eae6320::Graphics::cView                                        s_view;
 
     // Constant buffer objects
-    eae6320::Graphics::cConstantBuffer s_constantBuffer_perFrame(eae6320::Graphics::ConstantBufferTypes::PerFrame);
-    eae6320::Graphics::cConstantBuffer s_constantBuffer_perDrawCall(eae6320::Graphics::ConstantBufferTypes::PerDrawCall);
+    eae6320::Graphics::cConstantBuffer                              s_constantBuffer_perFrame(eae6320::Graphics::ConstantBufferTypes::PerFrame);
+    eae6320::Graphics::cConstantBuffer                              s_constantBuffer_perDrawCall(eae6320::Graphics::ConstantBufferTypes::PerDrawCall);
     // In our class we will only have a single sampler state
-    eae6320::Graphics::cSamplerState s_samplerState;
+    eae6320::Graphics::cSamplerState                                s_samplerState;
 
     // Submission Data
     //----------------
 
     struct sDataRequiredToRenderASprite
     {
-        eae6320::Graphics::cTexture* constantData_texture = nullptr;
-        eae6320::Graphics::cEffect* constantData_effect = nullptr;
-        eae6320::Graphics::cSprite* constantData_sprite = nullptr;
+        eae6320::Graphics::cTexture*                                constantData_texture = nullptr;
+        eae6320::Graphics::cEffect*                                 constantData_effect = nullptr;
+        eae6320::Graphics::cSprite*                                 constantData_sprite = nullptr;
     };
 
     struct sDataRequiredToRenderAMesh
     {
-        eae6320::Graphics::cEffect* constantData_effect = nullptr;
-        eae6320::Graphics::cMesh* constantData_mesh = nullptr;
-        eae6320::Math::sVector constantData_position;
-        eae6320::Math::cQuaternion constantData_orientation;
+        eae6320::Graphics::cEffect*                                 constantData_effect = nullptr;
+        eae6320::Graphics::cMesh*                                   constantData_mesh = nullptr;
+        eae6320::Math::sVector                                      constantData_position;
+        eae6320::Math::cQuaternion                                  constantData_orientation;
     };
 
     // This struct's data is populated at submission time;
     // it must cache whatever is necessary in order to render a frame
     struct sDataRequiredToRenderAFrame
     {
-        std::vector<sDataRequiredToRenderAMesh> meshRenderDataList;
-        std::vector<sDataRequiredToRenderASprite> spriteRenderDataList;
-        eae6320::Graphics::ConstantBufferFormats::sPerFrame constantData_perFrame;
-        eae6320::Graphics::ConstantBufferFormats::sPerDrawCall constantData_perDrawCall;
-        eae6320::Graphics::sColor backgroundColor;
+        std::vector<sDataRequiredToRenderAMesh>                     meshRenderDataList;
+        std::vector<sDataRequiredToRenderASprite>                   spriteRenderDataList;
+        eae6320::Graphics::ConstantBufferFormats::sPerFrame         constantData_perFrame;
+        eae6320::Graphics::ConstantBufferFormats::sPerDrawCall      constantData_perDrawCall;
+        eae6320::Graphics::sColor                                   backgroundColor;
+        float                                                       depthBufferClearDepth;
     };
     // In our class there will be two copies of the data required to render a frame:
     //	* One of them will be getting populated by the data currently being submitted by the application loop thread
     //	* One of them will be fully populated, 
-    sDataRequiredToRenderAFrame s_dataRequiredToRenderAFrame[2];
-    auto* s_dataBeingSubmittedByApplicationThread = &s_dataRequiredToRenderAFrame[0];
-    auto* s_dataBeingRenderedByRenderThread = &s_dataRequiredToRenderAFrame[1];
+    sDataRequiredToRenderAFrame                                     s_dataRequiredToRenderAFrame[2];
+    auto*                                                           s_dataBeingSubmittedByApplicationThread = &s_dataRequiredToRenderAFrame[0];
+    auto*                                                           s_dataBeingRenderedByRenderThread = &s_dataRequiredToRenderAFrame[1];
     // The following two events work together to make sure that
     // the main/render thread and the application loop thread can work in parallel but stay in sync:
     // This event is signaled by the application loop thread when it has finished submitting render data for a frame
     // (the main/render thread waits for the signal)
-    eae6320::Concurrency::cEvent s_whenAllDataHasBeenSubmittedFromApplicationThread;
+    eae6320::Concurrency::cEvent                                    s_whenAllDataHasBeenSubmittedFromApplicationThread;
     // This event is signaled by the main/render thread when it has swapped render data pointers.
     // This means that the renderer is now working with all the submitted data it needs to render the next frame,
     // and the application loop thread can start submitting data for the following frame
     // (the application loop thread waits for the signal)
-    eae6320::Concurrency::cEvent s_whenDataForANewFrameCanBeSubmittedFromApplicationThread;
+    eae6320::Concurrency::cEvent                                    s_whenDataForANewFrameCanBeSubmittedFromApplicationThread;
 }
 
 // Interface
@@ -108,6 +109,12 @@ void eae6320::Graphics::SubmitBackgroundColor(const sColor& i_backgroundColor)
 {
     EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
     s_dataBeingSubmittedByApplicationThread->backgroundColor = i_backgroundColor;
+}
+
+void eae6320::Graphics::SubmitDepthToClear(const float i_depth /* = 1.0f */)
+{
+    EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
+    s_dataBeingSubmittedByApplicationThread->depthBufferClearDepth = i_depth;
 }
 
 void eae6320::Graphics::SubmitCamera(const sCamera& i_camera, const Math::sVector& i_position, const Math::cQuaternion& i_orientation)
@@ -205,7 +212,7 @@ void eae6320::Graphics::RenderFrame()
     // by "clearing" the image buffer (filling it with a solid color)
     {
         // Black is usually used
-        s_view.Clear(s_dataBeingRenderedByRenderThread->backgroundColor);
+        s_view.ClearRenderTarget(s_dataBeingRenderedByRenderThread->backgroundColor);
     }
 
     // Update the per-frame constant buffer
@@ -249,6 +256,8 @@ void eae6320::Graphics::RenderFrame()
     {
         s_view.Swap();
     }
+
+    s_view.ClearDepthBuffer(s_dataBeingRenderedByRenderThread->depthBufferClearDepth);
 
     // Once everything has been drawn the data that was submitted for this frame
     // should be cleaned up and cleared.

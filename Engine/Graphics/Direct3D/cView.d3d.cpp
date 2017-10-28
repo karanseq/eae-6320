@@ -16,7 +16,7 @@
 // Render
 //-------
 
-void eae6320::Graphics::cView::Clear(const sColor& i_color) const
+void eae6320::Graphics::cView::ClearRenderTarget(const sColor& i_color) const
 {
     auto* const direct3dImmediateContext = sContext::g_context.direct3dImmediateContext;
     EAE6320_ASSERT(direct3dImmediateContext);
@@ -26,6 +26,16 @@ void eae6320::Graphics::cView::Clear(const sColor& i_color) const
     // Black is usually used
     const float clearColor[4] = { i_color.r, i_color.g, i_color.b, i_color.a };
     direct3dImmediateContext->ClearRenderTargetView(m_renderTargetView, clearColor);
+}
+
+void eae6320::Graphics::cView::ClearDepthBuffer(float i_depth) const
+{
+    auto* const direct3dImmediateContext = sContext::g_context.direct3dImmediateContext;
+    EAE6320_ASSERT(direct3dImmediateContext);
+
+    EAE6320_ASSERT(m_depthStencilView);
+    constexpr uint8_t stencilValue = 0; // Arbitrary if stencil isn't used
+    direct3dImmediateContext->ClearDepthStencilView(m_depthStencilView, D3D11_CLEAR_DEPTH, i_depth, stencilValue);
 }
 
 void eae6320::Graphics::cView::Swap() const

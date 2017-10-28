@@ -74,6 +74,7 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSec
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
     Graphics::SubmitBackgroundColor(m_backgroundColor);
+    Graphics::SubmitDepthToClear();
 
     {
         const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
@@ -106,11 +107,14 @@ void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_s
         impulse.x = m_isLeftPressed ? -impulseMagnitude : 0.0f + m_isRightPressed ? impulseMagnitude : 0.0f;
         impulse.y = m_isDownPressed ? -impulseMagnitude : 0.0f + m_isUpPressed ? impulseMagnitude : 0.0f;
 
-        //m_gameObjectList[0]->AddImpulse(impulse);
-        m_camera.m_rigidBodyState.velocity = impulse;
+        m_gameObjectList[0]->AddImpulse(impulse);
     }
 
-    m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+    {
+        //m_camera.m_rigidBodyState.velocity = impulse;
+        //m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+    }
+
     for (const auto& gameObject : m_gameObjectList)
     {
         gameObject->UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
@@ -169,11 +173,11 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
 
     InitializeSpriteRenderDataList();
 
-    //// Initialize game objects
-    //if (!(result = InitializeGameObjects()))
-    //{
-    //    goto OnExit;
-    //}
+    // Initialize game objects
+    if (!(result = InitializeGameObjects()))
+    {
+        goto OnExit;
+    }
 
     m_camera.m_rigidBodyState.position.z = 10;
 
@@ -239,7 +243,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
     {
         Graphics::cEffect* effect = nullptr;
 
-        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -254,7 +258,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
     {
         Graphics::cEffect* effect = nullptr;
 
-        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -269,7 +273,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
     {
         Graphics::cEffect* effect = nullptr;
 
-        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -325,52 +329,18 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
     cResult result = Results::Success;
 
     {
-        constexpr uint16_t vertexCount = 36;
-        
-        const Math::sVector vertices[vertexCount] = { 
-            { -1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f },            // front-down
-            { -1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },            // front-up
+        constexpr uint16_t vertexCount = 6;
 
-            { -1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },         // left-down
-            { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, -1.0f },         // left-up
-
-            { 1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f },           // right-down
-            { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f },             // right-up
-
-            { 1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },        // back-down
-            { 1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f },          // back-up
-
-            { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f },             // top-down
-            { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },           // top-up
-
-            { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, 1.0f },         // bottom-down
-            { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }          // bottom-up
+        const Math::sVector vertices[vertexCount] = {
+            { -2.0f, -1.0f, 2.0f }, { 2.0f, -1.0f, 2.0f }, { 2.0f, -1.0f, -2.0f },
+            { -2.0f, -1.0f, 2.0f }, { 2.0f, -1.0f, -2.0f }, { -2.0f, -1.0f, -2.0f }
         };
 
-        uint16_t indices[vertexCount];
-        for (uint16_t i = 0; i < vertexCount; ++i)
-        {
-            indices[i] = i;
-        }
+        const uint16_t indices[vertexCount] = { 0, 1, 2, 3, 4, 5 };
 
         const Graphics::sColor colors[vertexCount] = {
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,        // front-down
-            Graphics::sColor::RED, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,        // front-up
-
-            Graphics::sColor::RED, Graphics::sColor::RED, Graphics::sColor::PURPLE,         // left-down
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::PURPLE,      // left-up
-
-            Graphics::sColor::PURPLE, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,     // right-down
-            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::BLUE,       // right-up
-
-            Graphics::sColor::PURPLE, Graphics::sColor::RED, Graphics::sColor::PURPLE,      // back-down
-            Graphics::sColor::PURPLE, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,     // back-up
-
-            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::BLUE,       // top-down
-            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,     // top-up
-
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::PURPLE,      // bottom-down
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::RED,         // bottom-up
+            Graphics::sColor::BLACK, Graphics::sColor::BLACK, Graphics::sColor::SILVER,
+            Graphics::sColor::BLACK, Graphics::sColor::SILVER, Graphics::sColor::SILVER,
         };
 
         Graphics::cMesh* mesh = nullptr;

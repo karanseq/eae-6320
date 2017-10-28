@@ -15,7 +15,7 @@
 // Render
 //-------
 
-void eae6320::Graphics::cView::Clear(const sColor& i_color) const
+void eae6320::Graphics::cView::ClearRenderTarget(const sColor& i_color) const
 {
     {
         glClearColor(i_color.r, i_color.g, i_color.b, i_color.a);
@@ -24,6 +24,21 @@ void eae6320::Graphics::cView::Clear(const sColor& i_color) const
     {
         constexpr GLbitfield clearColor = GL_COLOR_BUFFER_BIT;
         glClear(clearColor);
+        EAE6320_ASSERT(glGetError() == GL_NO_ERROR);
+    }
+}
+
+void eae6320::Graphics::cView::ClearDepthBuffer(float i_depth) const
+{
+    {
+        glDepthMask(GL_TRUE);
+        EAE6320_ASSERT(glGetError() == GL_NO_ERROR);
+        glClearDepth(i_depth);
+        EAE6320_ASSERT(glGetError() == GL_NO_ERROR);
+    }
+    {
+        constexpr GLbitfield clearDepth = GL_DEPTH_BUFFER_BIT;
+        glClear(clearDepth);
         EAE6320_ASSERT(glGetError() == GL_NO_ERROR);
     }
 }

@@ -57,7 +57,7 @@ namespace eae6320
         void SubmitElapsedTime( const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_simulationTime );
 
         void SubmitBackgroundColor( const sColor& i_backgroundColor );
-
+        void SubmitDepthToClear( const float i_depth = 1.0f );
         void SubmitCamera(const sCamera& i_camera, const Math::sVector& i_position, const Math::cQuaternion& i_orientation);
         void SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position, const Math::cQuaternion& i_orientation);
         void SubmitSpriteToBeRendered(cSprite* i_spriteToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind);

@@ -40,7 +40,7 @@ namespace eae6320
             // Initialization / Clean Up
             //--------------------------
 
-            static cResult Create(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName);
+            static cResult Create(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName, uint8_t i_renderStateBits);
 
         public:
 
@@ -53,7 +53,7 @@ namespace eae6320
 
         private:
 
-            cResult Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName);
+            cResult Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName, uint8_t i_renderStateBits);
             cResult CleanUp();
 
             cEffect() = default;

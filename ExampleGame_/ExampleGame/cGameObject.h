@@ -8,7 +8,6 @@
 // Include Files
 //==============
 
-#include <Engine/Math/sVector.h>
 #include <Engine/Physics/sRigidBodyState.h>
 #include <Engine/Results/Results.h>
 
@@ -22,6 +21,10 @@ namespace eae6320
         class cEffect;
         class cMesh;
         struct sColor;
+    }
+    namespace Math
+    {
+        struct sVector;
     }
 }
 

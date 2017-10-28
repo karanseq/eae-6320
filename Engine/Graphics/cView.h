@@ -45,7 +45,8 @@ namespace eae6320
             // Render
             //-------
 
-            void Clear(const sColor& i_color) const;
+            void ClearRenderTarget(const sColor& i_color) const;
+            void ClearDepthBuffer(float i_depth) const;
             void Swap() const;
 
             // Initialization / Clean Up
