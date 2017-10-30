@@ -15,6 +15,7 @@ namespace eae6320
         //==========
 
         float ConvertDegreesToRadians( const float i_degrees );
+        float ConvertRadiansToDegrees( const float i_radians );
         float ConvertHorizontalFieldOfViewToVerticalFieldOfView( const float i_horizontalFieldOfView_inRadians,
             // aspectRatio = width / height
             const float i_aspectRatio );

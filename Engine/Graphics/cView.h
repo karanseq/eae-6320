@@ -1,5 +1,5 @@
 /*
-	TODO
+    TODO
 */
 
 #ifndef EAE6320_GRAPHICS_CVIEW_H
@@ -16,16 +16,16 @@
 //=====================
 
 #ifdef EAE6320_PLATFORM_D3D
-	struct ID3D11RenderTargetView;
-	struct ID3D11DepthStencilView;
+    struct ID3D11RenderTargetView;
+    struct ID3D11DepthStencilView;
 #endif
 
 namespace eae6320
 {
-	namespace Graphics
-	{
-		struct sColor;
-	}
+    namespace Graphics
+    {
+        struct sColor;
+    }
 }
 
 // Class Declaration
@@ -33,46 +33,47 @@ namespace eae6320
 
 namespace eae6320
 {
-	namespace Graphics
-	{
-		class cView
-		{
-			// Interface
-			//==========
+    namespace Graphics
+    {
+        class cView
+        {
+            // Interface
+            //==========
 
-		public:
+        public:
 
-			// Render
-			//-------
+            // Render
+            //-------
 
-			void Clear(const sColor& i_color) const;
-			void Swap() const;
+            void ClearRenderTarget(const sColor& i_color) const;
+            void ClearDepthBuffer(float i_depth) const;
+            void Swap() const;
 
-			// Initialization / Clean Up
-			//--------------------------
+            // Initialization / Clean Up
+            //--------------------------
 
-			eae6320::cResult Initialize(const sInitializationParameters& i_initializationParameters);
-			eae6320::cResult CleanUp();
+            eae6320::cResult Initialize(const sInitializationParameters& i_initializationParameters);
+            eae6320::cResult CleanUp();
 
-			cView() = default;
-			~cView();
+            cView() = default;
+            ~cView();
 
-		private:
+            // Data
+            //=====
 
-			// Data
-			//=====
-			
+        private:
+            
 #if defined(EAE6320_PLATFORM_D3D)
-			// In Direct3D "views" are objects that allow a texture to be used a particular way:
-			// A render target view allows a texture to have color rendered to it
-			ID3D11RenderTargetView* m_renderTargetView = nullptr;
-			// A depth/stencil view allows a texture to have depth rendered to it
-			ID3D11DepthStencilView* m_depthStencilView = nullptr;
+            // In Direct3D "views" are objects that allow a texture to be used a particular way:
+            // A render target view allows a texture to have color rendered to it
+            ID3D11RenderTargetView* m_renderTargetView = nullptr;
+            // A depth/stencil view allows a texture to have depth rendered to it
+            ID3D11DepthStencilView* m_depthStencilView = nullptr;
 #endif
 
-		}; // class cView
+        }; // class cView
 
-	} // namespace Graphics
+    } // namespace Graphics
 
 } // namespace eae6320
 

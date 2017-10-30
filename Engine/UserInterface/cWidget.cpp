@@ -81,7 +81,7 @@ eae6320::cResult eae6320::UserInterface::cWidget::Initialize(const sInitializati
     if (i_params.vertexShaderName && i_params.fragmentShaderName)
     {
         eae6320::Graphics::cEffect* effect = nullptr;
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, i_params.vertexShaderName, i_params.fragmentShaderName)))
+        if (!(result = eae6320::Graphics::cEffect::Create(effect, i_params.vertexShaderName, i_params.fragmentShaderName, Graphics::RenderStates::AlphaTransparency)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;

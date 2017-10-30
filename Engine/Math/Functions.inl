@@ -18,6 +18,11 @@ inline float eae6320::Math::ConvertDegreesToRadians( const float i_degrees )
     return i_degrees * ( Pi / 180.0f );
 }
 
+inline float eae6320::Math::ConvertRadiansToDegrees(const float i_radians)
+{
+    return i_radians * ( 180.0f / Pi );
+}
+
 template<typename tUnsignedInteger, class EnforceUnsigned>
     tUnsignedInteger eae6320::Math::RoundUpToMultiple( const tUnsignedInteger i_value, const tUnsignedInteger i_multiple )
 {

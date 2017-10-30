@@ -59,10 +59,30 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 {
-    m_isUpPressed = UserInput::IsKeyPressed(UserInput::KeyCodes::Up);
-    m_isDownPressed = UserInput::IsKeyPressed(UserInput::KeyCodes::Down);
-    m_isLeftPressed = UserInput::IsKeyPressed(UserInput::KeyCodes::Left);
-    m_isRightPressed = UserInput::IsKeyPressed(UserInput::KeyCodes::Right);
+    
+    // update camera
+    {
+        static const float cameraImpulseMagnitude = 2.0f;
+        Math::sVector impulse;
+        impulse.x = UserInput::IsKeyPressed('A') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('D') ? cameraImpulseMagnitude : 0.0f;
+        impulse.y = UserInput::IsKeyPressed('E') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('Q') ? cameraImpulseMagnitude : 0.0f;
+        impulse.z = UserInput::IsKeyPressed('W') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('S') ? cameraImpulseMagnitude : 0.0f;
+
+        m_camera.m_rigidBodyState.velocity += impulse;
+        m_camera.m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.x, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+        m_camera.m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.y, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+        m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+    }
+
+    // update game object
+    {
+        static const float gameObjectImpulseMagnitude = 1.5f;
+        Math::sVector impulse;
+        impulse.x += UserInput::IsKeyPressed(UserInput::KeyCodes::Left) ? -gameObjectImpulseMagnitude : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Right) ? gameObjectImpulseMagnitude : 0.0f;
+        impulse.y = UserInput::IsKeyPressed(UserInput::KeyCodes::Down) ? -gameObjectImpulseMagnitude : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Up) ? gameObjectImpulseMagnitude : 0.0f;
+
+        m_gameObjectList[0]->AddImpulse(impulse);
+    }
 }
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
@@ -73,18 +93,24 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSec
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
 {
-    eae6320::Graphics::SubmitBackgroundColor(m_backgroundColor);
+    Graphics::SubmitBackgroundColor(m_backgroundColor);
+    Graphics::SubmitDepthToClear();
+
+    {
+        const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        const Math::sVector predictedPosition = m_camera.m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
+    }
 
     for (auto& mesh : m_meshList)
     {
-        static Math::sVector position(0.75f, 0.75f, 0.0f);
-        eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], position);
+        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(), Math::cQuaternion());
     }
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
     {
-        eae6320::Graphics::cTexture* texture = eae6320::Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
-        eae6320::Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
+        Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
     }
 
     for (auto& gameObject : m_gameObjectList)
@@ -96,12 +122,12 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     {
-        static const float impulseMagnitude = 0.1f;
-        Math::sVector impulse;
-        impulse.x = m_isLeftPressed ? -impulseMagnitude : 0.0f + m_isRightPressed ? impulseMagnitude : 0.0f;
-        impulse.y = m_isDownPressed ? -impulseMagnitude : 0.0f + m_isUpPressed ? impulseMagnitude : 0.0f;
-
-        m_gameObjectList[0]->AddImpulse(impulse);
+        // Apply drag
+        m_camera.m_rigidBodyState.velocity.x -= fabsf(m_camera.m_rigidBodyState.velocity.x) > 0.0f ? m_camera.m_rigidBodyState.velocity.x * cGameObject::s_linearDamping : 0.0f;
+        m_camera.m_rigidBodyState.velocity.y -= fabsf(m_camera.m_rigidBodyState.velocity.y) > 0.0f ? m_camera.m_rigidBodyState.velocity.y * cGameObject::s_linearDamping : 0.0f;
+        m_camera.m_rigidBodyState.velocity.z -= fabsf(m_camera.m_rigidBodyState.velocity.z) > 0.0f ? m_camera.m_rigidBodyState.velocity.z * cGameObject::s_linearDamping : 0.0f;
+        
+        m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
     }
 
     for (const auto& gameObject : m_gameObjectList)
@@ -132,7 +158,7 @@ void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCo
 
 eae6320::cResult eae6320::cExampleGame::Initialize()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
@@ -168,6 +194,8 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
+    m_camera.m_rigidBodyState.position.z = 10;
+
 OnExit:
 
     return result;
@@ -175,7 +203,7 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::CleanUp()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     for (const auto& effect : m_effectList)
     {
@@ -185,7 +213,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 
     for (auto& texture : m_textureList)
     {
-        const auto localResult = eae6320::Graphics::cTexture::s_manager.Release(texture);
+        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
         if (!localResult)
         {
             EAE6320_ASSERT(false);
@@ -221,16 +249,16 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 
 eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     constexpr uint8_t numEffects = 3;
     m_effectList.reserve(numEffects);
 
     // initialize the mesh effect
     {
-        eae6320::Graphics::cEffect* effect = nullptr;
+        Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -243,9 +271,9 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 
     // initialize the simple sprite effect
     {
-        eae6320::Graphics::cEffect* effect = nullptr;
+        Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -258,9 +286,9 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 
     // initialize the animated sprite effect
     {
-        eae6320::Graphics::cEffect* effect = nullptr;
+        Graphics::cEffect* effect = nullptr;
 
-        if (!(result = eae6320::Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str())))
+        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -278,7 +306,7 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::InitializeTextures()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     constexpr uint8_t numTextures = s_numTextureFolders * s_numFrames;
     m_textureList.reserve(numTextures);
@@ -292,8 +320,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeTextures()
         for (uint8_t i = 0; i < s_numFrames; ++i)
         {
             const std::string textureName = textureBaseName + std::to_string(i) + textureFileExtension;
-            eae6320::Graphics::cTexture::Handle textureHandle;
-            if (!(result = eae6320::Graphics::cTexture::s_manager.Load(textureName.c_str(),
+            Graphics::cTexture::Handle textureHandle;
+            if (!(result = Graphics::cTexture::s_manager.Load(textureName.c_str(),
                 textureHandle)))
             {
                 EAE6320_ASSERT(false);
@@ -313,27 +341,25 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     {
-        constexpr uint16_t vertexCount = 3;
-        
-        const eae6320::Math::sVector vertices[vertexCount] = { 
-            { 0.0f, 0.0f, 0.0f },
-            { 0.25f, 0.0f, 0.0f },
-            { 0.125f, 0.25f, 0.0f }
+        constexpr uint16_t vertexCount = 6;
+
+        const Math::sVector vertices[vertexCount] = {
+            { -2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, -2.5f },
+            { -2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, -2.5f }, { -2.5f, -1.0f, -2.5f }
         };
 
-        const uint16_t indices[vertexCount] = { 0, 1, 2 };
+        const uint16_t indices[vertexCount] = { 0, 1, 2, 3, 4, 5 };
 
-        const eae6320::Graphics::sColor colors[vertexCount] = { 
-            eae6320::Graphics::sColor::RED, 
-            eae6320::Graphics::sColor::GREEN,
-            eae6320::Graphics::sColor::BLUE
+        const Graphics::sColor colors[vertexCount] = {
+            Graphics::sColor::BLACK, Graphics::sColor::BLACK, Graphics::sColor::SILVER,
+            Graphics::sColor::BLACK, Graphics::sColor::SILVER, Graphics::sColor::SILVER,
         };
 
-        eae6320::Graphics::cMesh* mesh = nullptr;
-        if (!(result = eae6320::Graphics::cMesh::Create(mesh, vertexCount, vertices, indices, colors)))
+        Graphics::cMesh* mesh = nullptr;
+        if (!(result = Graphics::cMesh::Create(mesh, vertexCount, vertices, indices, colors)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -351,18 +377,18 @@ OnExit:
 
 eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
-    eae6320::cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
-    const eae6320::Math::sVector2d origins[s_numTextureFolders] = { { 0.0f, -0.5f }, { -0.4f, 0.5f }, { -0.75f, 0.75f } };
-    const eae6320::Math::sVector2d extents[s_numTextureFolders] = { { 0.75f, 0.35f }, { 0.4f, 0.3f } , { 0.3f, 0.3f } };
+    const Math::sVector2d origins[s_numTextureFolders] = { { 0.0f, -0.5f }, { -0.4f, 0.5f }, { -0.75f, 0.75f } };
+    const Math::sVector2d extents[s_numTextureFolders] = { { 0.75f, 0.35f }, { 0.4f, 0.3f } , { 0.3f, 0.3f } };
 
     m_spriteList.reserve(s_numTextureFolders);
 
     for (uint8_t i = 0; i < s_numTextureFolders; ++i)
     {
-        eae6320::Graphics::cSprite* sprite = nullptr;
+        Graphics::cSprite* sprite = nullptr;
 
-        if (!(result = eae6320::Graphics::cSprite::Create(sprite, origins[i], extents[i])))
+        if (!(result = Graphics::cSprite::Create(sprite, origins[i], extents[i])))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -399,7 +425,7 @@ void eae6320::cExampleGame::InitializeSpriteRenderDataList()
 
 eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 {
-    cResult result = eae6320::Results::Success;
+    cResult result = Results::Success;
 
     cGameObject* gameObject = nullptr;
 

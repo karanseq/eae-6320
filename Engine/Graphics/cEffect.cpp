@@ -23,7 +23,7 @@ void eae6320::Graphics::cEffect::Bind() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cEffect::Create(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName)
+eae6320::cResult eae6320::Graphics::cEffect::Create(cEffect*& o_effect, const char* i_vertexShaderName, const char* i_fragmentShaderName, uint8_t i_renderStateBits)
 {
     auto result = eae6320::Results::Success;
 
@@ -42,7 +42,7 @@ eae6320::cResult eae6320::Graphics::cEffect::Create(cEffect*& o_effect, const ch
     }
 
     // Initialize the new effect's shaders
-    if (!(result = newEffect->Initialize(i_vertexShaderName, i_fragmentShaderName)))
+    if (!(result = newEffect->Initialize(i_vertexShaderName, i_fragmentShaderName, i_renderStateBits)))
     {
         EAE6320_ASSERTF(false, "Failed to initialize the new effect!");
         goto OnExit;
@@ -68,36 +68,30 @@ OnExit:
     return result;
 }
 
-eae6320::cResult eae6320::Graphics::cEffect::Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName)
+eae6320::cResult eae6320::Graphics::cEffect::Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName, uint8_t i_renderStateBits)
 {
     auto result = eae6320::Results::Success;
 
+    if (!(result = eae6320::Graphics::cShader::s_manager.Load(i_vertexShaderName,
+        m_vertexShader, eae6320::Graphics::ShaderTypes::Vertex)))
     {
-        if (!(result = eae6320::Graphics::cShader::s_manager.Load(i_vertexShaderName,
-            m_vertexShader, eae6320::Graphics::ShaderTypes::Vertex)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
+        EAE6320_ASSERT(false);
+        goto OnExit;
     }
 
+    if (!(result = eae6320::Graphics::cShader::s_manager.Load(i_fragmentShaderName,
+        m_fragmentShader, eae6320::Graphics::ShaderTypes::Fragment)))
     {
-        if (!(result = eae6320::Graphics::cShader::s_manager.Load(i_fragmentShaderName,
-            m_fragmentShader, eae6320::Graphics::ShaderTypes::Fragment)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
+        EAE6320_ASSERT(false);
+        goto OnExit;
     }
 
+    if (!(result = m_renderState.Initialize(i_renderStateBits)))
     {
-        constexpr uint8_t alphaTransparencyRenderState = RenderStates::eRenderState::AlphaTransparency;
-        if (!(result = m_renderState.Initialize(alphaTransparencyRenderState)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
+        EAE6320_ASSERT(false);
+        goto OnExit;
     }
+
     if (!(result = InitializePlatform()))
     {
         EAE6320_ASSERT(false);
@@ -125,6 +119,7 @@ eae6320::cResult eae6320::Graphics::cEffect::CleanUp()
             }
         }
     }
+
     if (m_fragmentShader)
     {
         const auto localResult = cShader::s_manager.Release(m_fragmentShader);
@@ -137,6 +132,7 @@ eae6320::cResult eae6320::Graphics::cEffect::CleanUp()
             }
         }
     }
+
     {
         const auto localResult = m_renderState.CleanUp();
         if (!localResult)
@@ -148,6 +144,7 @@ eae6320::cResult eae6320::Graphics::cEffect::CleanUp()
             }
         }
     }
+
     {
         const auto localResult = CleanUpPlatform();
         if (!localResult)

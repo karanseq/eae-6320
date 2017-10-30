@@ -111,6 +111,7 @@ void eae6320::Graphics::cMesh::GetVertexBufferData(VertexFormats::sMesh* o_verte
     {
         o_vertexData[i].x = i_vertices[i].x;
         o_vertexData[i].y = i_vertices[i].y;
+        o_vertexData[i].z = i_vertices[i].z;
         o_vertexData[i].r = static_cast<uint8_t>(i_colors[i].r * 255.0f);
         o_vertexData[i].g = static_cast<uint8_t>(i_colors[i].g * 255.0f);
         o_vertexData[i].b = static_cast<uint8_t>(i_colors[i].b * 255.0f);
