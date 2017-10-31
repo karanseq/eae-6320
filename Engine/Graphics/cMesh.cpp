@@ -18,17 +18,17 @@
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors)
+eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = Results::Success;
 
     // Validate inputs
     {
-        if (i_vertexCount % s_verticesPerTriangle)
+        if (i_vertexCount < 3)
         {
             result = Results::Failure;
-            EAE6320_ASSERTF(false, "The vertex count for a mesh must be a multiple of 3!");
-            Logging::OutputError("The vertex count for a mesh must be a multiple of 3!");
+            EAE6320_ASSERTF(false, "The vertex count for a mesh must be at least 3!");
+            Logging::OutputError("The vertex count for a mesh must be at least of 3!");
             goto OnExit;
         }
         else if (i_vertices == nullptr)
@@ -38,18 +38,25 @@ eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t
             Logging::OutputError("Invalid vertex data!");
             goto OnExit;
         }
-        else if (i_indices == nullptr)
-        {
-            result = Results::Failure;
-            EAE6320_ASSERTF(false, "Invalid index data!");
-            Logging::OutputError("Invalid index data!");
-            goto OnExit;
-        }
         else if (i_colors == nullptr)
         {
             result = Results::Failure;
             EAE6320_ASSERTF(false, "Invalid color data!");
             Logging::OutputError("Invalid color data!");
+            goto OnExit;
+        }
+        else if (i_indexCount % 3 != 0)
+        {
+            result = Results::Failure;
+            EAE6320_ASSERTF(false, "The index count for a mesh must be a multiple of 3!");
+            Logging::OutputError("The index count for a mesh must be a multiple of 3!");
+            goto OnExit;
+        }
+        else if (i_indices == nullptr)
+        {
+            result = Results::Failure;
+            EAE6320_ASSERTF(false, "Invalid index data!");
+            Logging::OutputError("Invalid index data!");
             goto OnExit;
         }
     }
@@ -69,7 +76,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t
     }
 
     // Initialize the new mesh's geometry
-    if (!(result = newMesh->Initialize(i_vertexCount, i_vertices, i_indices, i_colors)))
+    if (!(result = newMesh->Initialize(i_vertexCount, i_vertices, i_colors, i_indexCount, i_indices)))
     {
         EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
         goto OnExit;
@@ -105,7 +112,7 @@ eae6320::Graphics::cMesh::~cMesh()
 
 void eae6320::Graphics::cMesh::GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors) const
 {
-    EAE6320_ASSERT(o_vertexData != nullptr && i_vertexCount % s_verticesPerTriangle == 0);
+    EAE6320_ASSERT(o_vertexData != nullptr && i_vertices != nullptr && i_colors != nullptr && i_vertexCount > 0);
 
     for (uint16_t i = 0; i < i_vertexCount; ++i)
     {
@@ -116,15 +123,5 @@ void eae6320::Graphics::cMesh::GetVertexBufferData(VertexFormats::sMesh* o_verte
         o_vertexData[i].g = static_cast<uint8_t>(i_colors[i].g * 255.0f);
         o_vertexData[i].b = static_cast<uint8_t>(i_colors[i].b * 255.0f);
         o_vertexData[i].a = static_cast<uint8_t>(i_colors[i].a * 255.0f);
-    }
-}
-
-void eae6320::Graphics::cMesh::GetIndexBufferData(uint16_t* o_indexData, const uint16_t i_vertexCount, const uint16_t* i_indices) const
-{
-    EAE6320_ASSERT(o_indexData != nullptr && i_vertexCount % s_verticesPerTriangle == 0);
-
-    for (uint16_t i = 0; i < i_vertexCount; ++i)
-    {
-        o_indexData[i] = i_indices[i];
     }
 }

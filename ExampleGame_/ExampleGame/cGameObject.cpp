@@ -99,55 +99,29 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the mesh
     {
-        constexpr uint16_t vertexCount = 36;
-        
-        const Math::sVector vertices[vertexCount] = { 
-            { -1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f },            // front-down
-            { -1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },            // front-up
+        constexpr uint16_t vertexCount = 8;
+        constexpr uint16_t indexCount = 36;
 
-            { -1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },         // left-down
-            { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, -1.0f },         // left-up
-
-            { 1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f },           // right-down
-            { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, 1.0f },             // right-up
-
-            { 1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },        // back-down
-            { 1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f },          // back-up
-
-            { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f },             // top-down
-            { -1.0f, 1.0f, 1.0f }, { 1.0f, 1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f },           // top-up
-
-            { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, 1.0f },         // bottom-down
-            { -1.0f, -1.0f, -1.0f }, { 1.0f, -1.0f, 1.0f }, { -1.0f, -1.0f, 1.0f }          // bottom-up
+        const Math::sVector vertices[vertexCount] = {
+            { -1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },
+            { 1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f }
         };
-
-        uint16_t indices[vertexCount];
-        for (uint16_t i = 0; i < vertexCount; ++i)
-        {
-            indices[i] = i;
-        }
 
         const Graphics::sColor colors[vertexCount] = {
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,        // front-down
-            Graphics::sColor::RED, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,        // front-up
-
-            Graphics::sColor::RED, Graphics::sColor::RED, Graphics::sColor::PURPLE,         // left-down
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::PURPLE,      // left-up
-
-            Graphics::sColor::PURPLE, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,     // right-down
-            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::BLUE,       // right-up
-
-            Graphics::sColor::PURPLE, Graphics::sColor::RED, Graphics::sColor::PURPLE,      // back-down
-            Graphics::sColor::PURPLE, Graphics::sColor::PURPLE, Graphics::sColor::BLUE,     // back-up
-
-            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::BLUE,       // top-down
-            Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,     // top-up
-
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::PURPLE,      // bottom-down
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::RED,         // bottom-up
+            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,
+            Graphics::sColor::PURPLE, Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE
         };
 
-        if (!(result = eae6320::Graphics::cMesh::Create(m_mesh, vertexCount, vertices, indices, colors)))
+        const uint16_t indices[indexCount] = {
+            0, 1, 2, 0, 2, 3,                   // front
+            4, 5, 6, 4, 6, 7,                   // back
+            5, 0, 3, 5, 3, 6,                   // left
+            1, 4, 7, 1, 7, 2,                   // right
+            3, 2, 7, 3, 7, 6,                   // top
+            5, 4, 1, 5, 1, 0                    // bottom
+        };
+
+        if (!(result = eae6320::Graphics::cMesh::Create(m_mesh, vertexCount, vertices, colors, indexCount, indices)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
             goto OnExit;

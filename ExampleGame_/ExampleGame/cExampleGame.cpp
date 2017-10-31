@@ -344,22 +344,21 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
     cResult result = Results::Success;
 
     {
-        constexpr uint16_t vertexCount = 6;
+        constexpr uint16_t vertexCount = 4;
+        constexpr uint16_t indexCount = 6;
 
         const Math::sVector vertices[vertexCount] = {
-            { -2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, -2.5f },
-            { -2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, -2.5f }, { -2.5f, -1.0f, -2.5f }
+            { -2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, -2.5f }, { -2.5f, -1.0f, -2.5f }
         };
-
-        const uint16_t indices[vertexCount] = { 0, 1, 2, 3, 4, 5 };
 
         const Graphics::sColor colors[vertexCount] = {
-            Graphics::sColor::BLACK, Graphics::sColor::BLACK, Graphics::sColor::SILVER,
-            Graphics::sColor::BLACK, Graphics::sColor::SILVER, Graphics::sColor::SILVER,
+            Graphics::sColor::BLACK, Graphics::sColor::BLACK, Graphics::sColor::SILVER, Graphics::sColor::SILVER
         };
 
+        const uint16_t indices[indexCount] = { 0, 1, 2, 0, 2, 3 };
+
         Graphics::cMesh* mesh = nullptr;
-        if (!(result = Graphics::cMesh::Create(mesh, vertexCount, vertices, indices, colors)))
+        if (!(result = Graphics::cMesh::Create(mesh, vertexCount, vertices, colors, indexCount, indices)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;

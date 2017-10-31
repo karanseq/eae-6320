@@ -38,12 +38,12 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = eae6320::Results::Success;
 
     // Save the vertex count as the index count
-    m_indexCount = i_vertexCount;
+    m_indexCount = i_indexCount;
 
     // Create a vertex array object and make it active
     {
@@ -165,26 +165,15 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
 
     // Assign data to the index buffer
     {
-        // Allocate memory for the index data
-        uint16_t* indexData = static_cast<uint16_t*>(malloc(i_vertexCount * sizeof(uint16_t)));
-        if (indexData == nullptr)
-        {
-            result = Results::OutOfMemory;
-            EAE6320_ASSERTF(false, "Couldn't allocate memory for the mesh's index data!");
-            Logging::OutputError("Failed to allocated memory for the mesh's index data!");
-            goto OnExit;
-        }
-        GetIndexBufferData(indexData, i_vertexCount, i_indices);
-
-        const auto bufferSize = i_vertexCount * sizeof(uint16_t);
+        const auto bufferSize = i_indexCount * sizeof(uint16_t);
         EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(GLsizeiptr) * 8)));
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(bufferSize), reinterpret_cast<GLvoid*>(indexData),
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(bufferSize), reinterpret_cast<GLvoid*>(const_cast<uint16_t*>(i_indices)),
             // In our class we won't ever read from the buffer
             GL_STATIC_DRAW);
 
-        // Free the memory allocated for the index data
-        free(indexData);
-        indexData = nullptr;
+        //// Free the memory allocated for the index data
+        //free(indexData);
+        //indexData = nullptr;
 
         const auto errorCode = glGetError();
         if (errorCode != GL_NO_ERROR)
