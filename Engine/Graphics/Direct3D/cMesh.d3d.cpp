@@ -66,12 +66,12 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = eae6320::Results::Success;
 
     // Save the vertex count as the index count
-    m_indexCount = i_vertexCount;
+    m_indexCount = i_indexCount;
 
     auto* const direct3dDevice = eae6320::Graphics::sContext::g_context.direct3dDevice;
     EAE6320_ASSERT(direct3dDevice);
@@ -190,7 +190,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
     // Index Buffer
     {
         // Allocate memory for the index data
-        uint16_t* indexData = static_cast<uint16_t*>(malloc(i_vertexCount * sizeof(uint16_t)));
+        uint16_t* indexData = static_cast<uint16_t*>(malloc(i_indexCount * sizeof(uint16_t)));
         if (indexData == nullptr)
         {
             result = Results::OutOfMemory;
@@ -198,21 +198,21 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             Logging::OutputError("Failed to allocated memory for the mesh's index data!");
             goto OnExit;
         }
-
+        
         // Initialize the index buffer data
         {
-            GetIndexBufferData(indexData, i_vertexCount, i_indices);
-            // D3D uses clockwise winding so swap the vertices appropriately
-            const uint16_t numTriangles = i_vertexCount / s_verticesPerTriangle;
+            memcpy_s(indexData, i_indexCount * sizeof(uint16_t), i_indices, i_indexCount * sizeof(uint16_t));
+            // D3D uses clockwise winding so swap the indices accordingly
+            const uint16_t numTriangles = i_indexCount / s_indicesPerTriangle;
             for (uint16_t i = 0; i < numTriangles; ++i)
             {
-                std::swap(indexData[i * s_verticesPerTriangle + 1], indexData[i * s_verticesPerTriangle + 2]);
+                std::swap(indexData[i * s_indicesPerTriangle + 1], indexData[i * s_indicesPerTriangle + 2]);
             }
         }
 
         D3D11_BUFFER_DESC bufferDescription{};
         {
-            const auto bufferSize = i_vertexCount * sizeof(uint16_t);
+            const auto bufferSize = i_indexCount * sizeof(uint16_t);
             EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(bufferDescription.ByteWidth) * 8)));
             bufferDescription.ByteWidth = static_cast<unsigned int>(bufferSize);
             bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;	// In our class the buffer will never change after it's been created
@@ -228,6 +228,11 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
         }
 
         const auto d3dResult = direct3dDevice->CreateBuffer(&bufferDescription, &initialData, &m_indexBuffer);
+
+        // Free the memory allocated for the index data
+        free(indexData);
+        indexData = nullptr;
+
         if (FAILED(d3dResult))
         {
             result = eae6320::Results::Failure;

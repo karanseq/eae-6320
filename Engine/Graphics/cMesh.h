@@ -62,7 +62,7 @@ namespace eae6320
             // Initialization / Clean Up
             //--------------------------
 
-            static cResult Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors);
+            static cResult Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices);
 
         public:
 
@@ -75,7 +75,7 @@ namespace eae6320
 
         private:
 
-            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const uint16_t* i_indices, const eae6320::Graphics::sColor* i_colors);
+            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices);
             cResult CleanUp();
 
             cMesh() = default;
@@ -88,14 +88,12 @@ namespace eae6320
 
             void GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors) const;
 
-            void GetIndexBufferData(uint16_t* o_indexData, const uint16_t i_vertexCount, const uint16_t* i_indices) const;
-
         private:
 
             // Data
             //=====
 
-            static const uint8_t s_verticesPerTriangle = 3;
+            static const uint8_t s_indicesPerTriangle = 3;
 
 #if defined( EAE6320_PLATFORM_D3D )
             // A vertex buffer holds the data for each vertex
