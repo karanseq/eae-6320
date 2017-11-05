@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Windows">
+      <UniqueIdentifier>{b74b88b4-ca15-41a2-ba04-9adf146a425b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="cMeshBuilder.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Windows\cMeshBuilder.win.cpp">
+      <Filter>Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="EntryPoint.cpp" />
+  </ItemGroup>
+</Project>
