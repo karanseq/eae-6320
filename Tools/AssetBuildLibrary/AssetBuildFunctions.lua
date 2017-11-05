@@ -77,6 +77,10 @@ local ArrowsTextureDir = "Textures/Arrows/"
 local FrameTexureSuffix = "frame_"
 local NumberFrames = 6
 
+-- meshes
+local MeshDir = "Meshes/"
+local FloorMeshName = "Floor"
+
 -- External Interface
 --===================
 
@@ -110,6 +114,11 @@ function BuildAssets()
         for i = 0, 3 do
             wereThereErrors = BuildTexture(ArrowsTextureDir .. FrameTexureSuffix .. i, ".png") or wereThereErrors
         end
+    end
+
+    -- Build the meshes and copy them to the installation location
+    do
+        wereThereErrors = BuildMesh(MeshDir .. FloorMeshName) or wereThereErrors
     end
 
     -- Copy the licenses to the installation location
@@ -210,6 +219,40 @@ function BuildTexture(textureName, textureExtension)
             wereThereErrors = true
             -- If the command wasn't executed then the second return value is an error message
                 OutputErrorMessage( "The command " .. command .. " couldn't be executed: " .. tostring( exitCode ), texture_authored )
+        end
+    end
+
+    return wereThereErrors
+end
+
+function BuildMesh(meshName)
+    local wereThereErrors = false
+
+    local path_meshBuilder = OutputDir .. "MeshBuilder.exe"
+    do
+        local mesh_authored = GameSourceContentDir .. meshName .. ".mesh"
+        local mesh_built = GameInstallDir .. "data/" .. meshName .. ".msh"
+        CreateDirectoryIfItDoesntExist( mesh_built )
+        local command = "\"" .. path_meshBuilder .. "\""
+            .. " \"" .. mesh_authored .. "\" \"" .. mesh_built
+        local result, exitCode = ExecuteCommand( command )
+        if result then
+            if exitCode == 0 then
+                -- Display a message for each asset
+                print( "Built " .. mesh_authored )
+            else
+                wereThereErrors = true
+                -- The builder should already output a descriptive error message if there was an error
+                -- (remember that you write the builder code,
+                -- and so if the build process failed it means that _your_ code has returned an error code)
+                -- but it can be helpful to still return an additional vague error message here
+                -- in case there is a bug in the specific builder that doesn't output an error message
+                OutputErrorMessage( "The command " .. command .. " failed with exit code " .. tostring( exitCode ), mesh_authored )
+            end
+        else
+            wereThereErrors = true
+            -- If the coimmand wasn't executed then the second return value is an error message
+            OutputErrorMessage( "The command " .. command .. " couldn't be executed: " .. tostring( exitCode), mesh_authored )
         end
     end
 
