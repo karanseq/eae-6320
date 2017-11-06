@@ -71,7 +71,6 @@ namespace eae6320
             //--------------------------
 
             static cResult Load(const char* const i_path, cMesh*& o_mesh);
-            static cResult Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices);
 
         public:
 

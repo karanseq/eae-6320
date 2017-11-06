@@ -8,6 +8,7 @@
 // Include Files
 //==============
 
+#include <Engine/Graphics/cMesh.h>
 #include <Engine/Physics/sRigidBodyState.h>
 #include <Engine/Results/Results.h>
 
@@ -19,7 +20,6 @@ namespace eae6320
     namespace Graphics
     {
         class cEffect;
-        class cMesh;
         struct sColor;
     }
     namespace Math
@@ -78,7 +78,7 @@ namespace eae6320
 
     private:
         Graphics::cEffect*                  m_effect = nullptr;
-        Graphics::cMesh*                    m_mesh = nullptr;
+        Graphics::cMesh::Handle             m_mesh;
         Physics::sRigidBodyState            m_rigidBodyState;
 
     }; // class cGameObject

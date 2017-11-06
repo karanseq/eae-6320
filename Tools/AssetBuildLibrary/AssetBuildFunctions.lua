@@ -80,6 +80,7 @@ local NumberFrames = 6
 -- meshes
 local MeshDir = "Meshes/"
 local FloorMeshName = "Floor"
+local CubeMeshName = "Cube"
 
 -- External Interface
 --===================
@@ -119,6 +120,7 @@ function BuildAssets()
     -- Build the meshes and copy them to the installation location
     do
         wereThereErrors = BuildMesh(MeshDir .. FloorMeshName) or wereThereErrors
+        wereThereErrors = BuildMesh(MeshDir .. CubeMeshName) or wereThereErrors
     end
 
     -- Copy the licenses to the installation location

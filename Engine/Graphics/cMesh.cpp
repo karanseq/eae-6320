@@ -13,6 +13,11 @@
 
 #include <new>
 
+// Static Data Initialization
+//===========================
+
+eae6320::Assets::cManager<eae6320::Graphics::cMesh> eae6320::Graphics::cMesh::s_manager;
+
 // Helper Function Declarations
 //=============================
 
@@ -194,90 +199,6 @@ OnExit:
         lua_close(luaState);
         luaState = nullptr;
     }
-
-    if (result)
-    {
-        EAE6320_ASSERT(newMesh);
-        o_mesh = newMesh;
-    }
-    else
-    {
-        if (newMesh)
-        {
-            newMesh->DecrementReferenceCount();
-            newMesh = nullptr;
-        }
-        o_mesh = nullptr;
-    }
-
-    return result;
-}
-
-eae6320::cResult eae6320::Graphics::cMesh::Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices)
-{
-    auto result = Results::Success;
-
-    // Validate inputs
-    {
-        if (i_vertexCount < 3)
-        {
-            result = Results::Failure;
-            EAE6320_ASSERTF(false, "The vertex count for a mesh must be at least 3!");
-            Logging::OutputError("The vertex count for a mesh must be at least of 3!");
-            goto OnExit;
-        }
-        else if (i_vertices == nullptr)
-        {
-            result = Results::Failure;
-            EAE6320_ASSERTF(false, "Invalid vertex data!");
-            Logging::OutputError("Invalid vertex data!");
-            goto OnExit;
-        }
-        else if (i_colors == nullptr)
-        {
-            result = Results::Failure;
-            EAE6320_ASSERTF(false, "Invalid color data!");
-            Logging::OutputError("Invalid color data!");
-            goto OnExit;
-        }
-        else if (i_indexCount % 3 != 0)
-        {
-            result = Results::Failure;
-            EAE6320_ASSERTF(false, "The index count for a mesh must be a multiple of 3!");
-            Logging::OutputError("The index count for a mesh must be a multiple of 3!");
-            goto OnExit;
-        }
-        else if (i_indices == nullptr)
-        {
-            result = Results::Failure;
-            EAE6320_ASSERTF(false, "Invalid index data!");
-            Logging::OutputError("Invalid index data!");
-            goto OnExit;
-        }
-    }
-
-    cMesh* newMesh = nullptr;
-
-    // Allocate a new mesh
-    {
-        newMesh = new (std::nothrow) cMesh();
-        if (newMesh == nullptr)
-        {
-            result = Results::OutOfMemory;
-            EAE6320_ASSERTF(false, "Couldn't allocate memory for the new mesh!");
-            Logging::OutputError("Failed to allocated memory for the new mesh!");
-            goto OnExit;
-        }
-    }
-
-    // Initialize the new mesh's geometry
-    if (!(result = newMesh->Initialize(i_vertexCount, i_vertices, i_colors, i_indexCount, i_indices)))
-    {
-        EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
-        goto OnExit;
-    }
-
-OnExit:
 
     if (result)
     {

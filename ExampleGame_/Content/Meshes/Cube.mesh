@@ -1,0 +1,54 @@
+--[[
+    This file represents a mesh
+]]
+
+return
+{
+    -- This table contains a list of vertices and their corresponding colors
+    vertexData = 
+    {    
+        {
+            position = { -1.0, -1.0, 1.0 }, 
+            color = { 1.0, 0.0, 0.0, 1.0 }
+        },
+        {
+            position = { 1.0, -1.0, 1.0 }, 
+            color = { 0.95294, 0.61176, 0.07059, 1.0 }
+        },
+        {
+            position = { 1.0, 1.0, 1.0 }, 
+            color = { 1.0, 1.0, 0.0, 1.0 }
+        },
+        {
+            position = { -1.0, 1.0, 1.0 },
+            color = { 0.95294, 0.61176, 0.07059, 1.0 }
+        },
+        {
+            position = { 1.0, -1.0, -1.0 }, 
+            color = { 0.95294, 0.61176, 0.07059, 1.0 }
+        },
+        {
+            position = { -1.0, -1.0, -1.0 }, 
+            color = { 1.0, 0.0, 0.0, 1.0 }
+        },
+        {
+            position = { -1.0, 1.0, -1.0 }, 
+            color = { 0.95294, 0.61176, 0.07059, 1.0 }
+        },
+        {
+            position = { 1.0, 1.0, -1.0 },
+            color = { 1.0, 1.0, 0.0, 1.0 }
+        }
+    },
+
+    -- This table contains a list of indices that map to the vertices above
+    indexData = 
+    {
+        0, 1, 2, 0, 2, 3,
+        4, 5, 6, 4, 6, 7,
+        5, 0, 3, 5, 3, 6,
+        1, 4, 7, 1, 7, 2,
+        3, 2, 7, 3, 7, 6,
+        5, 4, 1, 5, 1, 0
+    }
+}
