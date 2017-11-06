@@ -99,29 +99,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the mesh
     {
-        constexpr uint16_t vertexCount = 8;
-        constexpr uint16_t indexCount = 36;
-
-        const Math::sVector vertices[vertexCount] = {
-            { -1.0f, -1.0f, 1.0f }, { 1.0f, -1.0f, 1.0f }, { 1.0f, 1.0f, 1.0f }, { -1.0f, 1.0f, 1.0f },
-            { 1.0f, -1.0f, -1.0f }, { -1.0f, -1.0f, -1.0f }, { -1.0f, 1.0f, -1.0f }, { 1.0f, 1.0f, -1.0f }
-        };
-
-        const Graphics::sColor colors[vertexCount] = {
-            Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE, Graphics::sColor::PURPLE,
-            Graphics::sColor::PURPLE, Graphics::sColor::RED, Graphics::sColor::PURPLE, Graphics::sColor::BLUE
-        };
-
-        const uint16_t indices[indexCount] = {
-            0, 1, 2, 0, 2, 3,                   // front
-            4, 5, 6, 4, 6, 7,                   // back
-            5, 0, 3, 5, 3, 6,                   // left
-            1, 4, 7, 1, 7, 2,                   // right
-            3, 2, 7, 3, 7, 6,                   // top
-            5, 4, 1, 5, 1, 0                    // bottom
-        };
-
-        if (!(result = eae6320::Graphics::cMesh::Create(m_mesh, vertexCount, vertices, colors, indexCount, indices)))
+        if (!(result = eae6320::Graphics::cMesh::s_manager.Load("data/Meshes/Cube.msh", m_mesh)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
             goto OnExit;
@@ -138,8 +116,7 @@ eae6320::cResult eae6320::cGameObject::CleanUp()
     m_effect->DecrementReferenceCount();
     m_effect = nullptr;
 
-    m_mesh->DecrementReferenceCount();
-    m_mesh = nullptr;
+    Graphics::cMesh::s_manager.Release(m_mesh);
 
     return eae6320::Results::Success;
 }
@@ -180,5 +157,6 @@ void eae6320::cGameObject::SubmitDataToBeRendered(const float i_elapsedSecondCou
 {
     const Math::cQuaternion predictedOrientation = m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
     const Math::sVector predictedPosition = m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
-    eae6320::Graphics::SubmitMeshToBeRendered(m_mesh, m_effect, predictedPosition, predictedOrientation);
+    Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_mesh);
+    eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effect, predictedPosition, predictedOrientation);
 }

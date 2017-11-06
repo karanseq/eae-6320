@@ -9,6 +9,7 @@
 //==============
 
 #include <Engine/Application/cbApplication.h>
+#include <Engine/Graphics/cMesh.h>
 #include <Engine/Graphics/cTexture.h>
 #include <Engine/Graphics/sCamera.h>
 #include <Engine/Graphics/sColor.h>
@@ -27,7 +28,6 @@ namespace eae6320
     namespace Graphics
     {
         class cEffect;
-        class cMesh;
         class cSprite;
     }
 
@@ -156,7 +156,7 @@ namespace eae6320
         std::vector<Graphics::cEffect*>                     m_effectList;
         std::vector<Graphics::cTexture::Handle>             m_textureList;
         std::vector<Graphics::cSprite*>                     m_spriteList;
-        std::vector<Graphics::cMesh*>                       m_meshList;
+        std::vector<Graphics::cMesh::Handle>                m_meshList;
         std::vector<sSpriteRenderData>                      m_spriteRenderDataList;
 
         std::vector<cGameObject*>                           m_gameObjectList;

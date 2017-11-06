@@ -102,8 +102,9 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
     }
 
-    for (auto& mesh : m_meshList)
+    for (auto& meshHandle : m_meshList)
     {
+        Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(meshHandle);
         Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(), Math::cQuaternion());
     }
 
@@ -223,10 +224,19 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
             }
         }
     }
+    m_textureList.clear();
 
-    for (const auto& mesh : m_meshList)
+    for (auto& mesh : m_meshList)
     {
-        mesh->DecrementReferenceCount();
+        const auto localResult = Graphics::cMesh::s_manager.Release(mesh);
+        if (!localResult)
+        {
+            EAE6320_ASSERT(false);
+            if (result)
+            {
+                result = localResult;
+            }
+        }
     }
     m_meshList.clear();
 
@@ -344,28 +354,15 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
     cResult result = Results::Success;
 
     {
-        constexpr uint16_t vertexCount = 4;
-        constexpr uint16_t indexCount = 6;
-
-        const Math::sVector vertices[vertexCount] = {
-            { -2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, 2.5f }, { 2.5f, -1.0f, -2.5f }, { -2.5f, -1.0f, -2.5f }
-        };
-
-        const Graphics::sColor colors[vertexCount] = {
-            Graphics::sColor::BLACK, Graphics::sColor::BLACK, Graphics::sColor::SILVER, Graphics::sColor::SILVER
-        };
-
-        const uint16_t indices[indexCount] = { 0, 1, 2, 0, 2, 3 };
-
-        Graphics::cMesh* mesh = nullptr;
-        if (!(result = Graphics::cMesh::Create(mesh, vertexCount, vertices, colors, indexCount, indices)))
+        Graphics::cMesh::Handle meshHandle;
+        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Floor.msh", meshHandle)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
         }
         else
         {
-            m_meshList.push_back(mesh);
+            m_meshList.push_back(meshHandle);
         }
     }
 
