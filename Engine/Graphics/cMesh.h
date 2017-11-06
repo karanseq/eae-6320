@@ -8,6 +8,8 @@
 // Include Files
 //==============
 
+#include <Engine/Assets/cHandle.h>
+#include <Engine/Assets/cManager.h>
 #include <Engine/Assets/ReferenceCountedAssets.h>
 #include <Engine/Results/Results.h>
 
@@ -59,9 +61,16 @@ namespace eae6320
 
             void Draw() const;
 
+            // Access
+            //-------
+
+            using Handle = Assets::cHandle<cMesh>;
+            static Assets::cManager<cMesh> s_manager;
+
             // Initialization / Clean Up
             //--------------------------
 
+            static cResult Load(const char* const i_path, cMesh*& o_mesh);
             static cResult Create(cMesh*& o_mesh, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices);
 
         public:
