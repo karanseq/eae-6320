@@ -91,12 +91,12 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVe
                     auto& positionElement = layoutDescription[0];
 
                     positionElement.SemanticName = "POSITION";
-                    positionElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    positionElement.SemanticIndex = 0;  // (Semantics without modifying indices at the end can always use zero)
                     positionElement.Format = DXGI_FORMAT_R32G32_FLOAT;
                     positionElement.InputSlot = 0;
                     positionElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sSprite, x);
                     positionElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-                    positionElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                    positionElement.InstanceDataStepRate = 0;   // (Must be zero for per-vertex data)
                 }
 
                 // TEXCOORD
@@ -106,12 +106,12 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVe
                     auto& textureCoordElement = layoutDescription[1];
 
                     textureCoordElement.SemanticName = "TEXCOORD";
-                    textureCoordElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    textureCoordElement.SemanticIndex = 0;  // (Semantics without modifying indices at the end can always use zero)
                     textureCoordElement.Format = DXGI_FORMAT_R32G32_FLOAT;
                     textureCoordElement.InputSlot = 0;
                     textureCoordElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sSprite, u);
                     textureCoordElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-                    textureCoordElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                    textureCoordElement.InstanceDataStepRate = 0;   // (Must be zero for per-vertex data)
                 }
             }
 
@@ -153,11 +153,11 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVe
             const auto bufferSize = vertexCount * sizeof(eae6320::Graphics::VertexFormats::sSprite);
             EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(bufferDescription.ByteWidth) * 8)));
             bufferDescription.ByteWidth = static_cast<unsigned int>(bufferSize);
-            bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;	// In our class the buffer will never change after it's been created
+            bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;    // In our class the buffer will never change after it's been created
             bufferDescription.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-            bufferDescription.CPUAccessFlags = 0;	// No CPU access is necessary
+            bufferDescription.CPUAccessFlags = 0;   // No CPU access is necessary
             bufferDescription.MiscFlags = 0;
-            bufferDescription.StructureByteStride = 0;	// Not used
+            bufferDescription.StructureByteStride = 0;  // Not used
         }
         D3D11_SUBRESOURCE_DATA initialData{};
         {

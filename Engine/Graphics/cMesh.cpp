@@ -9,6 +9,7 @@
 #include <Engine/Graphics/sColor.h>
 #include <Engine/Logging/Logging.h>
 #include <Engine/Math/sVector.h>
+#include <Engine/Math/sVector2d.h>
 #include <External/Lua/Includes.h>
 
 #include <new>
@@ -27,8 +28,9 @@ namespace
     eae6320::cResult LoadFloatArray(lua_State& io_luaState, const uint16_t i_floatCount, float* o_floatArray);
     eae6320::cResult LoadPosition(lua_State& io_luaState, eae6320::Math::sVector& o_position);
     eae6320::cResult LoadColor(lua_State& io_luaState, eae6320::Graphics::sColor& o_color);
-    eae6320::cResult LoadVertexDataArray(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Graphics::sColor*& o_colors);
-    eae6320::cResult LoadVertexData(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Graphics::sColor*& o_colors);
+    eae6320::cResult LoadUV(lua_State& io_luaState, eae6320::Math::sVector2d& o_position);
+    eae6320::cResult LoadVertexDataArray(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Math::sVector2d*& o_uvs);
+    eae6320::cResult LoadVertexData(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Math::sVector2d*& o_uvs);
     eae6320::cResult LoadIndexDataArray(lua_State& io_luaState, uint16_t& o_indexCount, uint16_t*& o_indices);
     eae6320::cResult LoadIndexData(lua_State& io_luaState, uint16_t& o_indexCount, uint16_t*& o_indices);
 }
@@ -121,9 +123,9 @@ eae6320::cResult eae6320::Graphics::cMesh::Load(const char* const i_path, cMesh*
     // and its table is now at index -1
     uint16_t vertexCount = 0;
     eae6320::Math::sVector* vertices = nullptr;
-    eae6320::Graphics::sColor* colors = nullptr;
+    eae6320::Math::sVector2d* uvs = nullptr;
 
-    if (!(result = LoadVertexData(*luaState, vertexCount, vertices, colors)))
+    if (!(result = LoadVertexData(*luaState, vertexCount, vertices, uvs)))
     {
         result = Results::Failure;
         EAE6320_ASSERTF(false, "Couldn't parse vertex data for file %s", i_path);
@@ -160,7 +162,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Load(const char* const i_path, cMesh*
     }
 
     // Initialize the new mesh's geometry
-    if (!(result = newMesh->Initialize(vertexCount, vertices, colors, indexCount, indices)))
+    if (!(result = newMesh->Initialize(vertexCount, vertices, uvs, indexCount, indices)))
     {
         EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
         goto OnExit;
@@ -174,10 +176,10 @@ eae6320::cResult eae6320::Graphics::cMesh::Load(const char* const i_path, cMesh*
             vertices = nullptr;
         }
 
-        if (colors)
+        if (uvs)
         {
-            free(colors);
-            colors = nullptr;
+            free(uvs);
+            uvs = nullptr;
         }
 
         if (indices)
@@ -226,19 +228,17 @@ eae6320::Graphics::cMesh::~cMesh()
 // Implementation
 //===============
 
-void eae6320::Graphics::cMesh::GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors) const
+void eae6320::Graphics::cMesh::GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs) const
 {
-    EAE6320_ASSERT(o_vertexData != nullptr && i_vertices != nullptr && i_colors != nullptr && i_vertexCount > 0);
+    EAE6320_ASSERT(o_vertexData != nullptr && i_vertices != nullptr && i_uvs != nullptr && i_vertexCount > 0);
 
     for (uint16_t i = 0; i < i_vertexCount; ++i)
     {
         o_vertexData[i].x = i_vertices[i].x;
         o_vertexData[i].y = i_vertices[i].y;
         o_vertexData[i].z = i_vertices[i].z;
-        o_vertexData[i].r = static_cast<uint8_t>(i_colors[i].r * 255.0f);
-        o_vertexData[i].g = static_cast<uint8_t>(i_colors[i].g * 255.0f);
-        o_vertexData[i].b = static_cast<uint8_t>(i_colors[i].b * 255.0f);
-        o_vertexData[i].a = static_cast<uint8_t>(i_colors[i].a * 255.0f);
+        o_vertexData[i].u = i_uvs[i].x;
+        o_vertexData[i].v = i_uvs[i].y;
     }
 }
 
@@ -385,7 +385,7 @@ namespace
         // After lua_gettable the asset table will be at -4,
         // the vertexData table will be at -3,
         // the i'th element of the vertexData table will be at -2
-        // and the position table will be at -1
+        // and the color table will be at -1
         const auto* const key = "color";
         lua_pushstring(&io_luaState, key);
         lua_gettable(&io_luaState, -2);
@@ -424,13 +424,63 @@ namespace
         // Right now the asset table is at -4,
         // the vertexData table is at -3,
         // the i'th element of the vertexData table is at -2
-        // and the position table is at -1
+        // and the color table is at -1
         lua_pop(&io_luaState, 1);
 
         return result;
     }
 
-    eae6320::cResult LoadVertexDataArray(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Graphics::sColor*& o_colors)
+    eae6320::cResult LoadUV(lua_State& io_luaState, eae6320::Math::sVector2d& o_position)
+    {
+        auto result = eae6320::Results::Success;
+
+        // After lua_gettable the asset table will be at -4,
+        // the vertexData table will be at -3,
+        // the i'th element of the vertexData table will be at -2
+        // and the UV table will be at -1
+        const auto* const key = "uv";
+        lua_pushstring(&io_luaState, key);
+        lua_gettable(&io_luaState, -2);
+
+        // Make sure that the value is a table
+        if (lua_istable(&io_luaState, -1))
+        {
+            constexpr uint16_t floatsPerUV = 2;
+            float floatArray[floatsPerUV];
+
+            // Load the float array representing position
+            if (!(result = LoadFloatArray(io_luaState, floatsPerUV, floatArray)))
+            {
+                result = eae6320::Results::InvalidFile;
+                EAE6320_ASSERTF(false, "Couldn't load the floats within a UV");
+                eae6320::Logging::OutputError("Couldn't load the floats within a UV");
+                goto OnExit;
+            }
+
+            // Fill the output
+            o_position.x = floatArray[0];
+            o_position.y = floatArray[1];
+        }
+        else
+        {
+            result = eae6320::Results::InvalidFile;
+            EAE6320_ASSERTF(false, "The UV value must be a table (instead of a %s)", luaL_typename(&io_luaState, -1));
+            eae6320::Logging::OutputError("The UV value must be a table (instead of a %s)", luaL_typename(&io_luaState, -1));
+            goto OnExit;
+        }
+
+    OnExit:
+
+        // Right now the asset table is at -4,
+        // the vertexData table is at -3,
+        // the i'th element of the vertexData table is at -2
+        // and the UV table is at -1
+        lua_pop(&io_luaState, 1);
+
+        return result;
+    }
+
+    eae6320::cResult LoadVertexDataArray(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Math::sVector2d*& o_uvs)
     {
         auto result = eae6320::Results::Success;
 
@@ -446,10 +496,11 @@ namespace
         }
 
         o_vertexCount = static_cast<uint16_t>(vertexDataArraySize);
-        // reserve memory for the vertices & colors
+        // reserve memory for the vertices & UVs
         {
             o_vertices = static_cast<eae6320::Math::sVector*>(malloc(o_vertexCount * sizeof(eae6320::Math::sVector)));
-            o_colors = static_cast<eae6320::Graphics::sColor*>(malloc(o_vertexCount * sizeof(eae6320::Graphics::sColor)));
+            //o_colors = static_cast<eae6320::Graphics::sColor*>(malloc(o_vertexCount * sizeof(eae6320::Graphics::sColor)));
+            o_uvs = static_cast<eae6320::Math::sVector2d*>(malloc(o_vertexCount * sizeof(eae6320::Math::sVector2d)));
         }
 
         for (auto i = 1; i <= vertexDataArraySize; ++i)
@@ -471,12 +522,12 @@ namespace
                     lua_pop(&io_luaState, 1);
 
                     result = eae6320::Results::InvalidFile;
-                    EAE6320_ASSERTF(false, "Couldn't load the position for %d in the vertexTable", i);
-                    eae6320::Logging::OutputError("Couldn't load the position for %d in the vertexTable", i);
+                    EAE6320_ASSERTF(false, "Couldn't load the position for %d in the vertexData", i);
+                    eae6320::Logging::OutputError("Couldn't load the position for %d in the vertexData", i);
                     goto OnExit;
                 }
 
-                if (!(result = LoadColor(io_luaState, o_colors[i - 1])))
+                if (!(result = LoadUV(io_luaState, o_uvs[i - 1])))
                 {
                     // Right now the asset table is at -3,
                     // the vertexData table is at -2,
@@ -484,8 +535,8 @@ namespace
                     lua_pop(&io_luaState, 1);
 
                     result = eae6320::Results::InvalidFile;
-                    EAE6320_ASSERTF(false, "Couldn't load the color for %d in the vertexTable", i);
-                    eae6320::Logging::OutputError("Couldn't load the color for %d in the vertexTable", i);
+                    EAE6320_ASSERTF(false, "Couldn't load the UV for %d in the vertexData", i);
+                    eae6320::Logging::OutputError("Couldn't load the UV for %d in the vertexData", i);
                     goto OnExit;
                 }
             }
@@ -510,7 +561,7 @@ namespace
         return result;
     }
 
-    eae6320::cResult LoadVertexData(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Graphics::sColor*& o_colors)
+    eae6320::cResult LoadVertexData(lua_State& io_luaState, uint16_t& o_vertexCount, eae6320::Math::sVector*& o_vertices, eae6320::Math::sVector2d*& o_uvs)
     {
         auto result = eae6320::Results::Success;
 
@@ -525,7 +576,7 @@ namespace
         // and the vertexData table is at -1.
         if (lua_istable(&io_luaState, -1))
         {
-            if (!(result = LoadVertexDataArray(io_luaState, o_vertexCount, o_vertices, o_colors)))
+            if (!(result = LoadVertexDataArray(io_luaState, o_vertexCount, o_vertices, o_uvs)))
             {
                 goto OnExit;
             }

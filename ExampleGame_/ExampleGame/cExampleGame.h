@@ -155,6 +155,7 @@ namespace eae6320
         Graphics::sColor                                    m_backgroundColor = Graphics::sColor::ORANGE;
         std::vector<Graphics::cEffect*>                     m_effectList;
         std::vector<Graphics::cTexture::Handle>             m_textureList;
+        Graphics::cTexture::Handle                          m_meshTexture;
         std::vector<Graphics::cSprite*>                     m_spriteList;
         std::vector<Graphics::cMesh::Handle>                m_meshList;
         std::vector<sSpriteRenderData>                      m_spriteRenderDataList;

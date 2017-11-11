@@ -165,7 +165,7 @@ eae6320::cResult eae6320::Graphics::cSprite::Initialize(const eae6320::Math::sVe
         {
             constexpr GLuint vertexElementLocation = 1;
             constexpr GLint elementCount = 2;
-            constexpr GLboolean notNormalized = GL_FALSE;	// The given floats should be used as-is
+            constexpr GLboolean notNormalized = GL_FALSE;   // The given floats should be used as-is
             glVertexAttribPointer(vertexElementLocation, elementCount, GL_FLOAT, notNormalized, stride,
                 reinterpret_cast<GLvoid*>(offsetof(eae6320::Graphics::VertexFormats::sSprite, u)));
             const auto errorCode = glGetError();

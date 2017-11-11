@@ -39,6 +39,7 @@ namespace eae6320
     namespace Math
     {
         struct sVector;
+        struct sVector2d;
     }
 }
 
@@ -83,7 +84,7 @@ namespace eae6320
 
         private:
 
-            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices);
+            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs, const uint16_t i_indexCount, const uint16_t* i_indices);
             cResult CleanUp();
 
             cMesh() = default;
@@ -94,7 +95,7 @@ namespace eae6320
             // Implementation
             //===============
 
-            void GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors) const;
+            void GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs) const;
 
         private:
 

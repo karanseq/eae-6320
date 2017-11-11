@@ -806,7 +806,7 @@ namespace
                     --count;
                     fout << "\t\t{\n";
                     fout << "\t\t\tposition = { " << vertex.vertex.x << ", " << vertex.vertex.y << ", " << vertex.vertex.z << " },\n";
-                    fout << "\t\t\tcolor = { " << vertex.vertex.r << ", " << vertex.vertex.g << ", " << vertex.vertex.b << ", " << vertex.vertex.a << " }\n";
+                    fout << "\t\t\tuv = { " << vertex.vertex.u << ", " << vertex.vertex.v << " }\n";
                     fout << "\t\t" << (count == 0 ? "}\n" : "},\n");
                 }
 

@@ -105,7 +105,8 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     for (auto& meshHandle : m_meshList)
     {
         Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(meshHandle);
-        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(0.0f, -1.0f, 0.0f), Math::cQuaternion());
+        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_meshTexture);
+        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], texture, Math::sVector(0.0f, -1.0f, 0.0f), Math::cQuaternion());
     }
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
@@ -195,7 +196,7 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
-    m_camera.m_rigidBodyState.position.z = 10;
+    m_camera.m_rigidBodyState.position.z = 15;
 
 OnExit:
 
@@ -226,6 +227,17 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
     }
     m_textureList.clear();
 
+    {
+        const auto localResult = Graphics::cTexture::s_manager.Release(m_meshTexture);
+        if (!localResult)
+        {
+            EAE6320_ASSERT(false);
+            if (result)
+            {
+                result = localResult;
+            }
+        }
+    }
     for (auto& mesh : m_meshList)
     {
         const auto localResult = Graphics::cMesh::s_manager.Release(mesh);
@@ -239,6 +251,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
         }
     }
     m_meshList.clear();
+    
 
     for (const auto& sprite : m_spriteList)
     {
@@ -354,6 +367,12 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
     cResult result = Results::Success;
 
     {
+        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Grass.tex", m_meshTexture)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+
         Graphics::cMesh::Handle meshHandle;
         if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Floor.msh", meshHandle)))
         {
@@ -425,7 +444,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 
     cGameObject* gameObject = nullptr;
 
-    if (!(result = cGameObject::Create(gameObject, Math::sVector(), Graphics::sColor::RED, Graphics::sColor::YELLOW)))
+    if (!(result = cGameObject::Create(gameObject, Math::sVector())))
     {
         EAE6320_ASSERT(false);
         goto OnExit;

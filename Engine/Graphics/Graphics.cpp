@@ -56,6 +56,7 @@ namespace
 
     struct sDataRequiredToRenderAMesh
     {
+        eae6320::Graphics::cTexture*                                constantData_texture = nullptr;
         eae6320::Graphics::cEffect*                                 constantData_effect = nullptr;
         eae6320::Graphics::cMesh*                                   constantData_mesh = nullptr;
         eae6320::Math::sVector                                      constantData_position;
@@ -125,13 +126,15 @@ void eae6320::Graphics::SubmitCamera(const sCamera& i_camera, const Math::sVecto
     constantData_perFrame.g_transform_cameraToProjected = Math::cMatrix_transformation::CreateCameraToProjectedTransform_perspective(i_camera.m_verticalFieldOfView_inRadians, i_camera.m_aspectRatio, i_camera.m_z_nearPlane, i_camera.m_z_farPlane);
 }
     
-void eae6320::Graphics::SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, const Math::sVector& i_position, const Math::cQuaternion& i_orientation)
+void eae6320::Graphics::SubmitMeshToBeRendered(cMesh* i_meshToDraw, cEffect* i_effectToBind, cTexture* i_textureToBind, const Math::sVector& i_position, const Math::cQuaternion& i_orientation)
 {
     EAE6320_ASSERT(s_dataBeingSubmittedByApplicationThread);
-    EAE6320_ASSERT(i_meshToDraw && i_effectToBind);
+    EAE6320_ASSERT(i_meshToDraw && i_effectToBind && i_textureToBind);
 
     sDataRequiredToRenderAMesh meshRenderData;
     {
+        meshRenderData.constantData_texture = i_textureToBind;
+        meshRenderData.constantData_texture->IncrementReferenceCount();
         meshRenderData.constantData_mesh = i_meshToDraw;
         meshRenderData.constantData_mesh->IncrementReferenceCount();
         meshRenderData.constantData_effect = i_effectToBind;
@@ -215,6 +218,8 @@ void eae6320::Graphics::RenderFrame()
         s_view.ClearRenderTarget(s_dataBeingRenderedByRenderThread->backgroundColor);
     }
 
+    s_view.ClearDepthBuffer(s_dataBeingRenderedByRenderThread->depthBufferClearDepth);
+
     // Update the per-frame constant buffer
     {
         // Copy the data from the system memory that the application owns to GPU memory
@@ -233,6 +238,10 @@ void eae6320::Graphics::RenderFrame()
             s_constantBuffer_perDrawCall.Update(&constantData_perDrawCall);
 
             meshRenderData.constantData_effect->Bind();
+            {
+                constexpr unsigned int id = 0;
+                meshRenderData.constantData_texture->Bind(id);
+            }
             meshRenderData.constantData_mesh->Draw();
         }
     }
@@ -257,14 +266,13 @@ void eae6320::Graphics::RenderFrame()
         s_view.Swap();
     }
 
-    s_view.ClearDepthBuffer(s_dataBeingRenderedByRenderThread->depthBufferClearDepth);
-
     // Once everything has been drawn the data that was submitted for this frame
     // should be cleaned up and cleared.
     // so that the struct can be re-used (i.e. so that data for a new frame can be submitted to it)
     {
         for (auto& meshRenderData : s_dataBeingRenderedByRenderThread->meshRenderDataList)
         {
+            meshRenderData.constantData_texture->DecrementReferenceCount();
             meshRenderData.constantData_effect->DecrementReferenceCount();
             meshRenderData.constantData_mesh->DecrementReferenceCount();
         }
@@ -395,6 +403,7 @@ eae6320::cResult eae6320::Graphics::CleanUp()
     {
         for (auto& meshRenderData : s_dataBeingSubmittedByApplicationThread->meshRenderDataList)
         {
+            meshRenderData.constantData_texture->DecrementReferenceCount();
             meshRenderData.constantData_effect->DecrementReferenceCount();
             meshRenderData.constantData_mesh->DecrementReferenceCount();
         }
@@ -416,6 +425,7 @@ eae6320::cResult eae6320::Graphics::CleanUp()
     {
         for (auto& meshRenderData : s_dataBeingRenderedByRenderThread->meshRenderDataList)
         {
+            meshRenderData.constantData_texture->DecrementReferenceCount();
             meshRenderData.constantData_effect->DecrementReferenceCount();
             meshRenderData.constantData_mesh->DecrementReferenceCount();
         }

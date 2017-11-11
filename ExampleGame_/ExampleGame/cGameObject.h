@@ -9,6 +9,7 @@
 //==============
 
 #include <Engine/Graphics/cMesh.h>
+#include <Engine/Graphics/cTexture.h>
 #include <Engine/Physics/sRigidBodyState.h>
 #include <Engine/Results/Results.h>
 
@@ -43,7 +44,7 @@ namespace eae6320
         // Initialization / Clean Up
         //--------------------------
 
-        static cResult Create(cGameObject*& o_gameObject, const Math::sVector& i_position, const Graphics::sColor& i_innerColor, const Graphics::sColor& i_outerColor);
+        static cResult Create(cGameObject*& o_gameObject, const Math::sVector& i_position);
         static cResult Destroy(cGameObject*& i_gameObject);
 
         // Behavior
@@ -63,7 +64,7 @@ namespace eae6320
 
     private:
 
-        cResult Initialize(const Math::sVector& i_position, const Graphics::sColor& i_innerColor, const Graphics::sColor& i_outerColor);
+        cResult Initialize(const Math::sVector& i_position);
         cResult CleanUp();
 
         cGameObject() = default;
@@ -79,6 +80,7 @@ namespace eae6320
     private:
         Graphics::cEffect*                  m_effect = nullptr;
         Graphics::cMesh::Handle             m_mesh;
+        Graphics::cTexture::Handle          m_texture;
         Physics::sRigidBodyState            m_rigidBodyState;
 
     }; // class cGameObject
