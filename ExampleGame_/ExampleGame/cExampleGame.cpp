@@ -105,7 +105,7 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     for (auto& meshHandle : m_meshList)
     {
         Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(meshHandle);
-        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(), Math::cQuaternion());
+        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(0.0f, -1.0f, 0.0f), Math::cQuaternion());
     }
 
     for (auto& spriteRenderData : m_spriteRenderDataList)

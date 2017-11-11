@@ -1,54 +1,113 @@
 --[[
-    This file represents a mesh
+	This file represents a mesh
 ]]
 
 return
 {
-    -- This table contains a list of vertices and their corresponding colors
-    vertexData = 
-    {    
-        {
-            position = { -1.0, -1.0, 1.0 }, 
-            color = { 1.0, 0.0, 0.0, 1.0 }
-        },
-        {
-            position = { 1.0, -1.0, 1.0 }, 
-            color = { 0.95294, 0.61176, 0.07059, 1.0 }
-        },
-        {
-            position = { 1.0, 1.0, 1.0 }, 
-            color = { 1.0, 1.0, 0.0, 1.0 }
-        },
-        {
-            position = { -1.0, 1.0, 1.0 },
-            color = { 0.95294, 0.61176, 0.07059, 1.0 }
-        },
-        {
-            position = { 1.0, -1.0, -1.0 }, 
-            color = { 0.95294, 0.61176, 0.07059, 1.0 }
-        },
-        {
-            position = { -1.0, -1.0, -1.0 }, 
-            color = { 1.0, 0.0, 0.0, 1.0 }
-        },
-        {
-            position = { -1.0, 1.0, -1.0 }, 
-            color = { 0.95294, 0.61176, 0.07059, 1.0 }
-        },
-        {
-            position = { 1.0, 1.0, -1.0 },
-            color = { 1.0, 1.0, 0.0, 1.0 }
-        }
-    },
+	-- This table contains a list of vertices and their corresponding colors
+	vertexData = 
+	{
+		{
+			position = { -0.5, -0.5, 0.5 },
+			color = { 0.3422, 1, 0, 1 }
+		},
+		{
+			position = { -0.5, -0.5, 0.5 },
+			color = { 0.3422, 1, 0, 1 }
+		},
+		{
+			position = { -0.5, -0.5, 0.5 },
+			color = { 0.3422, 1, 0, 1 }
+		},
+		{
+			position = { 0.5, -0.5, 0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { 0.5, -0.5, 0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { 0.5, -0.5, 0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { -0.5, 0.5, 0.5 },
+			color = { 0.3422, 1, 0, 1 }
+		},
+		{
+			position = { -0.5, 0.5, 0.5 },
+			color = { 0.3422, 1, 0, 1 }
+		},
+		{
+			position = { -0.5, 0.5, 0.5 },
+			color = { 0.3422, 1, 0, 1 }
+		},
+		{
+			position = { 0.5, 0.5, 0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { 0.5, 0.5, 0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { 0.5, 0.5, 0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { -0.5, 0.5, -0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { -0.5, 0.5, -0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { -0.5, 0.5, -0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { 0.5, 0.5, -0.5 },
+			color = { 1, 0.4073, 0, 1 }
+		},
+		{
+			position = { 0.5, 0.5, -0.5 },
+			color = { 1, 0.4073, 0, 1 }
+		},
+		{
+			position = { 0.5, 0.5, -0.5 },
+			color = { 1, 0.4073, 0, 1 }
+		},
+		{
+			position = { -0.5, -0.5, -0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { -0.5, -0.5, -0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { -0.5, -0.5, -0.5 },
+			color = { 1, 0.8738, 0, 1 }
+		},
+		{
+			position = { 0.5, -0.5, -0.5 },
+			color = { 1, 0.4073, 0, 1 }
+		},
+		{
+			position = { 0.5, -0.5, -0.5 },
+			color = { 1, 0.4073, 0, 1 }
+		},
+		{
+			position = { 0.5, -0.5, -0.5 },
+			color = { 1, 0.4073, 0, 1 }
+		}
+	},
 
-    -- This table contains a list of indices that map to the vertices above
-    indexData = 
-    {
-        0, 1, 2, 0, 2, 3,
-        4, 5, 6, 4, 6, 7,
-        5, 0, 3, 5, 3, 6,
-        1, 4, 7, 1, 7, 2,
-        3, 2, 7, 3, 7, 6,
-        5, 4, 1, 5, 1, 0
-    }
+	-- This table contains a list of indices that map to the vertices above
+	indexData = 
+	{
+		0, 5, 7, 1, 22, 3, 4, 23, 9, 7, 5, 10, 8, 11, 13, 9, 23, 15, 12, 2, 6, 13, 11, 16, 14, 17, 18, 18, 17, 21, 19, 22, 1, 20, 2, 12
+	}
 }
