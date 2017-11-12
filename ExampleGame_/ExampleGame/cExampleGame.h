@@ -154,11 +154,13 @@ namespace eae6320
         Graphics::sCamera                                   m_camera;
         Graphics::sColor                                    m_backgroundColor = Graphics::sColor::ORANGE;
         std::vector<Graphics::cEffect*>                     m_effectList;
-        std::vector<Graphics::cTexture::Handle>             m_textureList;
-        Graphics::cTexture::Handle                          m_meshTexture;
+        std::vector<Graphics::cTexture::Handle>             m_spriteTextureList;
         std::vector<Graphics::cSprite*>                     m_spriteList;
-        std::vector<Graphics::cMesh::Handle>                m_meshList;
         std::vector<sSpriteRenderData>                      m_spriteRenderDataList;
+
+        std::vector<Graphics::cTexture::Handle>             m_meshTextureList;
+        std::vector<Graphics::cMesh::Handle>                m_meshList;
+        std::vector<Math::sVector>                          m_meshPositions;
 
         std::vector<cGameObject*>                           m_gameObjectList;
 

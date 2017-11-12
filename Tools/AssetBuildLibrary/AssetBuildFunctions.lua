@@ -82,6 +82,7 @@ local NumberFrames = 6
 local MeshDir = "Meshes/"
 local FloorMeshName = "Floor"
 local SoccerBallMeshName = "SoccerBall"
+local CrateMeshName = "Crate"
 
 -- External Interface
 --===================
@@ -122,12 +123,16 @@ function BuildAssets()
         
         local SoccerBallTexture = "SoccerBall"
         wereThereErrors = BuildTexture(SoccerTextureDir .. SoccerBallTexture, ".png") or wereThereErrors
+        
+        local CrateTexture = "Crate"
+        wereThereErrors = BuildTexture(SoccerTextureDir .. CrateTexture, ".png") or wereThereErrors
     end
 
     -- Build the meshes and copy them to the installation location
     do
         wereThereErrors = BuildMesh(MeshDir .. FloorMeshName) or wereThereErrors
         wereThereErrors = BuildMesh(MeshDir .. SoccerBallMeshName) or wereThereErrors
+        wereThereErrors = BuildMesh(MeshDir .. CrateMeshName) or wereThereErrors
     end
 
     -- Copy the licenses to the installation location
