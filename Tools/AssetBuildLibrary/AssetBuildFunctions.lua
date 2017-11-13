@@ -74,13 +74,15 @@ local DustTextureDir = "Textures/Dust/"
 local ForestTextureDir = "Textures/Forest/"
 local RampsTextureDir = "Textures/Ramps/"
 local ArrowsTextureDir = "Textures/Arrows/"
+local SoccerTextureDir = "Textures/Soccer/"
 local FrameTexureSuffix = "frame_"
 local NumberFrames = 6
 
 -- meshes
 local MeshDir = "Meshes/"
 local FloorMeshName = "Floor"
-local CubeMeshName = "Cube"
+local SoccerBallMeshName = "SoccerBall"
+local CrateMeshName = "Crate"
 
 -- External Interface
 --===================
@@ -115,12 +117,22 @@ function BuildAssets()
         for i = 0, 3 do
             wereThereErrors = BuildTexture(ArrowsTextureDir .. FrameTexureSuffix .. i, ".png") or wereThereErrors
         end
+
+        local GrassTexture = "Grass"
+        wereThereErrors = BuildTexture(SoccerTextureDir .. GrassTexture, ".png") or wereThereErrors
+        
+        local SoccerBallTexture = "SoccerBall"
+        wereThereErrors = BuildTexture(SoccerTextureDir .. SoccerBallTexture, ".png") or wereThereErrors
+        
+        local CrateTexture = "Crate"
+        wereThereErrors = BuildTexture(SoccerTextureDir .. CrateTexture, ".png") or wereThereErrors
     end
 
     -- Build the meshes and copy them to the installation location
     do
         wereThereErrors = BuildMesh(MeshDir .. FloorMeshName) or wereThereErrors
-        wereThereErrors = BuildMesh(MeshDir .. CubeMeshName) or wereThereErrors
+        wereThereErrors = BuildMesh(MeshDir .. SoccerBallMeshName) or wereThereErrors
+        wereThereErrors = BuildMesh(MeshDir .. CrateMeshName) or wereThereErrors
     end
 
     -- Copy the licenses to the installation location

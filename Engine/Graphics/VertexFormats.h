@@ -41,10 +41,10 @@ namespace eae6320
                 // Offset = 0
                 float x, y, z;
 
-                // COLOR0
-                // 4 8-bit ints == 4 bytes
+                // TEXCOORD0
+                // 2 floats == 8 bytes
                 // Offset = 12
-                uint8_t r, g, b, a;
+                float u, v;
 
             }; // struct sMesh
         }

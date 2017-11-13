@@ -15,7 +15,7 @@ void main(
 
     // These values come from one of the VertexFormats::sMesh that the vertex buffer was filled with in C code
     in const float3 i_position : POSITION,
-    in const float4 i_color : COLOR0,
+    in const float2 i_uv : TEXCOORD0,
 
     // Output
     //=======
@@ -23,7 +23,7 @@ void main(
     // An SV_POSITION value must always be output from every vertex shader
     // so that the GPU can figure out which fragments need to be shaded
     out float4 o_position : SV_POSITION,
-    out float4 o_color : COLOR0
+    out float2 o_uv : TEXCOORD0
 
     )
 
@@ -37,7 +37,7 @@ void main(
 
 // These values come from one of the VertexFormats::sMesh that the vertex buffer was filled with in C code
 layout( location = 0 ) in vec3 i_position;
-layout( location = 1 ) in vec4 i_color;
+layout( location = 1 ) in vec2 i_uv;
 
 // Output
 //=======
@@ -46,7 +46,7 @@ layout( location = 1 ) in vec4 i_color;
 // but unlike HLSL where the value is explicit
 // GLSL has an automatically-required variable named "gl_Position"
 #define o_position gl_Position
-layout( location = 0 ) out vec4 o_color;
+layout( location = 0 ) out vec2 o_uv;
 
 // Entry Point
 //============
@@ -69,7 +69,7 @@ void main()
         // Output the final projected position
         o_position = vertexPosition_projected;
 
-        // Pass the colors that were inputs
-        o_color = i_color;
+        // Pass the UVs that were inputs.
+        o_uv = i_uv;
     }
 }

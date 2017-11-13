@@ -102,15 +102,17 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
     }
 
-    for (auto& meshHandle : m_meshList)
+    const size_t numMeshes = m_meshList.size();
+    for (size_t i = 0; i < numMeshes; ++i)
     {
-        Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(meshHandle);
-        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], Math::sVector(), Math::cQuaternion());
+        Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_meshList[i]);
+        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_meshTextureList[i]);
+        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], texture, m_meshPositions[i], Math::cQuaternion());
     }
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
     {
-        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_textureList[spriteRenderData.m_currentFrameIndex]);
+        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_spriteTextureList[spriteRenderData.m_currentFrameIndex]);
         Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
     }
 
@@ -195,7 +197,7 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
-    m_camera.m_rigidBodyState.position.z = 10;
+    m_camera.m_rigidBodyState.position.z = 15;
 
 OnExit:
 
@@ -212,7 +214,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
     }
     m_effectList.clear();
 
-    for (auto& texture : m_textureList)
+    for (auto& texture : m_spriteTextureList)
     {
         const auto localResult = Graphics::cTexture::s_manager.Release(texture);
         if (!localResult)
@@ -224,7 +226,21 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
             }
         }
     }
-    m_textureList.clear();
+    m_spriteTextureList.clear();
+
+    for (auto& texture : m_meshTextureList)
+    {
+        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
+        if (!localResult)
+        {
+            EAE6320_ASSERT(false);
+            if (result)
+            {
+                result = localResult;
+            }
+        }
+    }
+    m_meshTextureList.clear();
 
     for (auto& mesh : m_meshList)
     {
@@ -239,6 +255,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
         }
     }
     m_meshList.clear();
+    
 
     for (const auto& sprite : m_spriteList)
     {
@@ -319,7 +336,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeTextures()
     cResult result = Results::Success;
 
     constexpr uint8_t numTextures = s_numTextureFolders * s_numFrames;
-    m_textureList.reserve(numTextures);
+    m_spriteTextureList.reserve(numTextures);
 
     static const std::string textureNameSuffix("frame_");
     static const std::string textureFileExtension(".tex");
@@ -339,7 +356,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeTextures()
             }
             else
             {
-                m_textureList.push_back(textureHandle);
+                m_spriteTextureList.push_back(textureHandle);
             }
         }
     }
@@ -354,6 +371,13 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
     cResult result = Results::Success;
 
     {
+        Graphics::cTexture::Handle textureHandle;
+        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Grass.tex", textureHandle)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+
         Graphics::cMesh::Handle meshHandle;
         if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Floor.msh", meshHandle)))
         {
@@ -362,8 +386,34 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
         }
         else
         {
+            m_meshTextureList.push_back(textureHandle);
             m_meshList.push_back(meshHandle);
         }
+
+        m_meshPositions.push_back(Math::sVector(0.0f, -1.0f, 0.0f));
+    }
+
+    {
+        Graphics::cTexture::Handle textureHandle;
+        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Crate.tex", textureHandle)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+
+        Graphics::cMesh::Handle meshHandle;
+        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Crate.msh", meshHandle)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_meshTextureList.push_back(textureHandle);
+            m_meshList.push_back(meshHandle);
+        }
+
+        m_meshPositions.push_back(Math::sVector(-2.0f, 0.25f, -2.0f));
     }
 
 OnExit:
@@ -425,7 +475,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 
     cGameObject* gameObject = nullptr;
 
-    if (!(result = cGameObject::Create(gameObject, Math::sVector(), Graphics::sColor::RED, Graphics::sColor::YELLOW)))
+    if (!(result = cGameObject::Create(gameObject, Math::sVector())))
     {
         EAE6320_ASSERT(false);
         goto OnExit;

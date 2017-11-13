@@ -27,7 +27,7 @@ const float eae6320::cGameObject::s_linearDamping = 0.1f;
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const Math::sVector& i_position, const Graphics::sColor& i_innerColor, const Graphics::sColor& i_outerColor)
+eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const Math::sVector& i_position)
 {
     auto result = Results::Success;
 
@@ -46,7 +46,7 @@ eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const 
     }
 
     // Initialize the new game object
-    if (!(result = newGameObject->Initialize(i_position, i_innerColor, i_outerColor)))
+    if (!(result = newGameObject->Initialize(i_position)))
     {
         EAE6320_ASSERTF(false, "Could not initialize the new game object!");
         goto OnExit;
@@ -81,7 +81,7 @@ eae6320::cResult eae6320::cGameObject::Destroy(cGameObject*& i_gameObject)
     return Results::Success;
 }
 
-eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_position, const Graphics::sColor& i_innerColor, const Graphics::sColor& i_outerColor)
+eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_position)
 {
     auto result = Results::Success;
 
@@ -90,7 +90,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the effect
     {
-        if (!(result = eae6320::Graphics::cEffect::Create(m_effect, cExampleGame::s_meshVertexShaderFilePath.c_str(), cExampleGame::s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
+        if (!(result = Graphics::cEffect::Create(m_effect, cExampleGame::s_meshVertexShaderFilePath.c_str(), cExampleGame::s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -99,9 +99,18 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the mesh
     {
-        if (!(result = eae6320::Graphics::cMesh::s_manager.Load("data/Meshes/Cube.msh", m_mesh)))
+        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/SoccerBall.msh", m_mesh)))
         {
-            EAE6320_ASSERTF(false, "Could not initialize the new mesh!");
+            EAE6320_ASSERTF(false, "Could not initialize the mesh for game object!");
+            goto OnExit;
+        }
+    }
+
+    // Initialize the texture
+    {
+        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/SoccerBall.tex", m_texture)))
+        {
+            EAE6320_ASSERTF(false, "Could not initialize the texture for game object!");
             goto OnExit;
         }
     }
@@ -116,6 +125,7 @@ eae6320::cResult eae6320::cGameObject::CleanUp()
     m_effect->DecrementReferenceCount();
     m_effect = nullptr;
 
+    Graphics::cTexture::s_manager.Release(m_texture);
     Graphics::cMesh::s_manager.Release(m_mesh);
 
     return eae6320::Results::Success;
@@ -157,6 +167,9 @@ void eae6320::cGameObject::SubmitDataToBeRendered(const float i_elapsedSecondCou
 {
     const Math::cQuaternion predictedOrientation = m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
     const Math::sVector predictedPosition = m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
+    
     Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_mesh);
-    eae6320::Graphics::SubmitMeshToBeRendered(mesh, m_effect, predictedPosition, predictedOrientation);
+    Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_texture);
+    
+    Graphics::SubmitMeshToBeRendered(mesh, m_effect, texture, predictedPosition, predictedOrientation);
 }

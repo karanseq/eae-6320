@@ -1,5 +1,11 @@
 #include <Shaders/shaders.inc>
 
+// Constant Buffers
+//=================
+
+DeclareTexture( g_color_texture, 0 );
+DeclareSamplerState( g_color_samplerState, 0 );
+
 // Entry Point
 //============
 
@@ -11,7 +17,7 @@ void main (
     //======
 
     in const float4 i_position : SV_POSITION,
-    in const float4 i_color : COLOR0,
+    in const float2 i_uv : TEXCOORD0,
 
     // Output
     //=======
@@ -27,7 +33,7 @@ void main (
 // Input
 //======
 
-layout( location = 0 ) in vec4 i_color;
+layout( location = 0 ) in vec2 i_uv;
 
 // Output
 //=======
@@ -41,5 +47,7 @@ void main()
 #endif
 
 {
-    o_color = i_color;
+    float4 sampledColor = GetSampledColor( g_color_texture, i_uv, g_color_samplerState );
+
+    o_color = sampledColor;
 }

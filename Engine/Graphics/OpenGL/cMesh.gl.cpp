@@ -38,7 +38,7 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = eae6320::Results::Success;
 
@@ -112,7 +112,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             Logging::OutputError("Failed to allocated memory for the mesh's vertex data!");
             goto OnExit;
         }
-        GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_colors);
+        GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_uvs);
 
         const auto bufferSize = i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh);
         EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(GLsizeiptr) * 8)));
@@ -171,10 +171,6 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             // In our class we won't ever read from the buffer
             GL_STATIC_DRAW);
 
-        //// Free the memory allocated for the index data
-        //free(indexData);
-        //indexData = nullptr;
-
         const auto errorCode = glGetError();
         if (errorCode != GL_NO_ERROR)
         {
@@ -225,15 +221,15 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             }
         }
 
-        // Color (1)
-        // 4 8-bit ints == 4 bytes
+        // Texture Coordinates (1)
+        // 2 floats == 8 bytes
         // Offset = 12
         {
             constexpr GLuint vertexElementLocation = 1;
-            constexpr GLint elementCount = 4;
-            constexpr GLboolean normalized = GL_TRUE;
-            glVertexAttribPointer(vertexElementLocation, elementCount, GL_UNSIGNED_BYTE, normalized, stride,
-                reinterpret_cast<GLvoid*>(offsetof(eae6320::Graphics::VertexFormats::sMesh, r)));
+            constexpr GLint elementCount = 2;
+            constexpr GLboolean normalized = GL_FALSE;  // The given floats should be used as-is
+            glVertexAttribPointer(vertexElementLocation, elementCount, GL_FLOAT, normalized, stride,
+                reinterpret_cast<GLvoid*>(offsetof(eae6320::Graphics::VertexFormats::sMesh, u)));
             const auto errorCode = glGetError();
             if (errorCode == GL_NO_ERROR)
             {
@@ -243,7 +239,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
                 {
                     result = eae6320::Results::Failure;
                     EAE6320_ASSERTF(false, reinterpret_cast<const char*>(gluErrorString(errorCode)));
-                    eae6320::Logging::OutputError("OpenGL failed to enable the COLOR vertex attribute at location %u: %s",
+                    eae6320::Logging::OutputError("OpenGL failed to enable the TEXCOORD vertex attribute at location %u: %s",
                         vertexElementLocation, reinterpret_cast<const char*>(gluErrorString(errorCode)));
                     goto OnExit;
                 }
@@ -252,7 +248,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             {
                 result = eae6320::Results::Failure;
                 EAE6320_ASSERTF(false, reinterpret_cast<const char*>(gluErrorString(errorCode)));
-                eae6320::Logging::OutputError("OpenGL failed to set the COLOR vertex attribute at location %u: %s",
+                eae6320::Logging::OutputError("OpenGL failed to set the TEXCOORD vertex attribute at location %u: %s",
                     vertexElementLocation, reinterpret_cast<const char*>(gluErrorString(errorCode)));
                 goto OnExit;
             }

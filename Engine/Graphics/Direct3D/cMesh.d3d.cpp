@@ -66,7 +66,7 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Graphics::sColor* i_colors, const uint16_t i_indexCount, const uint16_t* i_indices)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = eae6320::Results::Success;
 
@@ -104,27 +104,27 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
                     auto& positionElement = layoutDescription[0];
 
                     positionElement.SemanticName = "POSITION";
-                    positionElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    positionElement.SemanticIndex = 0;  // (Semantics without modifying indices at the end can always use zero)
                     positionElement.Format = DXGI_FORMAT_R32G32B32_FLOAT;
                     positionElement.InputSlot = 0;
                     positionElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sMesh, x);
                     positionElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-                    positionElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                    positionElement.InstanceDataStepRate = 0;   // (Must be zero for per-vertex data)
                 }
 
-                // COLOR
-                // 4 8-bit ints == 4 bytes
+                // TEXCOORD
+                // 2 floats == 8 bytes
                 // Offset = 12
                 {
                     auto& colorElement = layoutDescription[1];
 
-                    colorElement.SemanticName = "COLOR";
-                    colorElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
-                    colorElement.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                    colorElement.SemanticName = "TEXCOORD";
+                    colorElement.SemanticIndex = 0; // (Semantics without modifying indices at the end can always use zero)
+                    colorElement.Format = DXGI_FORMAT_R32G32_FLOAT;
                     colorElement.InputSlot = 0;
-                    colorElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sMesh, r);
+                    colorElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sMesh, u);
                     colorElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-                    colorElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                    colorElement.InstanceDataStepRate = 0;  // (Must be zero for per-vertex data)
                 }
             }
 
@@ -158,18 +158,18 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             Logging::OutputError("Failed to allocated memory for the mesh's vertex data!");
             goto OnExit;
         }
-        GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_colors);
+        GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_uvs);
 
         D3D11_BUFFER_DESC bufferDescription{};
         {
             const auto bufferSize = i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh);
             EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(bufferDescription.ByteWidth) * 8)));
             bufferDescription.ByteWidth = static_cast<unsigned int>(bufferSize);
-            bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;	// In our class the buffer will never change after it's been created
+            bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;    // In our class the buffer will never change after it's been created
             bufferDescription.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-            bufferDescription.CPUAccessFlags = 0;	// No CPU access is necessary
+            bufferDescription.CPUAccessFlags = 0;   // No CPU access is necessary
             bufferDescription.MiscFlags = 0;
-            bufferDescription.StructureByteStride = 0;	// Not used
+            bufferDescription.StructureByteStride = 0;  // Not used
         }
         D3D11_SUBRESOURCE_DATA initialData{};
         {
@@ -215,11 +215,11 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             const auto bufferSize = i_indexCount * sizeof(uint16_t);
             EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(bufferDescription.ByteWidth) * 8)));
             bufferDescription.ByteWidth = static_cast<unsigned int>(bufferSize);
-            bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;	// In our class the buffer will never change after it's been created
+            bufferDescription.Usage = D3D11_USAGE_IMMUTABLE;    // In our class the buffer will never change after it's been created
             bufferDescription.BindFlags = D3D11_BIND_INDEX_BUFFER;
-            bufferDescription.CPUAccessFlags = 0;	// No CPU access is necessary
+            bufferDescription.CPUAccessFlags = 0;   // No CPU access is necessary
             bufferDescription.MiscFlags = 0;
-            bufferDescription.StructureByteStride = 0;	// Not used
+            bufferDescription.StructureByteStride = 0;  // Not used
         }
         D3D11_SUBRESOURCE_DATA initialData{};
         {
