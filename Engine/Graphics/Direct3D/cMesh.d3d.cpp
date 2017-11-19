@@ -160,6 +160,14 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
         }
         GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_uvs);
 
+        // D3D uses top-to-bottom UVs so reverse the Vs appropriately
+        {
+            for (uint16_t i = 0; i < i_vertexCount; ++i)
+            {
+                vertexData[i].v = 1.0f - vertexData[i].v;
+            }
+        }
+
         D3D11_BUFFER_DESC bufferDescription{};
         {
             const auto bufferSize = i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh);
