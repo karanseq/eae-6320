@@ -84,20 +84,13 @@ namespace eae6320
 
         private:
 
-            cResult Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs, const uint16_t i_indexCount, const uint16_t* i_indices);
+            cResult Initialize(const uint16_t i_vertexCount, const Graphics::VertexFormats::sMesh* i_vertexData, const uint16_t i_indexCount, const uint16_t* i_indices);
             cResult CleanUp();
 
             cMesh() = default;
             ~cMesh();
 
-        private:
-
-            // Implementation
-            //===============
-
-            void GetVertexBufferData(VertexFormats::sMesh* o_vertexData, const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs) const;
-
-        private:
+       private:
 
             // Data
             //=====

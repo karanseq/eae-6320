@@ -43,18 +43,6 @@ eae6320::cResult eae6320::Assets::cMeshBuilder::Build(const std::vector<std::str
 {
     auto result = eae6320::Results::Success;
 
-    //std::string errorMessage;
-    //// Copy the mesh from the source directory to the destination directory
-    //if (!(result = eae6320::Platform::CopyFile(
-    //    m_path_source,
-    //    m_path_target,
-    //    /*i_shouldFunctionFailIfTargetAlreadyExists = */ false,
-    //    /*i_shouldTargetFileTimeBeModified = */ true,
-    //    &errorMessage)))
-    //{
-    //    eae6320::Assets::OutputErrorMessageWithFileInfo(m_path_source, errorMessage.c_str());
-    //}
-    
     // Create a new Lua state
     lua_State* luaState = nullptr;
     {

@@ -38,7 +38,7 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs, const uint16_t i_indexCount, const uint16_t* i_indices)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const Graphics::VertexFormats::sMesh* i_vertexData, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = eae6320::Results::Success;
 
@@ -103,26 +103,11 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
 
     // Assign the data to the vertex buffer
     {
-        // Allocate memory for the vertex data
-        eae6320::Graphics::VertexFormats::sMesh* vertexData = static_cast<eae6320::Graphics::VertexFormats::sMesh*>(malloc(i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh)));
-        if (vertexData == nullptr)
-        {
-            result = Results::OutOfMemory;
-            EAE6320_ASSERTF(false, "Couldn't allocate memory for the mesh's vertex data!");
-            Logging::OutputError("Failed to allocated memory for the mesh's vertex data!");
-            goto OnExit;
-        }
-        GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_uvs);
-
         const auto bufferSize = i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh);
         EAE6320_ASSERT(bufferSize < (uint64_t(1u) << (sizeof(GLsizeiptr) * 8)));
-        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(bufferSize), reinterpret_cast<GLvoid*>(vertexData),
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(bufferSize), reinterpret_cast<GLvoid*>(const_cast<VertexFormats::sMesh*>(i_vertexData)),
             // In our class we won't ever read from the buffer
             GL_STATIC_DRAW);
-
-        // Free the memory allocated for the vertex data
-        free(vertexData);
-        vertexData = nullptr;
 
         const auto errorCode = glGetError();
         if (errorCode != GL_NO_ERROR)
