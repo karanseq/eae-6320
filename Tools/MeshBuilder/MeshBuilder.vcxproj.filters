@@ -1,17 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Windows">
-      <UniqueIdentifier>{b74b88b4-ca15-41a2-ba04-9adf146a425b}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="cMeshBuilder.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Windows\cMeshBuilder.win.cpp">
-      <Filter>Windows</Filter>
-    </ClCompile>
     <ClCompile Include="EntryPoint.cpp" />
+    <ClCompile Include="Direct3D\cMeshBuilder.d3d.cpp">
+      <Filter>Direct3D</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenGL\cMeshBuilder.gl.cpp">
+      <Filter>OpenGL</Filter>
+    </ClCompile>
+    <ClCompile Include="cMeshBuilder.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Direct3D">
+      <UniqueIdentifier>{952e17f0-8869-4c53-85d1-0d6d0864824f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenGL">
+      <UniqueIdentifier>{a98e30b5-1c90-45bb-aaac-25206021f597}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
 </Project>

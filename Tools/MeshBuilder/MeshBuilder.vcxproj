@@ -150,12 +150,29 @@
     <ClInclude Include="cMeshBuilder.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cMeshBuilder.cpp" />
+    <ClCompile Include="Direct3D\cMeshBuilder.d3d.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="EntryPoint.cpp" />
-    <ClCompile Include="Windows\cMeshBuilder.win.cpp" />
+    <ClCompile Include="OpenGL\cMeshBuilder.gl.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\Engine\Graphics\Graphics.vcxproj">
+      <Project>{f59dda89-7cc8-4fbf-8baa-f7d83b908e5b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Engine\Math\Math.vcxproj">
+      <Project>{999c3d5f-7f79-4bd7-ae21-92eeed0c5962}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\Engine\Platform\Platform.vcxproj">
       <Project>{7462d3a7-9936-442e-877c-89efda754596}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\External\Lua\LuaLib.vcxproj">
+      <Project>{a506e35d-bb34-468d-82cd-112386be29d1}</Project>
     </ProjectReference>
     <ProjectReference Include="..\AssetBuildLibrary\AssetBuildLibrary.vcxproj">
       <Project>{4438bc28-0c79-4907-bd5c-abad0dd78aec}</Project>
