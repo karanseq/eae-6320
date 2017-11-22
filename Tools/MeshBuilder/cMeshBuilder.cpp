@@ -473,6 +473,26 @@ namespace
                     o_vertexData[i - 1].u = uv.x;
                     o_vertexData[i - 1].v = uv.y;
                 }
+
+                // Load the vertex color
+                {
+                    eae6320::Graphics::sColor color;
+                    if (!(result = LoadColor(io_luaState, color)))
+                    {
+                        // Right now the asset table is at -3,
+                        // the vertexData table is at -2,
+                        // and i'th element of the vertexData table is at -1
+                        lua_pop(&io_luaState, 1);
+
+                        result = eae6320::Results::InvalidFile;
+                        eae6320::Assets::OutputErrorMessage("Couldn't load the color for %d in the vertexData", i);
+                        goto OnExit;
+                    }
+                    o_vertexData[i - 1].r = static_cast<uint8_t>(color.r * 255.0f);
+                    o_vertexData[i - 1].g = static_cast<uint8_t>(color.g * 255.0f);
+                    o_vertexData[i - 1].b = static_cast<uint8_t>(color.b * 255.0f);
+                    o_vertexData[i - 1].a = static_cast<uint8_t>(color.a * 255.0f);
+                }
             }
             else
             {

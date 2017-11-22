@@ -81,7 +81,6 @@ local NumberFrames = 6
 -- meshes
 local MeshDir = "Meshes/"
 local FloorMeshName = "Floor"
-local SoccerBallMeshName = "SoccerBall"
 local CrateMeshName = "Crate"
 
 -- External Interface
@@ -121,9 +120,6 @@ function BuildAssets()
         local GrassTexture = "Grass"
         wereThereErrors = BuildTexture(SoccerTextureDir .. GrassTexture, ".png") or wereThereErrors
         
-        local SoccerBallTexture = "SoccerBall"
-        wereThereErrors = BuildTexture(SoccerTextureDir .. SoccerBallTexture, ".png") or wereThereErrors
-        
         local CrateTexture = "Crate"
         wereThereErrors = BuildTexture(SoccerTextureDir .. CrateTexture, ".png") or wereThereErrors
         
@@ -134,7 +130,6 @@ function BuildAssets()
     -- Build the meshes and copy them to the installation location
     do
         wereThereErrors = BuildMesh(MeshDir .. FloorMeshName) or wereThereErrors
-        wereThereErrors = BuildMesh(MeshDir .. SoccerBallMeshName) or wereThereErrors
         wereThereErrors = BuildMesh(MeshDir .. CrateMeshName) or wereThereErrors
         wereThereErrors = BuildMesh(MeshDir .. "Bat") or wereThereErrors
     end

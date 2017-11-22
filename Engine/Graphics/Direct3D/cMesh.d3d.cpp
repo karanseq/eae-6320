@@ -92,7 +92,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             // "POSITION" here matches with "POSITION" in shader code.
             // "COLOR" here matches with "COLOR" in shader code).
             // Note that OpenGL uses arbitrarily assignable number IDs to do the same thing.
-            constexpr unsigned int vertexElementCount = 2;
+            constexpr unsigned int vertexElementCount = 3;
             D3D11_INPUT_ELEMENT_DESC layoutDescription[vertexElementCount] = {};
             {
                 // Slot 0
@@ -125,6 +125,21 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
                     colorElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sMesh, u);
                     colorElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
                     colorElement.InstanceDataStepRate = 0;  // (Must be zero for per-vertex data)
+                }
+
+                // COLOR
+                // 4 8-bit ints == 4 bytes
+                // Offset = 20
+                {
+                    auto& colorElement = layoutDescription[2];
+
+                    colorElement.SemanticName = "COLOR";
+                    colorElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    colorElement.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                    colorElement.InputSlot = 0;
+                    colorElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sMesh, r);
+                    colorElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                    colorElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
                 }
             }
 

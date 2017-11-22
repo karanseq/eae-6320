@@ -238,6 +238,40 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
                 goto OnExit;
             }
         }
+
+        // Color (2)
+        // 4 8-bit ints == 4 bytes
+        // Offset = 20
+        {
+            constexpr GLuint vertexElementLocation = 2;
+            constexpr GLint elementCount = 4;
+            constexpr GLboolean normalized = GL_TRUE;
+            glVertexAttribPointer(vertexElementLocation, elementCount, GL_UNSIGNED_BYTE, normalized, stride,
+                reinterpret_cast<GLvoid*>(offsetof(eae6320::Graphics::VertexFormats::sMesh, r)));
+            const auto errorCode = glGetError();
+            if (errorCode == GL_NO_ERROR)
+            {
+                glEnableVertexAttribArray(vertexElementLocation);
+                const GLenum errorCode = glGetError();
+                if (errorCode != GL_NO_ERROR)
+                {
+                    result = eae6320::Results::Failure;
+                    EAE6320_ASSERTF(false, reinterpret_cast<const char*>(gluErrorString(errorCode)));
+                    eae6320::Logging::OutputError("OpenGL failed to enable the COLOR vertex attribute at location %u: %s",
+                        vertexElementLocation, reinterpret_cast<const char*>(gluErrorString(errorCode)));
+                    goto OnExit;
+                }
+            }
+            else
+            {
+                result = eae6320::Results::Failure;
+                EAE6320_ASSERTF(false, reinterpret_cast<const char*>(gluErrorString(errorCode)));
+                eae6320::Logging::OutputError("OpenGL failed to set the COLOR vertex attribute at location %u: %s",
+                    vertexElementLocation, reinterpret_cast<const char*>(gluErrorString(errorCode)));
+                goto OnExit;
+            }
+        }
+
     }
 
 OnExit:
