@@ -66,7 +66,7 @@ void eae6320::Graphics::cMesh::Draw() const
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const eae6320::Math::sVector* i_vertices, const eae6320::Math::sVector2d* i_uvs, const uint16_t i_indexCount, const uint16_t* i_indices)
+eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCount, const Graphics::VertexFormats::sMesh* i_vertexData, const uint16_t i_indexCount, const uint16_t* i_indices)
 {
     auto result = eae6320::Results::Success;
 
@@ -92,7 +92,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
             // "POSITION" here matches with "POSITION" in shader code.
             // "COLOR" here matches with "COLOR" in shader code).
             // Note that OpenGL uses arbitrarily assignable number IDs to do the same thing.
-            constexpr unsigned int vertexElementCount = 2;
+            constexpr unsigned int vertexElementCount = 3;
             D3D11_INPUT_ELEMENT_DESC layoutDescription[vertexElementCount] = {};
             {
                 // Slot 0
@@ -126,6 +126,21 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
                     colorElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
                     colorElement.InstanceDataStepRate = 0;  // (Must be zero for per-vertex data)
                 }
+
+                // COLOR
+                // 4 8-bit ints == 4 bytes
+                // Offset = 20
+                {
+                    auto& colorElement = layoutDescription[2];
+
+                    colorElement.SemanticName = "COLOR";
+                    colorElement.SemanticIndex = 0;	// (Semantics without modifying indices at the end can always use zero)
+                    colorElement.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+                    colorElement.InputSlot = 0;
+                    colorElement.AlignedByteOffset = offsetof(eae6320::Graphics::VertexFormats::sMesh, r);
+                    colorElement.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
+                    colorElement.InstanceDataStepRate = 0;	// (Must be zero for per-vertex data)
+                }
             }
 
             const auto d3dResult = direct3dDevice->CreateInputLayout(layoutDescription, vertexElementCount,
@@ -149,17 +164,6 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
 
     // Vertex Buffer
     {
-        // Allocate memory for the vertex data
-        eae6320::Graphics::VertexFormats::sMesh* vertexData = static_cast<eae6320::Graphics::VertexFormats::sMesh*>(malloc(i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh)));
-        if (vertexData == nullptr)
-        {
-            result = Results::OutOfMemory;
-            EAE6320_ASSERTF(false, "Couldn't allocate memory for the mesh's vertex data!");
-            Logging::OutputError("Failed to allocated memory for the mesh's vertex data!");
-            goto OnExit;
-        }
-        GetVertexBufferData(vertexData, i_vertexCount, i_vertices, i_uvs);
-
         D3D11_BUFFER_DESC bufferDescription{};
         {
             const auto bufferSize = i_vertexCount * sizeof(eae6320::Graphics::VertexFormats::sMesh);
@@ -173,7 +177,7 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
         }
         D3D11_SUBRESOURCE_DATA initialData{};
         {
-            initialData.pSysMem = vertexData;
+            initialData.pSysMem = i_vertexData;
             // (The other data members are ignored for non-texture buffers)
         }
 
@@ -189,27 +193,6 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
 
     // Index Buffer
     {
-        // Allocate memory for the index data
-        uint16_t* indexData = static_cast<uint16_t*>(malloc(i_indexCount * sizeof(uint16_t)));
-        if (indexData == nullptr)
-        {
-            result = Results::OutOfMemory;
-            EAE6320_ASSERTF(false, "Couldn't allocate memory for the mesh's index data!");
-            Logging::OutputError("Failed to allocated memory for the mesh's index data!");
-            goto OnExit;
-        }
-        
-        // Initialize the index buffer data
-        {
-            memcpy_s(indexData, i_indexCount * sizeof(uint16_t), i_indices, i_indexCount * sizeof(uint16_t));
-            // D3D uses clockwise winding so swap the indices accordingly
-            const uint16_t numTriangles = i_indexCount / s_indicesPerTriangle;
-            for (uint16_t i = 0; i < numTriangles; ++i)
-            {
-                std::swap(indexData[i * s_indicesPerTriangle + 1], indexData[i * s_indicesPerTriangle + 2]);
-            }
-        }
-
         D3D11_BUFFER_DESC bufferDescription{};
         {
             const auto bufferSize = i_indexCount * sizeof(uint16_t);
@@ -223,15 +206,11 @@ eae6320::cResult eae6320::Graphics::cMesh::Initialize(const uint16_t i_vertexCou
         }
         D3D11_SUBRESOURCE_DATA initialData{};
         {
-            initialData.pSysMem = indexData;
+            initialData.pSysMem = i_indices;
             // (The other data members are ignored for non-texture buffers)
         }
 
         const auto d3dResult = direct3dDevice->CreateBuffer(&bufferDescription, &initialData, &m_indexBuffer);
-
-        // Free the memory allocated for the index data
-        free(indexData);
-        indexData = nullptr;
 
         if (FAILED(d3dResult))
         {

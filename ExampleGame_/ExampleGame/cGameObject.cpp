@@ -99,7 +99,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the mesh
     {
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/SoccerBall.msh", m_mesh)))
+        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Bat.msh", m_mesh)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the mesh for game object!");
             goto OnExit;
@@ -108,7 +108,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the texture
     {
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/SoccerBall.tex", m_texture)))
+        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Wood.tex", m_texture)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the texture for game object!");
             goto OnExit;

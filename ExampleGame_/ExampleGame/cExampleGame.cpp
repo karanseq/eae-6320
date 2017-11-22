@@ -197,7 +197,8 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
-    m_camera.m_rigidBodyState.position.z = 15;
+    m_camera.m_rigidBodyState.position.y = 2.5f;
+    m_camera.m_rigidBodyState.position.z = 15.0f;
 
 OnExit:
 
@@ -475,7 +476,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 
     cGameObject* gameObject = nullptr;
 
-    if (!(result = cGameObject::Create(gameObject, Math::sVector())))
+    if (!(result = cGameObject::Create(gameObject, Math::sVector(0.0f, -2.5f, 0.0f))))
     {
         EAE6320_ASSERT(false);
         goto OnExit;
