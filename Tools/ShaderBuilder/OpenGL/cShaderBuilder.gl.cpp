@@ -477,7 +477,8 @@ namespace
 			const auto localResult = mcpp_lib_main( static_cast<int>( argumentCount ), arguments );
 			if ( localResult == EXIT_SUCCESS )
 			{
-				o_shaderSource_preProcessed = mcpp_get_mem_buffer( static_cast<OUTDEST>( eae6320::mcpp::OUTDEST::Out ) );
+                auto const * const shaderSource_preProcessed = mcpp_get_mem_buffer(static_cast<OUTDEST>(eae6320::mcpp::OUTDEST::Out));
+                o_shaderSource_preProcessed = shaderSource_preProcessed ? shaderSource_preProcessed : "";
 			}
 			else
 			{

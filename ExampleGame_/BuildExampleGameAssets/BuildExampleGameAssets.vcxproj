@@ -89,13 +89,16 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <CustomBuildStep>
-      <Command>"$(OutputDir)AssetBuildExe.exe"</Command>
+      <Command>
+      </Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Message>Building $(GameName) Assets</Message>
+      <Message>
+      </Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>ALWAYS_RUN</Outputs>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -105,13 +108,16 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <CustomBuildStep>
-      <Command>"$(OutputDir)AssetBuildExe.exe"</Command>
+      <Command>
+      </Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Message>Building $(GameName) Assets</Message>
+      <Message>
+      </Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>ALWAYS_RUN</Outputs>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -127,13 +133,16 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <CustomBuildStep>
-      <Command>"$(OutputDir)AssetBuildExe.exe"</Command>
+      <Command>
+      </Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Message>Building $(GameName) Assets</Message>
+      <Message>
+      </Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>ALWAYS_RUN</Outputs>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -149,16 +158,34 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <CustomBuildStep>
-      <Command>"$(OutputDir)AssetBuildExe.exe"</Command>
+      <Command>
+      </Command>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Message>Building $(GameName) Assets</Message>
+      <Message>
+      </Message>
     </CustomBuildStep>
     <CustomBuildStep>
-      <Outputs>ALWAYS_RUN</Outputs>
+      <Outputs>
+      </Outputs>
     </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <CustomBuild Include="..\Content\AssetsToBuild.lua">
+      <FileType>Document</FileType>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building $(GameName) Assets</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building $(GameName) Assets</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building $(GameName) Assets</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building $(GameName) Assets</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(OutputDir)AssetBuildExe.exe" "%(Identity)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(OutputDir)AssetBuildExe.exe" "%(Identity)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(OutputDir)AssetBuildExe.exe" "%(Identity)"</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(OutputDir)AssetBuildExe.exe" "%(Identity)"</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">ALWAYS_RUN</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">ALWAYS_RUN</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">ALWAYS_RUN</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">ALWAYS_RUN</Outputs>
+    </CustomBuild>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

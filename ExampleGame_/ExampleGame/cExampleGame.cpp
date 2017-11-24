@@ -26,7 +26,7 @@ const std::string eae6320::cExampleGame::s_meshFragmentShaderFilePath("data/Shad
 const std::string eae6320::cExampleGame::s_spriteVertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
 const std::string eae6320::cExampleGame::s_spriteFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
 const std::string eae6320::cExampleGame::s_animatedSpriteFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
-const std::string eae6320::cExampleGame::s_textureFolderList[s_numTextureFolders] = { "data/Textures/Dust/", "data/Textures/Forest/", "data/Textures/Ramps/" };
+const std::string eae6320::cExampleGame::s_textureFolderList[s_numTextureFolders] = { "data/Textures/Ramps/" };
 
 // Inherited Implementation
 //=========================
@@ -426,8 +426,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeSprites()
 {
     cResult result = Results::Success;
 
-    const Math::sVector2d origins[s_numTextureFolders] = { { 0.0f, -0.5f }, { -0.4f, 0.5f }, { -0.75f, 0.75f } };
-    const Math::sVector2d extents[s_numTextureFolders] = { { 0.75f, 0.35f }, { 0.4f, 0.3f } , { 0.3f, 0.3f } };
+    const Math::sVector2d origins[s_numTextureFolders] = { { -0.75f, 0.75f } };
+    const Math::sVector2d extents[s_numTextureFolders] = { { 0.3f, 0.3f } };
 
     m_spriteList.reserve(s_numTextureFolders);
 
