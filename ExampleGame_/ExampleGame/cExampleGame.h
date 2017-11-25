@@ -130,7 +130,7 @@ namespace eae6320
 
     public:
 
-        static constexpr uint8_t                            s_numTextureFolders = 3;
+        static constexpr uint8_t                            s_numTextureFolders = 1;
         static constexpr uint8_t                            s_numFrames = 6;
         static const std::string                            s_meshVertexShaderFilePath;
         static const std::string                            s_meshFragmentShaderFilePath;
