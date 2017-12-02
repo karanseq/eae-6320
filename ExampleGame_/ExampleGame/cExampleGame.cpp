@@ -60,7 +60,6 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 {
-    
     // update camera
     {
         static const float cameraImpulseMagnitude = 2.0f;
@@ -75,7 +74,22 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
         m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
     }
 
-    // update game object
+    // update meshes
+    {
+        static bool keyChanged = true;
+        if (keyChanged == true && UserInput::IsKeyPressed('X') == true)
+        {
+            std::swap(m_meshPositions[1].z, m_meshPositions[2].z);
+            keyChanged = false;
+
+        }
+        else if (keyChanged == false && UserInput::IsKeyPressed('X') == false)
+        {
+            keyChanged = true;
+        }
+    }
+
+    // update game objects
     {
         static const float gameObjectImpulseMagnitude = 1.5f;
         Math::sVector impulse;
