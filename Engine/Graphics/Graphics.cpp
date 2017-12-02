@@ -26,6 +26,7 @@
 #include <Engine/Time/Time.h>
 #include <Engine/UserOutput/UserOutput.h>
 
+#include <algorithm>
 #include <utility>
 #include <vector>
 
@@ -227,10 +228,53 @@ void eae6320::Graphics::RenderFrame()
         s_constantBuffer_perFrame.Update(&constantData_perFrame);
     }
 
-    // Draw the meshes
+    // Scratch-pad for transparent meshes
+    struct sMeshIndexTransformPair
+    {
+        uint16_t indexIntoMeshRenderDataList = 0;
+        float cameraSpaceZ = 0.0f;
+    };
+    uint16_t meshCounter = 0;
+    std::vector<sMeshIndexTransformPair> transparentMeshData;
+
+    // Draw the opaque meshes & filter out transparent mehses
     {
         for (const auto& meshRenderData : s_dataBeingRenderedByRenderThread->meshRenderDataList)
         {
+            Math::cMatrix_transformation transform_localToWorld = Math::cMatrix_transformation(meshRenderData.constantData_orientation, meshRenderData.constantData_position);
+
+            if (meshRenderData.constantData_effect->GetRenderState().IsAlphaTransparencyEnabled())
+            {
+                const Math::sVector translation_localToCamera = s_dataBeingRenderedByRenderThread->constantData_perFrame.g_transform_worldToCamera * transform_localToWorld.GetTranslation();
+                transparentMeshData.push_back({ meshCounter, translation_localToCamera.z });
+            }
+            else
+            {
+                auto& constantData_perDrawCall = s_dataBeingRenderedByRenderThread->constantData_perDrawCall;
+                {
+                    constantData_perDrawCall.g_transform_localToWorld = transform_localToWorld;
+                }
+                s_constantBuffer_perDrawCall.Update(&constantData_perDrawCall);
+
+                meshRenderData.constantData_effect->Bind();
+                {
+                    constexpr unsigned int id = 0;
+                    meshRenderData.constantData_texture->Bind(id);
+                }
+                meshRenderData.constantData_mesh->Draw();
+            }
+
+            ++meshCounter;
+        }
+    }
+
+    // Sort the transparent meshes from far-to-near in camera space and draw them
+    {
+        std::sort(transparentMeshData.begin(), transparentMeshData.end(), [](const sMeshIndexTransformPair& a, const sMeshIndexTransformPair& b) { return a.cameraSpaceZ < b.cameraSpaceZ; });
+
+        for (const auto& meshIndexTransformPair : transparentMeshData)
+        {
+            const auto& meshRenderData = s_dataBeingRenderedByRenderThread->meshRenderDataList[meshIndexTransformPair.indexIntoMeshRenderDataList];
             auto& constantData_perDrawCall = s_dataBeingRenderedByRenderThread->constantData_perDrawCall;
             {
                 constantData_perDrawCall.g_transform_localToWorld = Math::cMatrix_transformation(meshRenderData.constantData_orientation, meshRenderData.constantData_position);

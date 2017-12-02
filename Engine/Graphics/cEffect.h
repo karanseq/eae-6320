@@ -51,6 +51,13 @@ namespace eae6320
 
             EAE6320_ASSETS_DECLAREDELETEDREFERENCECOUNTEDFUNCTIONS(cEffect);
 
+            // Data
+            //=====
+
+        public:
+
+            FORCEINLINE const cRenderState& GetRenderState() const { return m_renderState; }
+
         private:
 
             cResult Initialize(const char* i_vertexShaderName, const char* i_fragmentShaderName, uint8_t i_renderStateBits);
