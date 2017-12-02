@@ -134,6 +134,7 @@ namespace eae6320
         static constexpr uint8_t                            s_numFrames = 6;
         static const std::string                            s_meshVertexShaderFilePath;
         static const std::string                            s_meshFragmentShaderFilePath;
+        static const std::string                            s_meshTranslucentFragmentShaderFilePath;
         static const std::string                            s_spriteVertexShaderFilePath;
         static const std::string                            s_spriteFragmentShaderFilePath;
         static const std::string                            s_animatedSpriteFragmentShaderFilePath;

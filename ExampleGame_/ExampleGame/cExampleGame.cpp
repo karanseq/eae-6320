@@ -23,6 +23,7 @@
 
 const std::string eae6320::cExampleGame::s_meshVertexShaderFilePath("data/Shaders/Vertex/mesh.shd");
 const std::string eae6320::cExampleGame::s_meshFragmentShaderFilePath("data/Shaders/Fragment/mesh.shd");
+const std::string eae6320::cExampleGame::s_meshTranslucentFragmentShaderFilePath("data/Shaders/Fragment/meshTranslucent.shd");
 const std::string eae6320::cExampleGame::s_spriteVertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
 const std::string eae6320::cExampleGame::s_spriteFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
 const std::string eae6320::cExampleGame::s_animatedSpriteFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
@@ -107,7 +108,8 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     {
         Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_meshList[i]);
         Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_meshTextureList[i]);
-        Graphics::SubmitMeshToBeRendered(mesh, m_effectList[0], texture, m_meshPositions[i], Math::cQuaternion());
+        Graphics::cEffect* effect = i == 0 ? m_effectList[0] : m_effectList[1];
+        Graphics::SubmitMeshToBeRendered(mesh, effect, texture, m_meshPositions[i], Math::cQuaternion());
     }
 
     for (auto& spriteRenderData : m_spriteRenderDataList)
@@ -279,14 +281,29 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 {
     cResult result = Results::Success;
 
-    constexpr uint8_t numEffects = 3;
+    constexpr uint8_t numEffects = 4;
     m_effectList.reserve(numEffects);
 
     // initialize the mesh effect
     {
         Graphics::cEffect* effect = nullptr;
 
-        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
+        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_effectList.push_back(effect);
+        }
+    }
+
+    // initialize the translucent mesh effect
+    {
+        Graphics::cEffect* effect = nullptr;
+
+        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshTranslucentFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -394,6 +411,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
         m_meshPositions.push_back(Math::sVector(0.0f, -1.0f, 0.0f));
     }
 
+    constexpr uint8_t numCrates = 2;
+    for (uint8_t i = 0; i < numCrates; ++i)
     {
         Graphics::cTexture::Handle textureHandle;
         if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Crate.tex", textureHandle)))
@@ -414,7 +433,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
             m_meshList.push_back(meshHandle);
         }
 
-        m_meshPositions.push_back(Math::sVector(-2.0f, 0.25f, -2.0f));
+        m_meshPositions.push_back(Math::sVector(-2.0f * i, 0.25f, 2.0f + -4.0f * i));
     }
 
 OnExit:
@@ -463,7 +482,7 @@ void eae6320::cExampleGame::InitializeSpriteRenderDataList()
             spriteRenderData.m_currentFrameIndex = i * s_numFrames;
             spriteRenderData.m_frameRate = 0.125f + float(i) * 0.05f;
             spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
-            spriteRenderData.m_effect = m_effectList[1];
+            spriteRenderData.m_effect = m_effectList[2];
             spriteRenderData.m_sprite = m_spriteList[i];
         }
         m_spriteRenderDataList.push_back(spriteRenderData);
