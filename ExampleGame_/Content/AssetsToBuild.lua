@@ -17,6 +17,7 @@ return
         { path = "Shaders/Vertex/mesh.xlsl", arguments = { "vertex" } },
         { path = "Shaders/Vertex/sprite.xlsl", arguments = { "vertex" } },
         { path = "Shaders/Fragment/mesh.xlsl", arguments = { "fragment" } },
+        { path = "Shaders/Fragment/meshTranslucent.xlsl", arguments = { "fragment" } },
         { path = "Shaders/Fragment/spriteAnimated.xlsl", arguments = { "fragment" } },
         { path = "Shaders/Fragment/spriteBasic.xlsl", arguments = { "fragment" } }
     },
