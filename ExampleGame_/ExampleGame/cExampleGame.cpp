@@ -23,11 +23,6 @@
 
 const std::string eae6320::cExampleGame::s_meshVertexShaderFilePath("data/Shaders/Vertex/mesh.shd");
 const std::string eae6320::cExampleGame::s_meshFragmentShaderFilePath("data/Shaders/Fragment/mesh.shd");
-const std::string eae6320::cExampleGame::s_meshTranslucentFragmentShaderFilePath("data/Shaders/Fragment/meshTranslucent.shd");
-const std::string eae6320::cExampleGame::s_spriteVertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
-const std::string eae6320::cExampleGame::s_spriteFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
-const std::string eae6320::cExampleGame::s_animatedSpriteFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
-const std::string eae6320::cExampleGame::s_textureFolderList[s_numTextureFolders] = { "data/Textures/Ramps/" };
 
 // Inherited Implementation
 //=========================
@@ -48,14 +43,7 @@ void eae6320::cExampleGame::UpdateBasedOnInput()
 
 void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    // Animate the background
-    {
-        static float systemTime = 0.0f;
-        systemTime += i_elapsedSecondCount_sinceLastUpdate;
-        m_backgroundColor.r = 1.0f + (cosf(systemTime) * 0.5f) - 0.5f;
-        m_backgroundColor.g = 1.0f + (sinf(systemTime) * 0.5f) - 0.5f;
-        m_backgroundColor.b = 1.0f + (acosf(systemTime) * 0.5f) - 0.5f;
-    }
+
 }
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
@@ -74,21 +62,6 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
         m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
     }
 
-    // update meshes
-    {
-        static bool keyChanged = true;
-        if (keyChanged == true && UserInput::IsKeyPressed('X') == true)
-        {
-            std::swap(m_meshPositions[1].z, m_meshPositions[2].z);
-            keyChanged = false;
-
-        }
-        else if (keyChanged == false && UserInput::IsKeyPressed('X') == false)
-        {
-            keyChanged = true;
-        }
-    }
-
     // update game objects
     {
         static const float gameObjectImpulseMagnitude = 1.5f;
@@ -103,7 +76,6 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
-    UpdateSpriteRenderData(i_elapsedSecondCount_sinceLastUpdate);
 }
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
@@ -115,21 +87,6 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
         const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
         const Math::sVector predictedPosition = m_camera.m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
-    }
-
-    const size_t numMeshes = m_meshList.size();
-    for (size_t i = 0; i < numMeshes; ++i)
-    {
-        Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_meshList[i]);
-        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_meshTextureList[i]);
-        Graphics::cEffect* effect = i == 0 ? m_effectList[0] : m_effectList[1];
-        Graphics::SubmitMeshToBeRendered(mesh, effect, texture, m_meshPositions[i], Math::cQuaternion());
-    }
-
-    for (auto& spriteRenderData : m_spriteRenderDataList)
-    {
-        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_spriteTextureList[spriteRenderData.m_currentFrameIndex]);
-        Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
     }
 
     for (auto& gameObject : m_gameObjectList)
@@ -152,23 +109,6 @@ void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_s
     for (const auto& gameObject : m_gameObjectList)
     {
         gameObject->UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
-    }
-}
-
-void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate)
-{
-    // Swap textures based on time.
-    {
-        for (auto& spriteRenderData : m_spriteRenderDataList)
-        {
-            spriteRenderData.m_waitUntilNextFrame -= i_elapsedSecondCount_sinceLastUpdate;
-            if (spriteRenderData.m_waitUntilNextFrame < 0.0f)
-            {
-                ++spriteRenderData.m_currentFrameIndex;
-                spriteRenderData.m_currentFrameIndex = spriteRenderData.m_currentFrameIndex - spriteRenderData.m_firstFrameIndex >= s_numFrames ? spriteRenderData.m_firstFrameIndex : spriteRenderData.m_currentFrameIndex;
-                spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
-            }
-        }
     }
 }
 
@@ -199,14 +139,6 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
-    // Initialize sprites
-    if (!(result = InitializeSprites()))
-    {
-        goto OnExit;
-    }
-
-    InitializeSpriteRenderDataList();
-
     // Initialize game objects
     if (!(result = InitializeGameObjects()))
     {
@@ -231,7 +163,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
     }
     m_effectList.clear();
 
-    for (auto& texture : m_spriteTextureList)
+    for (auto& texture : m_textureList)
     {
         const auto localResult = Graphics::cTexture::s_manager.Release(texture);
         if (!localResult)
@@ -243,44 +175,7 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
             }
         }
     }
-    m_spriteTextureList.clear();
-
-    for (auto& texture : m_meshTextureList)
-    {
-        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
-        if (!localResult)
-        {
-            EAE6320_ASSERT(false);
-            if (result)
-            {
-                result = localResult;
-            }
-        }
-    }
-    m_meshTextureList.clear();
-
-    for (auto& mesh : m_meshList)
-    {
-        const auto localResult = Graphics::cMesh::s_manager.Release(mesh);
-        if (!localResult)
-        {
-            EAE6320_ASSERT(false);
-            if (result)
-            {
-                result = localResult;
-            }
-        }
-    }
-    m_meshList.clear();
-    
-
-    for (const auto& sprite : m_spriteList)
-    {
-        sprite->DecrementReferenceCount();
-    }
-    m_spriteList.clear();
-
-    m_spriteRenderDataList.clear();
+    m_textureList.clear();
 
     for (auto& gameObject : m_gameObjectList)
     {
@@ -295,7 +190,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
 {
     cResult result = Results::Success;
 
-    constexpr uint8_t numEffects = 4;
+    constexpr uint8_t numEffects = 1;
     m_effectList.reserve(numEffects);
 
     // initialize the mesh effect
@@ -303,51 +198,6 @@ eae6320::cResult eae6320::cExampleGame::InitializeEffects()
         Graphics::cEffect* effect = nullptr;
 
         if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-    // initialize the translucent mesh effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshTranslucentFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-    // initialize the simple sprite effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-    // initialize the animated sprite effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -367,34 +217,6 @@ eae6320::cResult eae6320::cExampleGame::InitializeTextures()
 {
     cResult result = Results::Success;
 
-    constexpr uint8_t numTextures = s_numTextureFolders * s_numFrames;
-    m_spriteTextureList.reserve(numTextures);
-
-    static const std::string textureNameSuffix("frame_");
-    static const std::string textureFileExtension(".tex");
-
-    for (const auto& textureFolder : s_textureFolderList)
-    {
-        const std::string textureBaseName(textureFolder + textureNameSuffix);
-        for (uint8_t i = 0; i < s_numFrames; ++i)
-        {
-            const std::string textureName = textureBaseName + std::to_string(i) + textureFileExtension;
-            Graphics::cTexture::Handle textureHandle;
-            if (!(result = Graphics::cTexture::s_manager.Load(textureName.c_str(),
-                textureHandle)))
-            {
-                EAE6320_ASSERT(false);
-                goto OnExit;
-            }
-            else
-            {
-                m_spriteTextureList.push_back(textureHandle);
-            }
-        }
-    }
-
-OnExit:
-
     return result;
 }
 
@@ -402,105 +224,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
 {
     cResult result = Results::Success;
 
-    {
-        Graphics::cTexture::Handle textureHandle;
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Grass.tex", textureHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-
-        Graphics::cMesh::Handle meshHandle;
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Floor.msh", meshHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_meshTextureList.push_back(textureHandle);
-            m_meshList.push_back(meshHandle);
-        }
-
-        m_meshPositions.push_back(Math::sVector(0.0f, -1.0f, 0.0f));
-    }
-
-    constexpr uint8_t numCrates = 2;
-    for (uint8_t i = 0; i < numCrates; ++i)
-    {
-        Graphics::cTexture::Handle textureHandle;
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Crate.tex", textureHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-
-        Graphics::cMesh::Handle meshHandle;
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Crate.msh", meshHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_meshTextureList.push_back(textureHandle);
-            m_meshList.push_back(meshHandle);
-        }
-
-        m_meshPositions.push_back(Math::sVector(-2.0f * i, 0.25f, 2.0f + -4.0f * i));
-    }
-
-OnExit:
-
     return result;
-}
-
-eae6320::cResult eae6320::cExampleGame::InitializeSprites()
-{
-    cResult result = Results::Success;
-
-    const Math::sVector2d origins[s_numTextureFolders] = { { -0.75f, 0.75f } };
-    const Math::sVector2d extents[s_numTextureFolders] = { { 0.3f, 0.3f } };
-
-    m_spriteList.reserve(s_numTextureFolders);
-
-    for (uint8_t i = 0; i < s_numTextureFolders; ++i)
-    {
-        Graphics::cSprite* sprite = nullptr;
-
-        if (!(result = Graphics::cSprite::Create(sprite, origins[i], extents[i])))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_spriteList.push_back(sprite);
-        }
-    }
-
-OnExit:
-
-    return result;
-}
-
-void eae6320::cExampleGame::InitializeSpriteRenderDataList()
-{
-    const size_t numSprites = m_spriteList.size();
-    //for (uint8_t i = 0; i < numSprites; ++i)
-    const uint8_t i = static_cast<const uint8_t>(numSprites) - 1;
-    {
-        sSpriteRenderData spriteRenderData;
-        {
-            spriteRenderData.m_firstFrameIndex = i * s_numFrames;
-            spriteRenderData.m_currentFrameIndex = i * s_numFrames;
-            spriteRenderData.m_frameRate = 0.125f + float(i) * 0.05f;
-            spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
-            spriteRenderData.m_effect = m_effectList[2];
-            spriteRenderData.m_sprite = m_spriteList[i];
-        }
-        m_spriteRenderDataList.push_back(spriteRenderData);
-    }
 }
 
 eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
