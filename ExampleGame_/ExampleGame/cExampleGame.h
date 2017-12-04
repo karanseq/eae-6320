@@ -117,6 +117,7 @@ namespace eae6320
         virtual cResult Initialize() override;
         virtual cResult CleanUp() override;
 
+        cResult InitializeCamera();
         cResult InitializeGameObjects();
         cResult InitializeRings();
         cResult InitializeSkyBox();

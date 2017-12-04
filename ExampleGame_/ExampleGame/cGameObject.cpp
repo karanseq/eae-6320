@@ -174,7 +174,7 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
     // Apply angular impulse
     if (fabsf(m_angularImpulseReceived.x) > 0.0f || fabsf(m_angularImpulseReceived.y))
     {
-        static constexpr float angularSpeed = Math::Pi * 0.25f;
+        static constexpr float angularSpeed = Math::Pi * 0.1f;
         m_rigidBodyState.angularVelocity_axis_local.x = m_angularImpulseReceived.x;
         m_rigidBodyState.angularVelocity_axis_local.y = m_angularImpulseReceived.y;
         m_rigidBodyState.angularSpeed = angularSpeed;

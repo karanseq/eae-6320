@@ -6,6 +6,8 @@
 
 #include "sRigidBodyState.h"
 
+#include <Engine/Math/sVector.h>
+
 // Class Declaration
 //==================
 
@@ -26,6 +28,7 @@ namespace eae6320
             // Interface
             //==========
 
+        public:
             void UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate);
 
         };

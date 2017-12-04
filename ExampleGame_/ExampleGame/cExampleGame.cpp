@@ -49,30 +49,12 @@ void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_s
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 {
-    // update camera
-    {
-        static constexpr float cameraImpulseMagnitude = 2.0f;
-        Math::sVector impulse;
-        impulse.x = UserInput::IsKeyPressed('A') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('D') ? cameraImpulseMagnitude : 0.0f;
-        impulse.y = UserInput::IsKeyPressed('E') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('Q') ? cameraImpulseMagnitude : 0.0f;
-        impulse.z = UserInput::IsKeyPressed('W') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('S') ? cameraImpulseMagnitude : 0.0f;
-
-        impulse = Math::cMatrix_transformation(m_camera.m_rigidBodyState.orientation, Math::sVector::ZERO) * impulse;
-        m_camera.m_rigidBodyState.velocity += impulse;
-
-        m_camera.m_rigidBodyState.angularVelocity_axis_local.x = UserInput::IsKeyPressed('2') || UserInput::IsKeyPressed('4') ? 1.0f : 0.0f;
-        m_camera.m_rigidBodyState.angularVelocity_axis_local.y = UserInput::IsKeyPressed('1') || UserInput::IsKeyPressed('3') ? 1.0f : 0.0f;
-
-        static constexpr float cameraAngularSpeed = Math::Pi * 0.25f;
-        m_camera.m_rigidBodyState.angularSpeed = UserInput::IsKeyPressed('1') || UserInput::IsKeyPressed('2') ? cameraAngularSpeed : 0.0f + UserInput::IsKeyPressed('3') || UserInput::IsKeyPressed('4') ? -cameraAngularSpeed : 0.0f;
-    }
-
     // update game objects
     {
         static constexpr float gameObjectImpulseMagnitude = 2.0f;
 
         Math::sVector impulse;
-        impulse.z = UserInput::IsKeyPressed(UserInput::KeyCodes::Space) ? -gameObjectImpulseMagnitude : 0.0f;
+        impulse.z = -gameObjectImpulseMagnitude;
         m_gameObjectList[0]->AddImpulse(impulse);
 
         m_gameObjectList[0]->AddYaw(UserInput::IsKeyPressed(UserInput::KeyCodes::Left) ? 1.0f : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Right) ? -1.0f : 0.0f);
@@ -82,8 +64,8 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    //UpdateCoins(i_elapsedSecondCount_sinceLastUpdate);
     m_springArm.UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
+    UpdateCoins(i_elapsedSecondCount_sinceLastUpdate);
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
 }
 
@@ -93,8 +75,9 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     Graphics::SubmitDepthToClear();
 
     {
-        const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
-        const Math::sVector predictedPosition = m_camera.m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        m_springArm.UpdateBasedOnTime(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.orientation;
+        const Math::sVector predictedPosition = m_camera.m_rigidBodyState.position;
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
 
         if (m_skyBoxEnabled)
@@ -132,13 +115,7 @@ void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_s
 
 void eae6320::cExampleGame::UpdateCoins(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    static constexpr float impulseZ = 2.5f;
 
-    const size_t numGameObjects = m_gameObjectList.size();
-    for (size_t i = 1; i < numGameObjects; ++i)
-    {
-        m_gameObjectList[i]->AddImpulse(Math::sVector(0.0f, 0.0f, impulseZ));
-    }
 }
 
 // Initialization / Clean Up
@@ -165,20 +142,9 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         }
     }
 
-    // Initialize the camera
+    if (!(result = InitializeCamera()))
     {
-        m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
-        m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
-
-        m_camera.m_rigidBodyState.position.y = 0.0f;
-        m_camera.m_rigidBodyState.position.z = 15.0f;
-    }
-
-    // Initialize the spring arm
-    {
-        m_springArm.target = &m_gameObjectList[0]->GetRigidBodyState();
-        m_springArm.camera = &m_camera.m_rigidBodyState;
-        m_springArm.armLength = 10.0f;
+        goto OnExit;
     }
 
 OnExit:
@@ -227,6 +193,29 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
     return result;
 }
 
+eae6320::cResult eae6320::cExampleGame::InitializeCamera()
+{
+    cResult result = Results::Success;
+
+    // Initialize the camera
+    {
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
+
+        m_camera.m_rigidBodyState.position.y = 0.0f;
+        m_camera.m_rigidBodyState.position.z = 15.0f;
+    }
+
+    // Initialize the spring arm
+    {
+        m_springArm.target = &m_gameObjectList[0]->GetRigidBodyState();
+        m_springArm.camera = &m_camera.m_rigidBodyState;
+        m_springArm.armLength = 15.0f;
+    }
+
+    return result;
+}
+
 eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 {
     cResult result = Results::Success;
@@ -240,7 +229,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
     Params.meshFilePath = &meshFilePath;
     Params.textureFilePath = &textureFilePath;
     Params.initialPosition = Math::sVector(0.0f, 0.0f, 0.0f);
-    Params.maxVelocity = 10.0f;
+    Params.maxVelocity = 30.0f;
 
     cGameObject* gameObject = nullptr;
     if (!(result = cGameObject::Create(gameObject, Params)))
@@ -311,7 +300,6 @@ eae6320::cResult eae6320::cExampleGame::InitializeSkyBox()
         EAE6320_ASSERT(false);
         goto OnExit;
     }
-
 
     if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/SkyBox.tex", m_skyBoxTexture)))
     {
