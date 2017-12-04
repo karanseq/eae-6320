@@ -117,6 +117,7 @@ namespace eae6320
 
         cResult InitializeGameObjects();
         cResult InitializeCoins();
+        cResult InitializeSkyBox();
 
         void GetRandomOriginForSprite(Math::sVector2d& o_origin) const;
         void GetRandomExtentsForSprite(Math::sVector2d& o_extents) const;
@@ -134,6 +135,11 @@ namespace eae6320
         Graphics::sCamera                                   m_camera;
         Graphics::sColor                                    m_backgroundColor = Graphics::sColor(0.05882f, 0.05882f, 0.26275f, 1.0f);
         std::vector<cGameObject*>                           m_gameObjectList;
+
+        bool                                                m_skyBoxEnabled = true;
+        Graphics::cMesh::Handle                             m_skyBoxMesh;
+        Graphics::cEffect*                                  m_skyBoxEffect = nullptr;
+        Graphics::cTexture::Handle                          m_skyBoxTexture;
 
     };
 }

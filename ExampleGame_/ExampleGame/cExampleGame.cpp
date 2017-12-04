@@ -10,6 +10,7 @@
 #include <Engine/Graphics/cSprite.h>
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/cMatrix_transformation.h>
 #include <Engine/Math/sVector.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/UserInput/UserInput.h>
@@ -56,10 +57,14 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
         impulse.y = UserInput::IsKeyPressed('E') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('Q') ? cameraImpulseMagnitude : 0.0f;
         impulse.z = UserInput::IsKeyPressed('W') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('S') ? cameraImpulseMagnitude : 0.0f;
 
+        impulse = Math::cMatrix_transformation(m_camera.m_rigidBodyState.orientation, Math::sVector()) * impulse;
+
         m_camera.m_rigidBodyState.velocity += impulse;
-        //m_camera.m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.x, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-        //m_camera.m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.y, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-        //m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.x = UserInput::IsKeyPressed('2') || UserInput::IsKeyPressed('4') ? 1.0f : 0.0f;
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.y = UserInput::IsKeyPressed('1') || UserInput::IsKeyPressed('3') ? 1.0f : 0.0f;
+
+        static const float cameraAngularSpeed = Math::Pi * 0.25;
+        m_camera.m_rigidBodyState.angularSpeed = UserInput::IsKeyPressed('1') || UserInput::IsKeyPressed('2') ? cameraAngularSpeed : 0.0f + UserInput::IsKeyPressed('3') || UserInput::IsKeyPressed('4') ? -cameraAngularSpeed : 0.0f;
     }
 
     // update game objects
@@ -88,6 +93,15 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
         const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
         const Math::sVector predictedPosition = m_camera.m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
+
+        if (m_skyBoxEnabled)
+        {
+            static const Math::cQuaternion skyBoxOrientation(Math::Pi * 0.5f, Math::sVector(0.0f, 1.0f, 1.0f));
+
+            Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_skyBoxMesh);
+            Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_skyBoxTexture);
+            Graphics::SubmitMeshToBeRendered(mesh, m_skyBoxEffect, texture, predictedPosition, skyBoxOrientation);
+        }
     }
 
     for (auto& gameObject : m_gameObjectList)
@@ -139,6 +153,18 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         goto OnExit;
     }
 
+    // Initialize the sky box
+    if (m_skyBoxEnabled)
+    {
+        if (!(result = InitializeSkyBox()))
+        {
+            goto OnExit;
+        }
+    }
+
+    m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
+    m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
+
     m_camera.m_rigidBodyState.position.y = 2.5f;
     m_camera.m_rigidBodyState.position.z = 15.0f;
 
@@ -151,11 +177,39 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 {
     cResult result = Results::Success;
 
+    // Cleanup all game objects
     for (auto& gameObject : m_gameObjectList)
     {
         cGameObject::Destroy(gameObject);
     }
     m_gameObjectList.clear();
+
+    // Cleanup sky box if enabled
+    if (m_skyBoxEnabled)
+    {
+        {
+            const auto localResult = Graphics::cMesh::s_manager.Release(m_skyBoxMesh);
+            if (!localResult)
+            {
+                EAE6320_ASSERT(false);
+                result = result ? localResult : result;
+            }
+        }
+
+        {
+            const auto localResult = Graphics::cTexture::s_manager.Release(m_skyBoxTexture);
+            if (!localResult)
+            {
+                EAE6320_ASSERT(false);
+                result = result ? localResult : result;
+            }
+        }
+
+        {
+            m_skyBoxEffect->DecrementReferenceCount();
+            m_skyBoxEffect = nullptr;
+        }
+    }
 
     return result;
 }
@@ -186,7 +240,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
         m_gameObjectList.push_back(gameObject);
     }
 
-    result = InitializeCoins();
+    //result = InitializeCoins();
 
 OnExit:
 
@@ -229,6 +283,34 @@ eae6320::cResult eae6320::cExampleGame::InitializeCoins()
         {
             m_gameObjectList.push_back(gameObject);
         }
+    }
+
+OnExit:
+
+    return result;
+}
+
+eae6320::cResult eae6320::cExampleGame::InitializeSkyBox()
+{
+    cResult result = Results::Success;
+
+    if (!(result = Graphics::cEffect::Create(m_skyBoxEffect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), 0)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
+    }
+
+
+    if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/SkyBox.tex", m_skyBoxTexture)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
+    }
+
+    if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/SkyBox.msh", m_skyBoxMesh)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
     }
 
 OnExit:

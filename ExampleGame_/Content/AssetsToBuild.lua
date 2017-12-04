@@ -19,6 +19,7 @@ return
     },
     textures =
     {
-        "Textures/Soccer/Wood.png"
+        "Textures/Soccer/Wood.png",
+        "Textures/SkyBox.png"
     }
 }

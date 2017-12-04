@@ -151,9 +151,6 @@ eae6320::cGameObject::~cGameObject()
 void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 {
     m_rigidBodyState.velocity += m_rigidBodyState.velocity.GetLengthSquared() < m_maxVelocityLengthSquared ? i_impulse : Math::sVector();
-    //m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.x, -s_maxVelocity, s_maxVelocity);
-    //m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.y, -s_maxVelocity, s_maxVelocity);
-    //m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.z, -s_maxVelocity, s_maxVelocity);
 }
 
 // Update
