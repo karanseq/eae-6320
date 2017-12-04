@@ -6,7 +6,10 @@ return
 {
     meshes =
     {
-        "Meshes/Bat.mesh"
+        "Meshes/Bat.mesh",
+        "Meshes/Coin.mesh",
+        "Meshes/Ship.mesh",
+        "Meshes/SkyBox.mesh"
     },
     shaders =
     {

@@ -18,7 +18,6 @@
 
 // Static Data Initialization
 //===========================
-const float eae6320::cGameObject::s_maxVelocity = 2.5f;
 const float eae6320::cGameObject::s_linearDamping = 0.1f;
 
 // Interface
@@ -27,7 +26,7 @@ const float eae6320::cGameObject::s_linearDamping = 0.1f;
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const Math::sVector& i_position)
+eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const sGameObjectinitializationParameters& i_initializationParameters)
 {
     auto result = Results::Success;
 
@@ -46,7 +45,7 @@ eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const 
     }
 
     // Initialize the new game object
-    if (!(result = newGameObject->Initialize(i_position)))
+    if (!(result = newGameObject->Initialize(i_initializationParameters)))
     {
         EAE6320_ASSERTF(false, "Could not initialize the new game object!");
         goto OnExit;
@@ -81,16 +80,26 @@ eae6320::cResult eae6320::cGameObject::Destroy(cGameObject*& i_gameObject)
     return Results::Success;
 }
 
-eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_position)
+eae6320::cResult eae6320::cGameObject::Initialize(const sGameObjectinitializationParameters& i_initializationParameters)
 {
     auto result = Results::Success;
 
+    // Validate initialization parameters
+    if (!i_initializationParameters.IsValid())
+    {
+        result = Results::Failure;
+        goto OnExit;
+    }
+
     // Save the position
-    m_rigidBodyState.position = i_position;
+    m_rigidBodyState.position = i_initializationParameters.initialPosition;
+
+    // Save the max velocity
+    m_maxVelocityLengthSquared = i_initializationParameters.maxVelocity * i_initializationParameters.maxVelocity;
 
     // Initialize the effect
     {
-        if (!(result = Graphics::cEffect::Create(m_effect, cExampleGame::s_meshVertexShaderFilePath.c_str(), cExampleGame::s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
+        if (!(result = Graphics::cEffect::Create(m_effect, i_initializationParameters.vertexShaderFilePath->c_str(), i_initializationParameters.fragmentShaderFilePath->c_str(), Graphics::RenderStates::DepthBuffering)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -99,7 +108,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the mesh
     {
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Bat.msh", m_mesh)))
+        if (!(result = Graphics::cMesh::s_manager.Load(i_initializationParameters.meshFilePath->c_str(), m_mesh)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the mesh for game object!");
             goto OnExit;
@@ -108,7 +117,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the texture
     {
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Wood.tex", m_texture)))
+        if (!(result = Graphics::cTexture::s_manager.Load(i_initializationParameters.textureFilePath->c_str(), m_texture)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the texture for game object!");
             goto OnExit;
@@ -141,10 +150,10 @@ eae6320::cGameObject::~cGameObject()
 
 void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 {
-    m_rigidBodyState.velocity += i_impulse;
-    m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.x, -s_maxVelocity, s_maxVelocity);
-    m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.y, -s_maxVelocity, s_maxVelocity);
-    m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.z, -s_maxVelocity, s_maxVelocity);
+    m_rigidBodyState.velocity += m_rigidBodyState.velocity.GetLengthSquared() < m_maxVelocityLengthSquared ? i_impulse : Math::sVector();
+    //m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.x, -s_maxVelocity, s_maxVelocity);
+    //m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.y, -s_maxVelocity, s_maxVelocity);
+    //m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.z, -s_maxVelocity, s_maxVelocity);
 }
 
 // Update

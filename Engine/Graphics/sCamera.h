@@ -25,7 +25,7 @@ namespace eae6320
             float                               m_verticalFieldOfView_inRadians = Math::Pi * 0.25f;
             float                               m_aspectRatio = 1.0f;
             float                               m_z_nearPlane = 0.1f;
-            float                               m_z_farPlane = 100.0f;
+            float                               m_z_farPlane = 1000.0f;
 
         }; // struct sCamera
 

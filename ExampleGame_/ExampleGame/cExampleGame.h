@@ -107,6 +107,7 @@ namespace eae6320
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
         void UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate);
+        void UpdateCoins(const float i_elapsedSecondCount_sinceLastUpdate);
 
         // Initialization / Clean Up
         //--------------------------
@@ -114,10 +115,8 @@ namespace eae6320
         virtual cResult Initialize() override;
         virtual cResult CleanUp() override;
 
-        cResult InitializeEffects();
-        cResult InitializeTextures();
-        cResult InitializeMeshes();
         cResult InitializeGameObjects();
+        cResult InitializeCoins();
 
         void GetRandomOriginForSprite(Math::sVector2d& o_origin) const;
         void GetRandomExtentsForSprite(Math::sVector2d& o_extents) const;
@@ -134,9 +133,6 @@ namespace eae6320
 
         Graphics::sCamera                                   m_camera;
         Graphics::sColor                                    m_backgroundColor = Graphics::sColor(0.05882f, 0.05882f, 0.26275f, 1.0f);
-        std::vector<Graphics::cEffect*>                     m_effectList;
-        std::vector<Graphics::cTexture::Handle>             m_textureList;
-
         std::vector<cGameObject*>                           m_gameObjectList;
 
     };

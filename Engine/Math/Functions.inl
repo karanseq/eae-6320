@@ -23,6 +23,16 @@ inline float eae6320::Math::ConvertRadiansToDegrees(const float i_radians)
     return i_radians * ( 180.0f / Pi );
 }
 
+inline float eae6320::Math::Rand()
+{
+    return float(std::rand()) / float(RAND_MAX);
+}
+
+inline float eae6320::Math::RandRange( const float i_min, const float i_max )
+{
+    return i_min + Rand() * (i_max - i_min);
+}
+
 template<typename tUnsignedInteger, class EnforceUnsigned>
     tUnsignedInteger eae6320::Math::RoundUpToMultiple( const tUnsignedInteger i_value, const tUnsignedInteger i_multiple )
 {

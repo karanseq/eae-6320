@@ -20,6 +20,9 @@ namespace eae6320
             // aspectRatio = width / height
             const float i_aspectRatio );
 
+        float Rand();
+        float RandRange( const float i_min, const float i_max );
+
         // Rounds up an unsigned integer to the next highest multiple
         template<typename tUnsignedInteger, class EnforceUnsigned = typename std::enable_if<std::is_unsigned<tUnsignedInteger>::value>::type>
             tUnsignedInteger RoundUpToMultiple( const tUnsignedInteger i_value, const tUnsignedInteger i_multiple );

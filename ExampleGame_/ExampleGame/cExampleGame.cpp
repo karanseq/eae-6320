@@ -57,9 +57,9 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
         impulse.z = UserInput::IsKeyPressed('W') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('S') ? cameraImpulseMagnitude : 0.0f;
 
         m_camera.m_rigidBodyState.velocity += impulse;
-        m_camera.m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.x, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-        m_camera.m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.y, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-        m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+        //m_camera.m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.x, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+        //m_camera.m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.y, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
+        //m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
     }
 
     // update game objects
@@ -75,6 +75,7 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
+    UpdateCoins(i_elapsedSecondCount_sinceLastUpdate);
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
 }
 
@@ -112,6 +113,17 @@ void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_s
     }
 }
 
+void eae6320::cExampleGame::UpdateCoins(const float i_elapsedSecondCount_sinceLastUpdate)
+{
+    static constexpr float impulseZ = 2.5f;
+
+    const size_t numGameObjects = m_gameObjectList.size();
+    for (size_t i = 1; i < numGameObjects; ++i)
+    {
+        m_gameObjectList[i]->AddImpulse(Math::sVector(0.0f, 0.0f, impulseZ));
+    }
+}
+
 // Initialization / Clean Up
 //--------------------------
 
@@ -120,24 +132,6 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
     cResult result = Results::Success;
 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
-
-    // Initialize effects
-    if (!(result = InitializeEffects()))
-    {
-        goto OnExit;
-    }
-
-    // Initialize textures
-    if (!(result = InitializeTextures()))
-    {
-        goto OnExit;
-    }
-
-    // Initialize meshes
-    if (!(result = InitializeMeshes()))
-    {
-        goto OnExit;
-    }
 
     // Initialize game objects
     if (!(result = InitializeGameObjects()))
@@ -157,26 +151,6 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 {
     cResult result = Results::Success;
 
-    for (const auto& effect : m_effectList)
-    {
-        effect->DecrementReferenceCount();
-    }
-    m_effectList.clear();
-
-    for (auto& texture : m_textureList)
-    {
-        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
-        if (!localResult)
-        {
-            EAE6320_ASSERT(false);
-            if (result)
-            {
-                result = localResult;
-            }
-        }
-    }
-    m_textureList.clear();
-
     for (auto& gameObject : m_gameObjectList)
     {
         cGameObject::Destroy(gameObject);
@@ -186,54 +160,23 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
     return result;
 }
 
-eae6320::cResult eae6320::cExampleGame::InitializeEffects()
-{
-    cResult result = Results::Success;
-
-    constexpr uint8_t numEffects = 1;
-    m_effectList.reserve(numEffects);
-
-    // initialize the mesh effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-OnExit:
-
-    return result;
-}
-
-eae6320::cResult eae6320::cExampleGame::InitializeTextures()
-{
-    cResult result = Results::Success;
-
-    return result;
-}
-
-eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
-{
-    cResult result = Results::Success;
-
-    return result;
-}
-
 eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 {
     cResult result = Results::Success;
 
-    cGameObject* gameObject = nullptr;
+    static const std::string meshFilePath = std::string("data/Meshes/Ship.msh");
+    static const std::string textureFilePath = std::string("data/Textures/Soccer/Wood.tex");
 
-    if (!(result = cGameObject::Create(gameObject, Math::sVector(0.0f, -2.5f, 0.0f))))
+    sGameObjectinitializationParameters Params;
+    Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
+    Params.fragmentShaderFilePath = &s_meshFragmentShaderFilePath;
+    Params.meshFilePath = &meshFilePath;
+    Params.textureFilePath = &textureFilePath;
+    Params.initialPosition = Math::sVector(0.0f, 0.0f, 0.0f);
+    Params.maxVelocity = 5.0f;
+
+    cGameObject* gameObject = nullptr;
+    if (!(result = cGameObject::Create(gameObject, Params)))
     {
         EAE6320_ASSERT(false);
         goto OnExit;
@@ -241,6 +184,51 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
     else
     {
         m_gameObjectList.push_back(gameObject);
+    }
+
+    result = InitializeCoins();
+
+OnExit:
+
+    return result;
+}
+
+eae6320::cResult eae6320::cExampleGame::InitializeCoins()
+{
+    cResult result = Results::Success;
+
+    static const std::string meshFilePath = std::string("data/Meshes/Coin.msh");
+    static const std::string textureFilePath = std::string("data/Textures/Soccer/Wood.tex");
+
+    sGameObjectinitializationParameters Params;
+    Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
+    Params.fragmentShaderFilePath = &s_meshFragmentShaderFilePath;
+    Params.meshFilePath = &meshFilePath;
+    Params.textureFilePath = &textureFilePath;
+    Params.maxVelocity = 10.0f;
+
+    constexpr uint8_t numCoins = 5;
+    constexpr float maxX = 10.0f;
+    constexpr float maxY = 10.0f;
+    constexpr float maxZ = 50.0f;
+
+    for (uint8_t i = 0; i < numCoins; ++i)
+    {
+        const float randX = Math::RandRange(-maxX, maxX);
+        const float randY = Math::RandRange(-maxY, maxY);
+
+        Params.initialPosition = Math::sVector(randX, randY, -maxZ);
+
+        cGameObject* gameObject = nullptr;
+        if (!(result = cGameObject::Create(gameObject, Params)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_gameObjectList.push_back(gameObject);
+        }
     }
 
 OnExit:

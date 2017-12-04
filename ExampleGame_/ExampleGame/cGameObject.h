@@ -34,8 +34,24 @@ namespace eae6320
 
 namespace eae6320
 {
+    struct sGameObjectinitializationParameters
+    {
+        const std::string*                  vertexShaderFilePath = nullptr;
+        const std::string*                  fragmentShaderFilePath = nullptr;
+        const std::string*                  meshFilePath = nullptr;
+        const std::string*                  textureFilePath = nullptr;
+        Math::sVector                       initialPosition = Math::sVector(0.0f, 0.0f, 0.0f);
+        float                               maxVelocity = 1.5f;
+
+        FORCEINLINE bool IsValid() const { return !(vertexShaderFilePath == nullptr || 
+            fragmentShaderFilePath == nullptr ||
+            meshFilePath == nullptr ||
+            textureFilePath == nullptr); }
+    };
+
     class cGameObject
     {
+
         // Interface
         //==========
 
@@ -44,7 +60,7 @@ namespace eae6320
         // Initialization / Clean Up
         //--------------------------
 
-        static cResult Create(cGameObject*& o_gameObject, const Math::sVector& i_position);
+        static cResult Create(cGameObject*& o_gameObject, const sGameObjectinitializationParameters& i_initializationParameters);
         static cResult Destroy(cGameObject*& i_gameObject);
 
         // Behavior
@@ -64,7 +80,7 @@ namespace eae6320
 
     private:
 
-        cResult Initialize(const Math::sVector& i_position);
+        cResult Initialize(const sGameObjectinitializationParameters& i_initializationParameters);
         cResult CleanUp();
 
         cGameObject() = default;
@@ -74,7 +90,6 @@ namespace eae6320
         //=====
 
     public:
-        static const float                  s_maxVelocity;
         static const float                  s_linearDamping;
 
     private:
@@ -82,6 +97,7 @@ namespace eae6320
         Graphics::cMesh::Handle             m_mesh;
         Graphics::cTexture::Handle          m_texture;
         Physics::sRigidBodyState            m_rigidBodyState;
+        float                               m_maxVelocityLengthSquared;
 
     }; // class cGameObject
 
