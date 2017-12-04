@@ -10,6 +10,7 @@
 
 #include <Engine/Graphics/cMesh.h>
 #include <Engine/Graphics/cTexture.h>
+#include <Engine/Math/sVector2d.h>
 #include <Engine/Physics/sRigidBodyState.h>
 #include <Engine/Results/Results.h>
 
@@ -67,6 +68,9 @@ namespace eae6320
         //---------
 
         void AddImpulse(const Math::sVector& i_impulse);
+        void AddYaw(float i_delta);
+        void AddPitch(float i_delta);
+
 
         // Update
         //-------
@@ -77,6 +81,11 @@ namespace eae6320
         //-------
 
         void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate);
+
+        // Data
+        //=====
+
+        FORCEINLINE const Physics::sRigidBodyState& GetRigidBodyState() const { return m_rigidBodyState; }
 
     private:
 
@@ -91,12 +100,14 @@ namespace eae6320
 
     public:
         static const float                  s_linearDamping;
+        static const float                  s_angularDamping;
 
     private:
         Graphics::cEffect*                  m_effect = nullptr;
         Graphics::cMesh::Handle             m_mesh;
         Graphics::cTexture::Handle          m_texture;
         Physics::sRigidBodyState            m_rigidBodyState;
+        Math::sVector2d                     m_angularImpulseReceived;
         float                               m_maxVelocityLengthSquared;
 
     }; // class cGameObject

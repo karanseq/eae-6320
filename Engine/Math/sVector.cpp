@@ -14,6 +14,8 @@ namespace
     constexpr auto s_epsilon = 1.0e-9f;
 }
 
+const eae6320::Math::sVector eae6320::Math::sVector::ZERO = eae6320::Math::sVector();
+
 // Interface
 //==========
 

@@ -51,36 +51,39 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 {
     // update camera
     {
-        static const float cameraImpulseMagnitude = 2.0f;
+        static constexpr float cameraImpulseMagnitude = 2.0f;
         Math::sVector impulse;
         impulse.x = UserInput::IsKeyPressed('A') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('D') ? cameraImpulseMagnitude : 0.0f;
         impulse.y = UserInput::IsKeyPressed('E') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('Q') ? cameraImpulseMagnitude : 0.0f;
         impulse.z = UserInput::IsKeyPressed('W') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('S') ? cameraImpulseMagnitude : 0.0f;
 
-        impulse = Math::cMatrix_transformation(m_camera.m_rigidBodyState.orientation, Math::sVector()) * impulse;
-
+        impulse = Math::cMatrix_transformation(m_camera.m_rigidBodyState.orientation, Math::sVector::ZERO) * impulse;
         m_camera.m_rigidBodyState.velocity += impulse;
+
         m_camera.m_rigidBodyState.angularVelocity_axis_local.x = UserInput::IsKeyPressed('2') || UserInput::IsKeyPressed('4') ? 1.0f : 0.0f;
         m_camera.m_rigidBodyState.angularVelocity_axis_local.y = UserInput::IsKeyPressed('1') || UserInput::IsKeyPressed('3') ? 1.0f : 0.0f;
 
-        static const float cameraAngularSpeed = Math::Pi * 0.25;
+        static constexpr float cameraAngularSpeed = Math::Pi * 0.25f;
         m_camera.m_rigidBodyState.angularSpeed = UserInput::IsKeyPressed('1') || UserInput::IsKeyPressed('2') ? cameraAngularSpeed : 0.0f + UserInput::IsKeyPressed('3') || UserInput::IsKeyPressed('4') ? -cameraAngularSpeed : 0.0f;
     }
 
     // update game objects
     {
-        static const float gameObjectImpulseMagnitude = 1.5f;
-        Math::sVector impulse;
-        impulse.x += UserInput::IsKeyPressed(UserInput::KeyCodes::Left) ? -gameObjectImpulseMagnitude : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Right) ? gameObjectImpulseMagnitude : 0.0f;
-        impulse.y = UserInput::IsKeyPressed(UserInput::KeyCodes::Down) ? -gameObjectImpulseMagnitude : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Up) ? gameObjectImpulseMagnitude : 0.0f;
+        static constexpr float gameObjectImpulseMagnitude = 2.0f;
 
+        Math::sVector impulse;
+        impulse.z = UserInput::IsKeyPressed(UserInput::KeyCodes::Space) ? -gameObjectImpulseMagnitude : 0.0f;
         m_gameObjectList[0]->AddImpulse(impulse);
+
+        m_gameObjectList[0]->AddYaw(UserInput::IsKeyPressed(UserInput::KeyCodes::Left) ? 1.0f : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Right) ? -1.0f : 0.0f);
+        m_gameObjectList[0]->AddPitch(UserInput::IsKeyPressed(UserInput::KeyCodes::Up) ? 1.0f: 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Down) ? -1.0f : 0.0f);
     }
 }
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    UpdateCoins(i_elapsedSecondCount_sinceLastUpdate);
+    //UpdateCoins(i_elapsedSecondCount_sinceLastUpdate);
+    m_springArm.UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
 }
 
@@ -113,12 +116,12 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     {
+        m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+
         // Apply drag
         m_camera.m_rigidBodyState.velocity.x -= fabsf(m_camera.m_rigidBodyState.velocity.x) > 0.0f ? m_camera.m_rigidBodyState.velocity.x * cGameObject::s_linearDamping : 0.0f;
         m_camera.m_rigidBodyState.velocity.y -= fabsf(m_camera.m_rigidBodyState.velocity.y) > 0.0f ? m_camera.m_rigidBodyState.velocity.y * cGameObject::s_linearDamping : 0.0f;
         m_camera.m_rigidBodyState.velocity.z -= fabsf(m_camera.m_rigidBodyState.velocity.z) > 0.0f ? m_camera.m_rigidBodyState.velocity.z * cGameObject::s_linearDamping : 0.0f;
-        
-        m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
     }
 
     for (const auto& gameObject : m_gameObjectList)
@@ -162,11 +165,21 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
         }
     }
 
-    m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
-    m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
+    // Initialize the camera
+    {
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
 
-    m_camera.m_rigidBodyState.position.y = 2.5f;
-    m_camera.m_rigidBodyState.position.z = 15.0f;
+        m_camera.m_rigidBodyState.position.y = 0.0f;
+        m_camera.m_rigidBodyState.position.z = 15.0f;
+    }
+
+    // Initialize the spring arm
+    {
+        m_springArm.target = &m_gameObjectList[0]->GetRigidBodyState();
+        m_springArm.camera = &m_camera.m_rigidBodyState;
+        m_springArm.armLength = 10.0f;
+    }
 
 OnExit:
 
@@ -219,7 +232,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
     cResult result = Results::Success;
 
     static const std::string meshFilePath = std::string("data/Meshes/Ship.msh");
-    static const std::string textureFilePath = std::string("data/Textures/Soccer/Wood.tex");
+    static const std::string textureFilePath = std::string("data/Textures/Ship.tex");
 
     sGameObjectinitializationParameters Params;
     Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
@@ -227,7 +240,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
     Params.meshFilePath = &meshFilePath;
     Params.textureFilePath = &textureFilePath;
     Params.initialPosition = Math::sVector(0.0f, 0.0f, 0.0f);
-    Params.maxVelocity = 5.0f;
+    Params.maxVelocity = 10.0f;
 
     cGameObject* gameObject = nullptr;
     if (!(result = cGameObject::Create(gameObject, Params)))
@@ -240,38 +253,37 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
         m_gameObjectList.push_back(gameObject);
     }
 
-    //result = InitializeCoins();
+    result = InitializeRings();
 
 OnExit:
 
     return result;
 }
 
-eae6320::cResult eae6320::cExampleGame::InitializeCoins()
+eae6320::cResult eae6320::cExampleGame::InitializeRings()
 {
     cResult result = Results::Success;
 
-    static const std::string meshFilePath = std::string("data/Meshes/Coin.msh");
-    static const std::string textureFilePath = std::string("data/Textures/Soccer/Wood.tex");
+    static const std::string meshFilePath = std::string("data/Meshes/Ring.msh");
+    static const std::string textureFilePath = std::string("data/Textures/Ring.tex");
 
     sGameObjectinitializationParameters Params;
     Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
     Params.fragmentShaderFilePath = &s_meshFragmentShaderFilePath;
     Params.meshFilePath = &meshFilePath;
     Params.textureFilePath = &textureFilePath;
-    Params.maxVelocity = 10.0f;
 
-    constexpr uint8_t numCoins = 5;
-    constexpr float maxX = 10.0f;
-    constexpr float maxY = 10.0f;
-    constexpr float maxZ = 50.0f;
+    constexpr uint8_t numCoins = 100;
+    constexpr float maxX = 2.0f;
+    constexpr float maxY = 2.0f;
+    constexpr float maxZ = 75.0f;
 
     for (uint8_t i = 0; i < numCoins; ++i)
     {
         const float randX = Math::RandRange(-maxX, maxX);
         const float randY = Math::RandRange(-maxY, maxY);
 
-        Params.initialPosition = Math::sVector(randX, randY, -maxZ);
+        Params.initialPosition = Math::sVector(randX, randY, -maxZ - i * maxZ);
 
         cGameObject* gameObject = nullptr;
         if (!(result = cGameObject::Create(gameObject, Params)))

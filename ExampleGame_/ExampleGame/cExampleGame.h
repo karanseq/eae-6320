@@ -13,7 +13,9 @@
 #include <Engine/Graphics/cTexture.h>
 #include <Engine/Graphics/sCamera.h>
 #include <Engine/Graphics/sColor.h>
+#include <Engine/Physics/sSpringArm.h>
 #include <Engine/Results/Results.h>
+
 #include <vector>
 
 #if defined( EAE6320_PLATFORM_WINDOWS )
@@ -116,7 +118,7 @@ namespace eae6320
         virtual cResult CleanUp() override;
 
         cResult InitializeGameObjects();
-        cResult InitializeCoins();
+        cResult InitializeRings();
         cResult InitializeSkyBox();
 
         void GetRandomOriginForSprite(Math::sVector2d& o_origin) const;
@@ -135,6 +137,8 @@ namespace eae6320
         Graphics::sCamera                                   m_camera;
         Graphics::sColor                                    m_backgroundColor = Graphics::sColor(0.05882f, 0.05882f, 0.26275f, 1.0f);
         std::vector<cGameObject*>                           m_gameObjectList;
+
+        Physics::sSpringArm                                 m_springArm;
 
         bool                                                m_skyBoxEnabled = true;
         Graphics::cMesh::Handle                             m_skyBoxMesh;

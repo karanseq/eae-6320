@@ -6,8 +6,7 @@ return
 {
     meshes =
     {
-        "Meshes/Bat.mesh",
-        "Meshes/Coin.mesh",
+        "Meshes/Ring.mesh",
         "Meshes/Ship.mesh",
         "Meshes/SkyBox.mesh"
     },
@@ -19,7 +18,8 @@ return
     },
     textures =
     {
-        "Textures/Soccer/Wood.png",
-        "Textures/SkyBox.png"
+        "Textures/Ship.png",
+        "Textures/SkyBox.png",
+        "Textures/Ring.png"
     }
 }

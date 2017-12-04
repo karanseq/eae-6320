@@ -10,6 +10,7 @@
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Graphics/sColor.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/cMatrix_transformation.h>
 #include <Engine/Math/cQuaternion.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Math/sVector.h>
@@ -19,6 +20,7 @@
 // Static Data Initialization
 //===========================
 const float eae6320::cGameObject::s_linearDamping = 0.1f;
+const float eae6320::cGameObject::s_angularDamping = eae6320::Math::Pi * 0.05f;
 
 // Interface
 //==========
@@ -150,7 +152,18 @@ eae6320::cGameObject::~cGameObject()
 
 void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 {
-    m_rigidBodyState.velocity += m_rigidBodyState.velocity.GetLengthSquared() < m_maxVelocityLengthSquared ? i_impulse : Math::sVector();
+    const Math::sVector impulse = Math::cMatrix_transformation(m_rigidBodyState.orientation, Math::sVector::ZERO) * i_impulse;
+    m_rigidBodyState.velocity += m_rigidBodyState.velocity.GetLengthSquared() < m_maxVelocityLengthSquared ? impulse : Math::sVector::ZERO;
+}
+
+void eae6320::cGameObject::AddYaw(float i_delta)
+{
+    m_angularImpulseReceived.y = i_delta;
+}
+
+void eae6320::cGameObject::AddPitch(float i_delta)
+{
+    m_angularImpulseReceived.x = i_delta;
 }
 
 // Update
@@ -158,12 +171,24 @@ void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 
 void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    // Apply drag
+    // Apply angular impulse
+    if (fabsf(m_angularImpulseReceived.x) > 0.0f || fabsf(m_angularImpulseReceived.y))
+    {
+        static constexpr float angularSpeed = Math::Pi * 0.25f;
+        m_rigidBodyState.angularVelocity_axis_local.x = m_angularImpulseReceived.x;
+        m_rigidBodyState.angularVelocity_axis_local.y = m_angularImpulseReceived.y;
+        m_rigidBodyState.angularSpeed = angularSpeed;
+    }
+
+    m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+
+    // Apply linear damping
     m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * s_linearDamping : 0.0f;
     m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * s_linearDamping : 0.0f;
     m_rigidBodyState.velocity.z -= fabsf(m_rigidBodyState.velocity.z) > 0.0f ? m_rigidBodyState.velocity.z * s_linearDamping : 0.0f;
 
-    m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+    // Apply angular damping
+    m_rigidBodyState.angularSpeed -= fabsf(m_rigidBodyState.angularSpeed) > 0.0f ? m_rigidBodyState.angularSpeed * s_angularDamping : 0.0f;
 }
 
 // Render
