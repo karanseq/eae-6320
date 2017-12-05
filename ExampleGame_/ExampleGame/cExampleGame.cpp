@@ -65,7 +65,6 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
     m_springArm.UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
-    UpdateCoins(i_elapsedSecondCount_sinceLastUpdate);
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
 }
 
@@ -98,6 +97,7 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 
 void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate)
 {
+    // Update the camera
     {
         m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
 
@@ -111,11 +111,25 @@ void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_s
     {
         gameObject->UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
     }
-}
 
-void eae6320::cExampleGame::UpdateCoins(const float i_elapsedSecondCount_sinceLastUpdate)
-{
+    // Check if ship has crossed ring
+    if (fabs(m_gameObjectList[m_shipIndex]->GetRigidBodyState().position.z - m_gameObjectList[m_nextRingIndex]->GetRigidBodyState().position.z) < 1.0f)
+    {
+        // Check if the ship has passed through the ring
+        const Math::sVector shipDistanceFromRing = m_gameObjectList[m_nextRingIndex]->GetRigidBodyState().position - m_gameObjectList[m_shipIndex]->GetRigidBodyState().position;
+        constexpr float ringRadiusSquared = 2.5f;
 
+        if (shipDistanceFromRing.GetLengthSquared() < ringRadiusSquared)
+        {
+            // Animate the ring
+            m_gameObjectList[m_nextRingIndex]->AddYaw(1.0f);
+        }
+
+        // Update the ring index
+        m_nextRingIndex += m_nextRingIndex < m_numRings - 1 ? 1 : 0;
+        const float newLinearDamping = 0.1f - 0.04f * float(m_nextRingIndex) / float(m_numRings);
+        m_gameObjectList[m_shipIndex]->SetLinearDamping(newLinearDamping);
+    }
 }
 
 // Initialization / Clean Up
@@ -261,16 +275,19 @@ eae6320::cResult eae6320::cExampleGame::InitializeRings()
     Params.fragmentShaderFilePath = &s_meshFragmentShaderFilePath;
     Params.meshFilePath = &meshFilePath;
     Params.textureFilePath = &textureFilePath;
+    Params.angularSpeed = Math::Pi * 2.0f;
+    Params.angularDamping = 0.0f;
 
-    constexpr uint8_t numCoins = 100;
+    constexpr uint8_t difficultyFactor = 20;
     constexpr float maxX = 2.0f;
     constexpr float maxY = 2.0f;
     constexpr float maxZ = 75.0f;
+    float multiplier = 1.0f;
 
-    for (uint8_t i = 0; i < numCoins; ++i)
+    for (uint8_t i = 0; i < m_numRings; ++i)
     {
-        const float randX = Math::RandRange(-maxX, maxX);
-        const float randY = Math::RandRange(-maxY, maxY);
+        const float randX = Math::RandRange(-maxX, maxX) * multiplier;
+        const float randY = Math::RandRange(-maxY, maxY) * multiplier;
 
         Params.initialPosition = Math::sVector(randX, randY, -maxZ - i * maxZ);
 
@@ -284,6 +301,8 @@ eae6320::cResult eae6320::cExampleGame::InitializeRings()
         {
             m_gameObjectList.push_back(gameObject);
         }
+
+        multiplier = 1.0f + float(i / difficultyFactor);
     }
 
 OnExit:

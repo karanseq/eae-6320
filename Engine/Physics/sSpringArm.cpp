@@ -19,5 +19,5 @@ void eae6320::Physics::sSpringArm::UpdateBasedOnTime(const float i_elapsedSecond
     camera->position += (positionBehindTarget - camera->position) * i_elapsedSecondCount_sinceLastUpdate * 0.25f;
 
     // Interpolate camera orientation to target orientation
-    camera->orientation += (target->orientation - camera->orientation) * i_elapsedSecondCount_sinceLastUpdate * 0.25f;
+    camera->orientation += (target->orientation - camera->orientation) * i_elapsedSecondCount_sinceLastUpdate * 0.05f;
 }

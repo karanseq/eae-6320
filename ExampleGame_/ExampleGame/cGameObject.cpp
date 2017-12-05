@@ -93,11 +93,14 @@ eae6320::cResult eae6320::cGameObject::Initialize(const sGameObjectinitializatio
         goto OnExit;
     }
 
-    // Save the position
-    m_rigidBodyState.position = i_initializationParameters.initialPosition;
-
-    // Save the max velocity
-    m_maxVelocityLengthSquared = i_initializationParameters.maxVelocity * i_initializationParameters.maxVelocity;
+    // Save physics information
+    {
+        m_rigidBodyState.position = i_initializationParameters.initialPosition;
+        m_maxVelocityLengthSquared = i_initializationParameters.maxVelocity * i_initializationParameters.maxVelocity;
+        m_angularSpeed = i_initializationParameters.angularSpeed;
+        m_linearDamping = i_initializationParameters.linearDamping;
+        m_angularDamping = i_initializationParameters.angularDamping;
+    }
 
     // Initialize the effect
     {
@@ -174,21 +177,20 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
     // Apply angular impulse
     if (fabsf(m_angularImpulseReceived.x) > 0.0f || fabsf(m_angularImpulseReceived.y))
     {
-        static constexpr float angularSpeed = Math::Pi * 0.1f;
         m_rigidBodyState.angularVelocity_axis_local.x = m_angularImpulseReceived.x;
         m_rigidBodyState.angularVelocity_axis_local.y = m_angularImpulseReceived.y;
-        m_rigidBodyState.angularSpeed = angularSpeed;
+        m_rigidBodyState.angularSpeed = m_angularSpeed;
     }
 
     m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
 
     // Apply linear damping
-    m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * s_linearDamping : 0.0f;
-    m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * s_linearDamping : 0.0f;
-    m_rigidBodyState.velocity.z -= fabsf(m_rigidBodyState.velocity.z) > 0.0f ? m_rigidBodyState.velocity.z * s_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * m_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * m_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.z -= fabsf(m_rigidBodyState.velocity.z) > 0.0f ? m_rigidBodyState.velocity.z * m_linearDamping : 0.0f;
 
     // Apply angular damping
-    m_rigidBodyState.angularSpeed -= fabsf(m_rigidBodyState.angularSpeed) > 0.0f ? m_rigidBodyState.angularSpeed * s_angularDamping : 0.0f;
+    m_rigidBodyState.angularSpeed -= fabsf(m_rigidBodyState.angularSpeed) > 0.0f ? m_rigidBodyState.angularSpeed * m_angularDamping : 0.0f;
 }
 
 // Render

@@ -109,7 +109,6 @@ namespace eae6320
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
         void UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate);
-        void UpdateCoins(const float i_elapsedSecondCount_sinceLastUpdate);
 
         // Initialization / Clean Up
         //--------------------------
@@ -145,6 +144,10 @@ namespace eae6320
         Graphics::cMesh::Handle                             m_skyBoxMesh;
         Graphics::cEffect*                                  m_skyBoxEffect = nullptr;
         Graphics::cTexture::Handle                          m_skyBoxTexture;
+
+        const uint8_t                                       m_shipIndex = 0;
+        uint8_t                                             m_nextRingIndex = 1;
+        uint8_t                                             m_numRings = 100;
 
     };
 }
