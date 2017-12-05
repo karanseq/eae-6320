@@ -147,7 +147,7 @@ namespace eae6320
 
         const uint8_t                                       m_shipIndex = 0;
         uint8_t                                             m_nextRingIndex = 1;
-        uint8_t                                             m_numRings = 100;
+        uint8_t                                             m_numRings = 200;
 
     };
 }

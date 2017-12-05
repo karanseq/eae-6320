@@ -122,7 +122,7 @@ void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_s
         if (shipDistanceFromRing.GetLengthSquared() < ringRadiusSquared)
         {
             // Animate the ring
-            m_gameObjectList[m_nextRingIndex]->AddYaw(1.0f);
+            m_gameObjectList[m_nextRingIndex]->AddYaw(m_nextRingIndex % 2 ? 1.0f : -1.0f);
         }
 
         // Update the ring index
@@ -224,7 +224,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeCamera()
     {
         m_springArm.target = &m_gameObjectList[0]->GetRigidBodyState();
         m_springArm.camera = &m_camera.m_rigidBodyState;
-        m_springArm.armLength = 15.0f;
+        m_springArm.armLength = 20.0f;
     }
 
     return result;
@@ -235,7 +235,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
     cResult result = Results::Success;
 
     static const std::string meshFilePath = std::string("data/Meshes/Ship.msh");
-    static const std::string textureFilePath = std::string("data/Textures/Ship.tex");
+    static const std::string textureFilePath = std::string("data/Textures/Ring.tex");
 
     sGameObjectinitializationParameters Params;
     Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
@@ -278,7 +278,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeRings()
     Params.angularSpeed = Math::Pi * 2.0f;
     Params.angularDamping = 0.0f;
 
-    constexpr uint8_t difficultyFactor = 20;
+    constexpr uint8_t difficultyFactor = 50;
     constexpr float maxX = 2.0f;
     constexpr float maxY = 2.0f;
     constexpr float maxZ = 75.0f;
