@@ -45,7 +45,8 @@ namespace eae6320
         const std::string*                  textureFilePath = nullptr;
         Math::sVector                       initialPosition = Math::sVector(0.0f, 0.0f, 0.0f);
         float                               maxVelocity = 1.5f;
-        float                               angularSpeed = Math::Pi * 0.1f;
+        float                               angularSpeed = Math::Pi * 0.05f;
+        float                               maxAngularSpeed = Math::Pi * 0.1f;
         float                               linearDamping = 0.1f;
         float                               angularDamping = Math::Pi * 0.05f;
 
@@ -127,6 +128,7 @@ namespace eae6320
         Math::sVector2d                     m_angularImpulseReceived;
         float                               m_maxVelocityLengthSquared;
         float                               m_angularSpeed;
+        float                               m_maxAngularSpeed;
         float                               m_linearDamping;
         float                               m_angularDamping;
 

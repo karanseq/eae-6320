@@ -23,7 +23,7 @@ namespace eae6320
             const sRigidBodyState*          target = nullptr;
             sRigidBodyState*                camera = nullptr;
             float                           armLength = 0.0f;
-            bool                            enableLag = false;
+            float                           lerpRate = 0.01f;
 
             // Interface
             //==========

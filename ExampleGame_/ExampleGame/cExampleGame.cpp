@@ -81,7 +81,7 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 
         if (m_skyBoxEnabled)
         {
-            static const Math::cQuaternion skyBoxOrientation(Math::Pi * 0.5f, Math::sVector(0.0f, 1.0f, 1.0f));
+            static const Math::cQuaternion skyBoxOrientation;
 
             Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_skyBoxMesh);
             Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_skyBoxTexture);
@@ -216,15 +216,15 @@ eae6320::cResult eae6320::cExampleGame::InitializeCamera()
         m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
         m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
 
-        m_camera.m_rigidBodyState.position.y = 0.0f;
-        m_camera.m_rigidBodyState.position.z = 15.0f;
+        m_camera.m_rigidBodyState.position.y = 25.0f;
+        m_camera.m_rigidBodyState.position.z = 60.0f;
     }
 
     // Initialize the spring arm
     {
         m_springArm.target = &m_gameObjectList[0]->GetRigidBodyState();
         m_springArm.camera = &m_camera.m_rigidBodyState;
-        m_springArm.armLength = 20.0f;
+        m_springArm.armLength = 30.0f;
     }
 
     return result;
@@ -289,7 +289,7 @@ eae6320::cResult eae6320::cExampleGame::InitializeRings()
         const float randX = Math::RandRange(-maxX, maxX) * multiplier;
         const float randY = Math::RandRange(-maxY, maxY) * multiplier;
 
-        Params.initialPosition = Math::sVector(randX, randY, -maxZ - i * maxZ);
+        Params.initialPosition = Math::sVector(randX, randY, -2 * maxZ - i * maxZ);
 
         cGameObject* gameObject = nullptr;
         if (!(result = cGameObject::Create(gameObject, Params)))

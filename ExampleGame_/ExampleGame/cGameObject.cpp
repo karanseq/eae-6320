@@ -98,6 +98,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const sGameObjectinitializatio
         m_rigidBodyState.position = i_initializationParameters.initialPosition;
         m_maxVelocityLengthSquared = i_initializationParameters.maxVelocity * i_initializationParameters.maxVelocity;
         m_angularSpeed = i_initializationParameters.angularSpeed;
+        m_maxAngularSpeed = i_initializationParameters.maxAngularSpeed;
         m_linearDamping = i_initializationParameters.linearDamping;
         m_angularDamping = i_initializationParameters.angularDamping;
     }
@@ -179,7 +180,7 @@ void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_si
     {
         m_rigidBodyState.angularVelocity_axis_local.x = m_angularImpulseReceived.x;
         m_rigidBodyState.angularVelocity_axis_local.y = m_angularImpulseReceived.y;
-        m_rigidBodyState.angularSpeed = m_angularSpeed;
+        m_rigidBodyState.angularSpeed += m_rigidBodyState.angularSpeed > m_maxAngularSpeed ? 0.0f : m_angularSpeed;
     }
 
     m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
