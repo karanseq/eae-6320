@@ -6,6 +6,7 @@
 
 #include "sRigidBodyState.h"
 
+#include <Engine/Math/cQuaternion.h>
 #include <Engine/Math/sVector.h>
 
 // Class Declaration
@@ -23,13 +24,15 @@ namespace eae6320
             const sRigidBodyState*          target = nullptr;
             sRigidBodyState*                camera = nullptr;
             float                           armLength = 0.0f;
-            float                           lerpRate = 0.01f;
+            float                           lerpRate = 1.0f;//0.01f;
 
             // Interface
             //==========
 
         public:
-            void UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate);
+            void Update(const float i_secondCountToIntegrate);
+            Math::sVector PredictCameraFuturePosition(const float i_secondCountToExtrapolate) const;
+            Math::cQuaternion PredictCameraFutureOrientation(const float i_secondCountToExtrapolate) const;
 
         };
     }

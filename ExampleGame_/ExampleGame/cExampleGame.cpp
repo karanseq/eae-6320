@@ -64,7 +64,7 @@ void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    m_springArm.UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
+    m_springArm.Update(i_elapsedSecondCount_sinceLastUpdate);
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
 }
 
@@ -74,9 +74,8 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     Graphics::SubmitDepthToClear();
 
     {
-        m_springArm.UpdateBasedOnTime(i_elapsedSecondCount_sinceLastSimulationUpdate);
-        const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.orientation;
-        const Math::sVector predictedPosition = m_camera.m_rigidBodyState.position;
+        const Math::cQuaternion predictedOrientation = m_springArm.PredictCameraFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        const Math::sVector predictedPosition = m_springArm.PredictCameraFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
 
         if (m_skyBoxEnabled)
