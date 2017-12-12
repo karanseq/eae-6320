@@ -10,6 +10,7 @@
 #include <Engine/Graphics/cSprite.h>
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/cMatrix_transformation.h>
 #include <Engine/Math/sVector.h>
 #include <Engine/Math/sVector2d.h>
 #include <Engine/UserInput/UserInput.h>
@@ -23,11 +24,6 @@
 
 const std::string eae6320::cExampleGame::s_meshVertexShaderFilePath("data/Shaders/Vertex/mesh.shd");
 const std::string eae6320::cExampleGame::s_meshFragmentShaderFilePath("data/Shaders/Fragment/mesh.shd");
-const std::string eae6320::cExampleGame::s_meshTranslucentFragmentShaderFilePath("data/Shaders/Fragment/meshTranslucent.shd");
-const std::string eae6320::cExampleGame::s_spriteVertexShaderFilePath("data/Shaders/Vertex/sprite.shd");
-const std::string eae6320::cExampleGame::s_spriteFragmentShaderFilePath("data/Shaders/Fragment/spriteBasic.shd");
-const std::string eae6320::cExampleGame::s_animatedSpriteFragmentShaderFilePath("data/Shaders/Fragment/spriteAnimated.shd");
-const std::string eae6320::cExampleGame::s_textureFolderList[s_numTextureFolders] = { "data/Textures/Ramps/" };
 
 // Inherited Implementation
 //=========================
@@ -48,62 +44,28 @@ void eae6320::cExampleGame::UpdateBasedOnInput()
 
 void eae6320::cExampleGame::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    // Animate the background
-    {
-        static float systemTime = 0.0f;
-        systemTime += i_elapsedSecondCount_sinceLastUpdate;
-        m_backgroundColor.r = 1.0f + (cosf(systemTime) * 0.5f) - 0.5f;
-        m_backgroundColor.g = 1.0f + (sinf(systemTime) * 0.5f) - 0.5f;
-        m_backgroundColor.b = 1.0f + (acosf(systemTime) * 0.5f) - 0.5f;
-    }
+
 }
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnInput()
 {
-    // update camera
-    {
-        static const float cameraImpulseMagnitude = 2.0f;
-        Math::sVector impulse;
-        impulse.x = UserInput::IsKeyPressed('A') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('D') ? cameraImpulseMagnitude : 0.0f;
-        impulse.y = UserInput::IsKeyPressed('E') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('Q') ? cameraImpulseMagnitude : 0.0f;
-        impulse.z = UserInput::IsKeyPressed('W') ? -cameraImpulseMagnitude : 0.0f + UserInput::IsKeyPressed('S') ? cameraImpulseMagnitude : 0.0f;
-
-        m_camera.m_rigidBodyState.velocity += impulse;
-        m_camera.m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.x, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-        m_camera.m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.y, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-        m_camera.m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_camera.m_rigidBodyState.velocity.z, -cGameObject::s_maxVelocity, cGameObject::s_maxVelocity);
-    }
-
-    // update meshes
-    {
-        static bool keyChanged = true;
-        if (keyChanged == true && UserInput::IsKeyPressed('X') == true)
-        {
-            std::swap(m_meshPositions[1].z, m_meshPositions[2].z);
-            keyChanged = false;
-
-        }
-        else if (keyChanged == false && UserInput::IsKeyPressed('X') == false)
-        {
-            keyChanged = true;
-        }
-    }
-
     // update game objects
     {
-        static const float gameObjectImpulseMagnitude = 1.5f;
-        Math::sVector impulse;
-        impulse.x += UserInput::IsKeyPressed(UserInput::KeyCodes::Left) ? -gameObjectImpulseMagnitude : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Right) ? gameObjectImpulseMagnitude : 0.0f;
-        impulse.y = UserInput::IsKeyPressed(UserInput::KeyCodes::Down) ? -gameObjectImpulseMagnitude : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Up) ? gameObjectImpulseMagnitude : 0.0f;
+        static constexpr float gameObjectImpulseMagnitude = 2.0f;
 
+        Math::sVector impulse;
+        impulse.z = -gameObjectImpulseMagnitude;
         m_gameObjectList[0]->AddImpulse(impulse);
+
+        m_gameObjectList[0]->AddYaw(UserInput::IsKeyPressed(UserInput::KeyCodes::Left) ? 1.0f : 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Right) ? -1.0f : 0.0f);
+        m_gameObjectList[0]->AddPitch(UserInput::IsKeyPressed(UserInput::KeyCodes::Up) ? 1.0f: 0.0f + UserInput::IsKeyPressed(UserInput::KeyCodes::Down) ? -1.0f : 0.0f);
     }
 }
 
 void eae6320::cExampleGame::UpdateSimulationBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
+    m_springArm.Update(i_elapsedSecondCount_sinceLastUpdate);
     UpdateGameObjects(i_elapsedSecondCount_sinceLastUpdate);
-    UpdateSpriteRenderData(i_elapsedSecondCount_sinceLastUpdate);
 }
 
 void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate)
@@ -112,24 +74,18 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
     Graphics::SubmitDepthToClear();
 
     {
-        const Math::cQuaternion predictedOrientation = m_camera.m_rigidBodyState.PredictFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
-        const Math::sVector predictedPosition = m_camera.m_rigidBodyState.PredictFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        const Math::cQuaternion predictedOrientation = m_springArm.PredictCameraFutureOrientation(i_elapsedSecondCount_sinceLastSimulationUpdate);
+        const Math::sVector predictedPosition = m_springArm.PredictCameraFuturePosition(i_elapsedSecondCount_sinceLastSimulationUpdate);
         Graphics::SubmitCamera(m_camera, predictedPosition, predictedOrientation);
-    }
 
-    const size_t numMeshes = m_meshList.size();
-    for (size_t i = 0; i < numMeshes; ++i)
-    {
-        Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_meshList[i]);
-        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_meshTextureList[i]);
-        Graphics::cEffect* effect = i == 0 ? m_effectList[0] : m_effectList[1];
-        Graphics::SubmitMeshToBeRendered(mesh, effect, texture, m_meshPositions[i], Math::cQuaternion());
-    }
+        if (m_skyBoxEnabled)
+        {
+            static const Math::cQuaternion skyBoxOrientation;
 
-    for (auto& spriteRenderData : m_spriteRenderDataList)
-    {
-        Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_spriteTextureList[spriteRenderData.m_currentFrameIndex]);
-        Graphics::SubmitSpriteToBeRendered(spriteRenderData.m_sprite, spriteRenderData.m_effect, texture);
+            Graphics::cMesh* mesh = Graphics::cMesh::s_manager.Get(m_skyBoxMesh);
+            Graphics::cTexture* texture = Graphics::cTexture::s_manager.Get(m_skyBoxTexture);
+            Graphics::SubmitMeshToBeRendered(mesh, m_skyBoxEffect, texture, predictedPosition, skyBoxOrientation);
+        }
     }
 
     for (auto& gameObject : m_gameObjectList)
@@ -140,35 +96,38 @@ void eae6320::cExampleGame::SubmitDataToBeRendered(const float i_elapsedSecondCo
 
 void eae6320::cExampleGame::UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate)
 {
+    // Update the camera
     {
+        m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+
         // Apply drag
         m_camera.m_rigidBodyState.velocity.x -= fabsf(m_camera.m_rigidBodyState.velocity.x) > 0.0f ? m_camera.m_rigidBodyState.velocity.x * cGameObject::s_linearDamping : 0.0f;
         m_camera.m_rigidBodyState.velocity.y -= fabsf(m_camera.m_rigidBodyState.velocity.y) > 0.0f ? m_camera.m_rigidBodyState.velocity.y * cGameObject::s_linearDamping : 0.0f;
         m_camera.m_rigidBodyState.velocity.z -= fabsf(m_camera.m_rigidBodyState.velocity.z) > 0.0f ? m_camera.m_rigidBodyState.velocity.z * cGameObject::s_linearDamping : 0.0f;
-        
-        m_camera.m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
     }
 
     for (const auto& gameObject : m_gameObjectList)
     {
         gameObject->UpdateBasedOnTime(i_elapsedSecondCount_sinceLastUpdate);
     }
-}
 
-void eae6320::cExampleGame::UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate)
-{
-    // Swap textures based on time.
+    // Check if ship has crossed ring
+    if (fabs(m_gameObjectList[m_shipIndex]->GetRigidBodyState().position.z - m_gameObjectList[m_nextRingIndex]->GetRigidBodyState().position.z) < 1.0f)
     {
-        for (auto& spriteRenderData : m_spriteRenderDataList)
+        // Check if the ship has passed through the ring
+        const Math::sVector shipDistanceFromRing = m_gameObjectList[m_nextRingIndex]->GetRigidBodyState().position - m_gameObjectList[m_shipIndex]->GetRigidBodyState().position;
+        constexpr float ringRadiusSquared = 2.5f;
+
+        if (shipDistanceFromRing.GetLengthSquared() < ringRadiusSquared)
         {
-            spriteRenderData.m_waitUntilNextFrame -= i_elapsedSecondCount_sinceLastUpdate;
-            if (spriteRenderData.m_waitUntilNextFrame < 0.0f)
-            {
-                ++spriteRenderData.m_currentFrameIndex;
-                spriteRenderData.m_currentFrameIndex = spriteRenderData.m_currentFrameIndex - spriteRenderData.m_firstFrameIndex >= s_numFrames ? spriteRenderData.m_firstFrameIndex : spriteRenderData.m_currentFrameIndex;
-                spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
-            }
+            // Animate the ring
+            m_gameObjectList[m_nextRingIndex]->AddYaw(m_nextRingIndex % 2 ? 1.0f : -1.0f);
         }
+
+        // Update the ring index
+        m_nextRingIndex += m_nextRingIndex < m_numRings - 1 ? 1 : 0;
+        const float newLinearDamping = 0.1f - 0.04f * float(m_nextRingIndex) / float(m_numRings);
+        m_gameObjectList[m_shipIndex]->SetLinearDamping(newLinearDamping);
     }
 }
 
@@ -181,40 +140,25 @@ eae6320::cResult eae6320::cExampleGame::Initialize()
 
     std::srand(static_cast<unsigned int>(std::time(nullptr)));
 
-    // Initialize effects
-    if (!(result = InitializeEffects()))
-    {
-        goto OnExit;
-    }
-
-    // Initialize textures
-    if (!(result = InitializeTextures()))
-    {
-        goto OnExit;
-    }
-
-    // Initialize meshes
-    if (!(result = InitializeMeshes()))
-    {
-        goto OnExit;
-    }
-
-    // Initialize sprites
-    if (!(result = InitializeSprites()))
-    {
-        goto OnExit;
-    }
-
-    InitializeSpriteRenderDataList();
-
     // Initialize game objects
     if (!(result = InitializeGameObjects()))
     {
         goto OnExit;
     }
 
-    m_camera.m_rigidBodyState.position.y = 2.5f;
-    m_camera.m_rigidBodyState.position.z = 15.0f;
+    // Initialize the sky box
+    if (m_skyBoxEnabled)
+    {
+        if (!(result = InitializeSkyBox()))
+        {
+            goto OnExit;
+        }
+    }
+
+    if (!(result = InitializeCamera()))
+    {
+        goto OnExit;
+    }
 
 OnExit:
 
@@ -225,291 +169,83 @@ eae6320::cResult eae6320::cExampleGame::CleanUp()
 {
     cResult result = Results::Success;
 
-    for (const auto& effect : m_effectList)
-    {
-        effect->DecrementReferenceCount();
-    }
-    m_effectList.clear();
-
-    for (auto& texture : m_spriteTextureList)
-    {
-        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
-        if (!localResult)
-        {
-            EAE6320_ASSERT(false);
-            if (result)
-            {
-                result = localResult;
-            }
-        }
-    }
-    m_spriteTextureList.clear();
-
-    for (auto& texture : m_meshTextureList)
-    {
-        const auto localResult = Graphics::cTexture::s_manager.Release(texture);
-        if (!localResult)
-        {
-            EAE6320_ASSERT(false);
-            if (result)
-            {
-                result = localResult;
-            }
-        }
-    }
-    m_meshTextureList.clear();
-
-    for (auto& mesh : m_meshList)
-    {
-        const auto localResult = Graphics::cMesh::s_manager.Release(mesh);
-        if (!localResult)
-        {
-            EAE6320_ASSERT(false);
-            if (result)
-            {
-                result = localResult;
-            }
-        }
-    }
-    m_meshList.clear();
-    
-
-    for (const auto& sprite : m_spriteList)
-    {
-        sprite->DecrementReferenceCount();
-    }
-    m_spriteList.clear();
-
-    m_spriteRenderDataList.clear();
-
+    // Cleanup all game objects
     for (auto& gameObject : m_gameObjectList)
     {
         cGameObject::Destroy(gameObject);
     }
     m_gameObjectList.clear();
 
-    return result;
-}
-
-eae6320::cResult eae6320::cExampleGame::InitializeEffects()
-{
-    cResult result = Results::Success;
-
-    constexpr uint8_t numEffects = 4;
-    m_effectList.reserve(numEffects);
-
-    // initialize the mesh effect
+    // Cleanup sky box if enabled
+    if (m_skyBoxEnabled)
     {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
         {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-    // initialize the translucent mesh effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_meshVertexShaderFilePath.c_str(), s_meshTranslucentFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency | Graphics::RenderStates::DepthBuffering)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-    // initialize the simple sprite effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_spriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-    // initialize the animated sprite effect
-    {
-        Graphics::cEffect* effect = nullptr;
-
-        if (!(result = Graphics::cEffect::Create(effect, s_spriteVertexShaderFilePath.c_str(), s_animatedSpriteFragmentShaderFilePath.c_str(), Graphics::RenderStates::AlphaTransparency)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_effectList.push_back(effect);
-        }
-    }
-
-OnExit:
-
-    return result;
-}
-
-eae6320::cResult eae6320::cExampleGame::InitializeTextures()
-{
-    cResult result = Results::Success;
-
-    constexpr uint8_t numTextures = s_numTextureFolders * s_numFrames;
-    m_spriteTextureList.reserve(numTextures);
-
-    static const std::string textureNameSuffix("frame_");
-    static const std::string textureFileExtension(".tex");
-
-    for (const auto& textureFolder : s_textureFolderList)
-    {
-        const std::string textureBaseName(textureFolder + textureNameSuffix);
-        for (uint8_t i = 0; i < s_numFrames; ++i)
-        {
-            const std::string textureName = textureBaseName + std::to_string(i) + textureFileExtension;
-            Graphics::cTexture::Handle textureHandle;
-            if (!(result = Graphics::cTexture::s_manager.Load(textureName.c_str(),
-                textureHandle)))
+            const auto localResult = Graphics::cMesh::s_manager.Release(m_skyBoxMesh);
+            if (!localResult)
             {
                 EAE6320_ASSERT(false);
-                goto OnExit;
+                result = result ? localResult : result;
             }
-            else
+        }
+
+        {
+            const auto localResult = Graphics::cTexture::s_manager.Release(m_skyBoxTexture);
+            if (!localResult)
             {
-                m_spriteTextureList.push_back(textureHandle);
+                EAE6320_ASSERT(false);
+                result = result ? localResult : result;
             }
         }
-    }
 
-OnExit:
+        {
+            m_skyBoxEffect->DecrementReferenceCount();
+            m_skyBoxEffect = nullptr;
+        }
+    }
 
     return result;
 }
 
-eae6320::cResult eae6320::cExampleGame::InitializeMeshes()
+eae6320::cResult eae6320::cExampleGame::InitializeCamera()
 {
     cResult result = Results::Success;
 
+    // Initialize the camera
     {
-        Graphics::cTexture::Handle textureHandle;
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Grass.tex", textureHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.x = 1.0f;
+        m_camera.m_rigidBodyState.angularVelocity_axis_local.y = 0.0f;
 
-        Graphics::cMesh::Handle meshHandle;
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Floor.msh", meshHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_meshTextureList.push_back(textureHandle);
-            m_meshList.push_back(meshHandle);
-        }
-
-        m_meshPositions.push_back(Math::sVector(0.0f, -1.0f, 0.0f));
+        m_camera.m_rigidBodyState.position.y = 25.0f;
+        m_camera.m_rigidBodyState.position.z = 60.0f;
     }
 
-    constexpr uint8_t numCrates = 2;
-    for (uint8_t i = 0; i < numCrates; ++i)
+    // Initialize the spring arm
     {
-        Graphics::cTexture::Handle textureHandle;
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Crate.tex", textureHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-
-        Graphics::cMesh::Handle meshHandle;
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Crate.msh", meshHandle)))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_meshTextureList.push_back(textureHandle);
-            m_meshList.push_back(meshHandle);
-        }
-
-        m_meshPositions.push_back(Math::sVector(-2.0f * i, 0.25f, 2.0f + -4.0f * i));
+        m_springArm.target = &m_gameObjectList[0]->GetRigidBodyState();
+        m_springArm.camera = &m_camera.m_rigidBodyState;
+        m_springArm.armLength = 30.0f;
     }
-
-OnExit:
 
     return result;
-}
-
-eae6320::cResult eae6320::cExampleGame::InitializeSprites()
-{
-    cResult result = Results::Success;
-
-    const Math::sVector2d origins[s_numTextureFolders] = { { -0.75f, 0.75f } };
-    const Math::sVector2d extents[s_numTextureFolders] = { { 0.3f, 0.3f } };
-
-    m_spriteList.reserve(s_numTextureFolders);
-
-    for (uint8_t i = 0; i < s_numTextureFolders; ++i)
-    {
-        Graphics::cSprite* sprite = nullptr;
-
-        if (!(result = Graphics::cSprite::Create(sprite, origins[i], extents[i])))
-        {
-            EAE6320_ASSERT(false);
-            goto OnExit;
-        }
-        else
-        {
-            m_spriteList.push_back(sprite);
-        }
-    }
-
-OnExit:
-
-    return result;
-}
-
-void eae6320::cExampleGame::InitializeSpriteRenderDataList()
-{
-    const size_t numSprites = m_spriteList.size();
-    //for (uint8_t i = 0; i < numSprites; ++i)
-    const uint8_t i = static_cast<const uint8_t>(numSprites) - 1;
-    {
-        sSpriteRenderData spriteRenderData;
-        {
-            spriteRenderData.m_firstFrameIndex = i * s_numFrames;
-            spriteRenderData.m_currentFrameIndex = i * s_numFrames;
-            spriteRenderData.m_frameRate = 0.125f + float(i) * 0.05f;
-            spriteRenderData.m_waitUntilNextFrame = spriteRenderData.m_frameRate;
-            spriteRenderData.m_effect = m_effectList[2];
-            spriteRenderData.m_sprite = m_spriteList[i];
-        }
-        m_spriteRenderDataList.push_back(spriteRenderData);
-    }
 }
 
 eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
 {
     cResult result = Results::Success;
 
-    cGameObject* gameObject = nullptr;
+    static const std::string meshFilePath = std::string("data/Meshes/Ship.msh");
+    static const std::string textureFilePath = std::string("data/Textures/Ring.tex");
 
-    if (!(result = cGameObject::Create(gameObject, Math::sVector(0.0f, -2.5f, 0.0f))))
+    sGameObjectinitializationParameters Params;
+    Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
+    Params.fragmentShaderFilePath = &s_meshFragmentShaderFilePath;
+    Params.meshFilePath = &meshFilePath;
+    Params.textureFilePath = &textureFilePath;
+    Params.initialPosition = Math::sVector(0.0f, 0.0f, 0.0f);
+    Params.maxVelocity = 30.0f;
+
+    cGameObject* gameObject = nullptr;
+    if (!(result = cGameObject::Create(gameObject, Params)))
     {
         EAE6320_ASSERT(false);
         goto OnExit;
@@ -517,6 +253,82 @@ eae6320::cResult eae6320::cExampleGame::InitializeGameObjects()
     else
     {
         m_gameObjectList.push_back(gameObject);
+    }
+
+    result = InitializeRings();
+
+OnExit:
+
+    return result;
+}
+
+eae6320::cResult eae6320::cExampleGame::InitializeRings()
+{
+    cResult result = Results::Success;
+
+    static const std::string meshFilePath = std::string("data/Meshes/Ring.msh");
+    static const std::string textureFilePath = std::string("data/Textures/Ring.tex");
+
+    sGameObjectinitializationParameters Params;
+    Params.vertexShaderFilePath = &s_meshVertexShaderFilePath;
+    Params.fragmentShaderFilePath = &s_meshFragmentShaderFilePath;
+    Params.meshFilePath = &meshFilePath;
+    Params.textureFilePath = &textureFilePath;
+    Params.angularSpeed = Math::Pi * 2.0f;
+    Params.angularDamping = 0.0f;
+
+    constexpr uint8_t difficultyFactor = 50;
+    constexpr float maxX = 2.0f;
+    constexpr float maxY = 2.0f;
+    constexpr float maxZ = 75.0f;
+    float multiplier = 1.0f;
+
+    for (uint8_t i = 0; i < m_numRings; ++i)
+    {
+        const float randX = Math::RandRange(-maxX, maxX) * multiplier;
+        const float randY = Math::RandRange(-maxY, maxY) * multiplier;
+
+        Params.initialPosition = Math::sVector(randX, randY, -2 * maxZ - i * maxZ);
+
+        cGameObject* gameObject = nullptr;
+        if (!(result = cGameObject::Create(gameObject, Params)))
+        {
+            EAE6320_ASSERT(false);
+            goto OnExit;
+        }
+        else
+        {
+            m_gameObjectList.push_back(gameObject);
+        }
+
+        multiplier = 1.0f + float(i / difficultyFactor);
+    }
+
+OnExit:
+
+    return result;
+}
+
+eae6320::cResult eae6320::cExampleGame::InitializeSkyBox()
+{
+    cResult result = Results::Success;
+
+    if (!(result = Graphics::cEffect::Create(m_skyBoxEffect, s_meshVertexShaderFilePath.c_str(), s_meshFragmentShaderFilePath.c_str(), 0)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
+    }
+
+    if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/SkyBox.tex", m_skyBoxTexture)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
+    }
+
+    if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/SkyBox.msh", m_skyBoxMesh)))
+    {
+        EAE6320_ASSERT(false);
+        goto OnExit;
     }
 
 OnExit:

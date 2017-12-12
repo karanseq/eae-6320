@@ -10,6 +10,7 @@
 #include <Engine/Graphics/Graphics.h>
 #include <Engine/Graphics/sColor.h>
 #include <Engine/Logging/Logging.h>
+#include <Engine/Math/cMatrix_transformation.h>
 #include <Engine/Math/cQuaternion.h>
 #include <Engine/Math/Functions.h>
 #include <Engine/Math/sVector.h>
@@ -18,8 +19,8 @@
 
 // Static Data Initialization
 //===========================
-const float eae6320::cGameObject::s_maxVelocity = 2.5f;
 const float eae6320::cGameObject::s_linearDamping = 0.1f;
+const float eae6320::cGameObject::s_angularDamping = eae6320::Math::Pi * 0.05f;
 
 // Interface
 //==========
@@ -27,7 +28,7 @@ const float eae6320::cGameObject::s_linearDamping = 0.1f;
 // Initialization / Clean Up
 //--------------------------
 
-eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const Math::sVector& i_position)
+eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const sGameObjectinitializationParameters& i_initializationParameters)
 {
     auto result = Results::Success;
 
@@ -46,7 +47,7 @@ eae6320::cResult eae6320::cGameObject::Create(cGameObject*& o_gameObject, const 
     }
 
     // Initialize the new game object
-    if (!(result = newGameObject->Initialize(i_position)))
+    if (!(result = newGameObject->Initialize(i_initializationParameters)))
     {
         EAE6320_ASSERTF(false, "Could not initialize the new game object!");
         goto OnExit;
@@ -81,16 +82,30 @@ eae6320::cResult eae6320::cGameObject::Destroy(cGameObject*& i_gameObject)
     return Results::Success;
 }
 
-eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_position)
+eae6320::cResult eae6320::cGameObject::Initialize(const sGameObjectinitializationParameters& i_initializationParameters)
 {
     auto result = Results::Success;
 
-    // Save the position
-    m_rigidBodyState.position = i_position;
+    // Validate initialization parameters
+    if (!i_initializationParameters.IsValid())
+    {
+        result = Results::Failure;
+        goto OnExit;
+    }
+
+    // Save physics information
+    {
+        m_rigidBodyState.position = i_initializationParameters.initialPosition;
+        m_maxVelocityLengthSquared = i_initializationParameters.maxVelocity * i_initializationParameters.maxVelocity;
+        m_angularSpeed = i_initializationParameters.angularSpeed;
+        m_maxAngularSpeed = i_initializationParameters.maxAngularSpeed;
+        m_linearDamping = i_initializationParameters.linearDamping;
+        m_angularDamping = i_initializationParameters.angularDamping;
+    }
 
     // Initialize the effect
     {
-        if (!(result = Graphics::cEffect::Create(m_effect, cExampleGame::s_meshVertexShaderFilePath.c_str(), cExampleGame::s_meshFragmentShaderFilePath.c_str(), Graphics::RenderStates::DepthBuffering)))
+        if (!(result = Graphics::cEffect::Create(m_effect, i_initializationParameters.vertexShaderFilePath->c_str(), i_initializationParameters.fragmentShaderFilePath->c_str(), Graphics::RenderStates::DepthBuffering)))
         {
             EAE6320_ASSERT(false);
             goto OnExit;
@@ -99,7 +114,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the mesh
     {
-        if (!(result = Graphics::cMesh::s_manager.Load("data/Meshes/Bat.msh", m_mesh)))
+        if (!(result = Graphics::cMesh::s_manager.Load(i_initializationParameters.meshFilePath->c_str(), m_mesh)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the mesh for game object!");
             goto OnExit;
@@ -108,7 +123,7 @@ eae6320::cResult eae6320::cGameObject::Initialize(const Math::sVector& i_positio
 
     // Initialize the texture
     {
-        if (!(result = Graphics::cTexture::s_manager.Load("data/Textures/Soccer/Wood.tex", m_texture)))
+        if (!(result = Graphics::cTexture::s_manager.Load(i_initializationParameters.textureFilePath->c_str(), m_texture)))
         {
             EAE6320_ASSERTF(false, "Could not initialize the texture for game object!");
             goto OnExit;
@@ -141,10 +156,18 @@ eae6320::cGameObject::~cGameObject()
 
 void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 {
-    m_rigidBodyState.velocity += i_impulse;
-    m_rigidBodyState.velocity.x = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.x, -s_maxVelocity, s_maxVelocity);
-    m_rigidBodyState.velocity.y = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.y, -s_maxVelocity, s_maxVelocity);
-    m_rigidBodyState.velocity.z = eae6320::Math::Clamp<float>(m_rigidBodyState.velocity.z, -s_maxVelocity, s_maxVelocity);
+    const Math::sVector impulse = Math::cMatrix_transformation(m_rigidBodyState.orientation, Math::sVector::ZERO) * i_impulse;
+    m_rigidBodyState.velocity += m_rigidBodyState.velocity.GetLengthSquared() < m_maxVelocityLengthSquared ? impulse : Math::sVector::ZERO;
+}
+
+void eae6320::cGameObject::AddYaw(float i_delta)
+{
+    m_angularImpulseReceived.y = i_delta;
+}
+
+void eae6320::cGameObject::AddPitch(float i_delta)
+{
+    m_angularImpulseReceived.x = i_delta;
 }
 
 // Update
@@ -152,12 +175,23 @@ void eae6320::cGameObject::AddImpulse(const Math::sVector& i_impulse)
 
 void eae6320::cGameObject::UpdateBasedOnTime(const float i_elapsedSecondCount_sinceLastUpdate)
 {
-    // Apply drag
-    m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * s_linearDamping : 0.0f;
-    m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * s_linearDamping : 0.0f;
-    m_rigidBodyState.velocity.z -= fabsf(m_rigidBodyState.velocity.z) > 0.0f ? m_rigidBodyState.velocity.z * s_linearDamping : 0.0f;
+    // Apply angular impulse
+    if (fabsf(m_angularImpulseReceived.x) > 0.0f || fabsf(m_angularImpulseReceived.y))
+    {
+        m_rigidBodyState.angularVelocity_axis_local.x = m_angularImpulseReceived.x;
+        m_rigidBodyState.angularVelocity_axis_local.y = m_angularImpulseReceived.y;
+        m_rigidBodyState.angularSpeed += m_rigidBodyState.angularSpeed > m_maxAngularSpeed ? 0.0f : m_angularSpeed;
+    }
 
     m_rigidBodyState.Update(i_elapsedSecondCount_sinceLastUpdate);
+
+    // Apply linear damping
+    m_rigidBodyState.velocity.x -= fabsf(m_rigidBodyState.velocity.x) > 0.0f ? m_rigidBodyState.velocity.x * m_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.y -= fabsf(m_rigidBodyState.velocity.y) > 0.0f ? m_rigidBodyState.velocity.y * m_linearDamping : 0.0f;
+    m_rigidBodyState.velocity.z -= fabsf(m_rigidBodyState.velocity.z) > 0.0f ? m_rigidBodyState.velocity.z * m_linearDamping : 0.0f;
+
+    // Apply angular damping
+    m_rigidBodyState.angularSpeed -= fabsf(m_rigidBodyState.angularSpeed) > 0.0f ? m_rigidBodyState.angularSpeed * m_angularDamping : 0.0f;
 }
 
 // Render

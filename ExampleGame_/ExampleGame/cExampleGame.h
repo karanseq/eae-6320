@@ -13,7 +13,9 @@
 #include <Engine/Graphics/cTexture.h>
 #include <Engine/Graphics/sCamera.h>
 #include <Engine/Graphics/sColor.h>
+#include <Engine/Physics/sSpringArm.h>
 #include <Engine/Results/Results.h>
+
 #include <vector>
 
 #if defined( EAE6320_PLATFORM_WINDOWS )
@@ -107,7 +109,6 @@ namespace eae6320
         virtual void SubmitDataToBeRendered(const float i_elapsedSecondCount_systemTime, const float i_elapsedSecondCount_sinceLastSimulationUpdate) override;
 
         void UpdateGameObjects(const float i_elapsedSecondCount_sinceLastUpdate);
-        void UpdateSpriteRenderData(const float i_elapsedSecondCount_sinceLastUpdate);
 
         // Initialization / Clean Up
         //--------------------------
@@ -115,12 +116,10 @@ namespace eae6320
         virtual cResult Initialize() override;
         virtual cResult CleanUp() override;
 
-        cResult InitializeEffects();
-        cResult InitializeTextures();
-        cResult InitializeMeshes();
-        cResult InitializeSprites();
-        void InitializeSpriteRenderDataList();
+        cResult InitializeCamera();
         cResult InitializeGameObjects();
+        cResult InitializeRings();
+        cResult InitializeSkyBox();
 
         void GetRandomOriginForSprite(Math::sVector2d& o_origin) const;
         void GetRandomExtentsForSprite(Math::sVector2d& o_extents) const;
@@ -130,40 +129,25 @@ namespace eae6320
 
     public:
 
-        static constexpr uint8_t                            s_numTextureFolders = 1;
-        static constexpr uint8_t                            s_numFrames = 6;
         static const std::string                            s_meshVertexShaderFilePath;
         static const std::string                            s_meshFragmentShaderFilePath;
-        static const std::string                            s_meshTranslucentFragmentShaderFilePath;
-        static const std::string                            s_spriteVertexShaderFilePath;
-        static const std::string                            s_spriteFragmentShaderFilePath;
-        static const std::string                            s_animatedSpriteFragmentShaderFilePath;
-        static const std::string                            s_textureFolderList[s_numTextureFolders];
 
     private:
 
-        struct sSpriteRenderData
-        {
-            uint8_t                                         m_firstFrameIndex = 0;
-            uint8_t                                         m_currentFrameIndex = 0;
-            float                                           m_frameRate = 0.0f;
-            float                                           m_waitUntilNextFrame = 0.0f;
-            Graphics::cEffect*                              m_effect = nullptr;
-            Graphics::cSprite*                              m_sprite = nullptr;
-        };
-
         Graphics::sCamera                                   m_camera;
-        Graphics::sColor                                    m_backgroundColor = Graphics::sColor::ORANGE;
-        std::vector<Graphics::cEffect*>                     m_effectList;
-        std::vector<Graphics::cTexture::Handle>             m_spriteTextureList;
-        std::vector<Graphics::cSprite*>                     m_spriteList;
-        std::vector<sSpriteRenderData>                      m_spriteRenderDataList;
-
-        std::vector<Graphics::cTexture::Handle>             m_meshTextureList;
-        std::vector<Graphics::cMesh::Handle>                m_meshList;
-        std::vector<Math::sVector>                          m_meshPositions;
-
+        Graphics::sColor                                    m_backgroundColor = Graphics::sColor(0.05882f, 0.05882f, 0.26275f, 1.0f);
         std::vector<cGameObject*>                           m_gameObjectList;
+
+        Physics::sSpringArm                                 m_springArm;
+
+        bool                                                m_skyBoxEnabled = true;
+        Graphics::cMesh::Handle                             m_skyBoxMesh;
+        Graphics::cEffect*                                  m_skyBoxEffect = nullptr;
+        Graphics::cTexture::Handle                          m_skyBoxTexture;
+
+        const uint8_t                                       m_shipIndex = 0;
+        uint8_t                                             m_nextRingIndex = 1;
+        uint8_t                                             m_numRings = 200;
 
     };
 }
